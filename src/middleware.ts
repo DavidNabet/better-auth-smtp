@@ -4,8 +4,6 @@ import { getSessionCookie } from "better-auth/cookies";
 import { betterFetch } from "@better-fetch/fetch";
 import type { auth } from "@/lib/auth";
 
-type Session = typeof auth.$Infer.Session;
-
 /**
  * L'admin a accès à certaines routes, le user non !
  * Pour comparer un admin d'un user, soit on met un userId param, soit on crée un accessToken** encoded qui est stocké dans le cookie et dont le role est soit user soit admin.

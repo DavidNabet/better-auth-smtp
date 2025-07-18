@@ -28,7 +28,7 @@ export interface FormState {
   // errors?: CreateUserErrors;
 }
 
-type ErrorTypes = keyof typeof authServer.$ERROR_CODES;
+export type ErrorTypes = keyof typeof authServer.$ERROR_CODES;
 
 export async function updateProfile(
   formState: FormState,

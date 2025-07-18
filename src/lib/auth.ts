@@ -5,11 +5,13 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
 import { createMiddleware } from "better-auth";
 import { db } from "@/db";
-import { admin, twoFactor } from "better-auth/plugins";
+import { admin, twoFactor, username } from "better-auth/plugins";
 import { sendMagicLinkforLogin, sendOTPforLogin } from "@/lib/auth/auth.mails";
 import { ac, user, admin as adminRole } from "@/lib/user/user.service";
 import { getUserIdByEmail } from "@/lib/auth/auth.utils";
 import { Role } from "@prisma/client";
+
+export type Session = typeof auth.$Infer.Session;
 
 export const auth = betterAuth({
   database: prismaAdapter(db, {
@@ -101,6 +103,7 @@ export const auth = betterAuth({
       },
       skipVerificationOnEnable: true,
     }),
+    username(),
     // multiSession(),
     // magicLink({
     //   sendMagicLink: async ({ email, url, token }) => {
