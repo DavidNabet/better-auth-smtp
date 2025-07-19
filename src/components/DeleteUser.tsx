@@ -64,7 +64,7 @@ export default function DeleteUser() {
             setError(ctx.error.message);
           },
           onResponse() {
-            console.log("loading");
+            console.log("loading deleteuser");
           },
           onSuccess() {
             router.push("/auth/sign-in");

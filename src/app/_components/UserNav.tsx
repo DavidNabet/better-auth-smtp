@@ -15,7 +15,7 @@ import { menu } from "@/components/routes";
 import { getCurrentServerSession } from "@/lib/session/server";
 
 export async function UserNav() {
-  const session = await getCurrentServerSession();
+  const { userEmail, userName } = await getCurrentServerSession();
 
   return (
     <DropdownMenu>
@@ -36,11 +36,9 @@ export async function UserNav() {
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">
-              {session?.user.name}
-            </p>
+            <p className="text-sm font-medium leading-none">{userName}</p>
             <p className="text-xs leading-none text-muted-foreground">
-              {session?.user.email}
+              {userEmail}
             </p>
           </div>
         </DropdownMenuLabel>
@@ -53,8 +51,8 @@ export async function UserNav() {
           ))}
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem variant="destructive" asChild>
-          <LogOut className="flex w-full items-center gap-2 rounded-lg cursor-pointer">
+        <DropdownMenuItem asChild>
+          <LogOut className="flex w-full items-center gap-2 rounded-sm hover:bg-red-700/20">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -69,7 +67,6 @@ export async function UserNav() {
                 d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3"
               />
             </svg>
-            Logout
           </LogOut>
         </DropdownMenuItem>
       </DropdownMenuContent>

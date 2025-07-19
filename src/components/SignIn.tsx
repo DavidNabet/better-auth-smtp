@@ -61,7 +61,7 @@ export default function AuthSignIn() {
             setError(ctx.error.message);
           },
           onRequest() {
-            console.log("loading");
+            console.log("loading signin");
             setSuccess("");
             setError("");
           },

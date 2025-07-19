@@ -6,5 +6,12 @@ export async function getCurrentServerSession() {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
-  return session;
+  return {
+    userId: session?.user.id!,
+    userEmail: session?.user.email!,
+    userRole: session?.user.role!,
+    userName: session?.user ? session.user.name : "",
+    sessionToken: session?.session.token,
+    expiresAt: session?.session.expiresAt,
+  };
 }

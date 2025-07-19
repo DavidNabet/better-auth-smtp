@@ -67,7 +67,7 @@ export default function AuthSignUp() {
             setError(ctx.error.message);
           },
           onRequest() {
-            console.log("loading");
+            console.log("loading signup");
             setSuccess("");
             setError("");
           },

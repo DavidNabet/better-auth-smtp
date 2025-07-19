@@ -5,11 +5,8 @@ import EnableTwoFactor from "@/components/EnableTwoFactor";
 import UserPasswordForm from "@/components/UserPasswordForm";
 import { Suspense } from "react";
 import { CardInner } from "@/app/_components/Card";
-import { getCurrentServerSession } from "@/lib/session/server";
-import type { User } from "better-auth";
 
 export default function DetailsPage() {
-  // const session = await getCurrentServerSession();
   return (
     <Wrapper title="Security">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

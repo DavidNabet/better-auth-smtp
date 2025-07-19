@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server";
 import { getSessionCookie } from "better-auth/cookies";
 import { betterFetch } from "@better-fetch/fetch";
 import type { auth } from "@/lib/auth";
+import { Session } from "@/lib/auth";
 
 /**
  * L'admin a accès à certaines routes, le user non !
@@ -15,54 +16,71 @@ import type { auth } from "@/lib/auth";
 
 export async function middleware(req: NextRequest) {
   const routes = ["/auth/signin", "/auth/signup"];
-  const adminRoute = ["/admin"];
+  // const adminRoute = ["/admin"];
 
   const root = ["/"];
   const { nextUrl } = req;
-  const response = NextResponse.next();
   const isAuthRoute = routes.includes(nextUrl.pathname);
-  const isAdminRoute = adminRoute.includes(nextUrl.pathname);
+  // const isAdminRoute = adminRoute.includes(nextUrl.pathname);
   const isRoot = root.includes(nextUrl.pathname);
-
-  // const { data, error } = await betterFetch<Session>("/api/auth/get-session", {
-  //   baseURL: process.env.NEXT_PUBLIC_APP_URL,
-  //   headers: {
-  //     cookie: req.headers.get("cookie") || "",
-  //   },
-  // });
-
-  const authRoutes = routes.some((route) => nextUrl.pathname.startsWith(route));
   const sessionCookie = getSessionCookie(req);
+
+  // const { data: session, error } = await betterFetch<Session>(
+  //   "/api/auth/get-session",
+  //   {
+  //     baseURL: process.env.NEXT_PUBLIC_APP_URL,
+  //     headers: {
+  //       cookie: cookies || "",
+  //     },
+  //   }
+  // );
+
+  console.log("sessionCookie: ", sessionCookie);
+
+  // const authRoutes = routes.some((route) => nextUrl.pathname.startsWith(route));
 
   if (isRoot) {
     console.log("root");
     return NextResponse.redirect(new URL("/auth/signin", nextUrl.origin));
   }
 
-  // Redirect to dashboard if user is authenticated and trying to access auth routes
-  if (sessionCookie) {
-    console.log("logged in");
-    if (nextUrl.pathname.startsWith("/auth")) {
+  if (isAuthRoute) {
+    if (sessionCookie) {
+      console.log("logged in");
       return NextResponse.redirect(new URL("/dashboard", req.url));
     }
-    return NextResponse.redirect(new URL("/dashboard", req.url));
+    return NextResponse.next();
   }
 
-  if (sessionCookie) {
-    if (isAuthRoute) {
-      console.log("not logged in and isAuthRoute");
-      return response;
-    }
+  if (!sessionCookie && nextUrl.pathname.startsWith("/dashboard")) {
     console.log("not logged in");
-
-    return NextResponse.redirect(new URL("/auth/signin", req.url));
+    return Response.redirect(new URL("/auth/signin", nextUrl));
   }
+
+  // Redirect to dashboard if user is authenticated and trying to access auth routes
+  // if (sessionCookie) {
+  //   console.log("logged in");
+  //   if (nextUrl.pathname.startsWith("/auth")) {
+  //     return NextResponse.redirect(new URL("/dashboard", req.url));
+  //   }
+  //   return NextResponse.redirect(new URL("/dashboard", req.url));
+  // }
+
+  // if (sessionCookie) {
+  //   if (isAuthRoute) {
+  //     console.log("not logged in and isAuthRoute");
+  //     return response;
+  //   }
+  //   console.log("not logged in");
+
+  //   return NextResponse.redirect(new URL("/auth/signin", req.url));
+  // }
 
   // if (isAdminRoute && data?.user.role !== "admin") {
   //   return NextResponse.redirect(new URL("/auth/signin", req.url));
   // }
 
-  return response;
+  return NextResponse.next();
 }
 
 export const config = {

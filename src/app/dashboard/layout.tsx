@@ -1,6 +1,8 @@
 import { Metadata } from "next";
 import Navbar from "@/app/_components/Navbar";
 import Breadcrumbs from "../_components/Breadcrumb";
+import { redirect } from "next/navigation";
+import { getCurrentServerSession } from "@/lib/session/server";
 export const metadata: Metadata = {
   title: "Dashboard",
   description: "Manage your account and settings.",
@@ -9,6 +11,8 @@ export const metadata: Metadata = {
 export default async function PrivateLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const { sessionToken } = await getCurrentServerSession();
+  if (!sessionToken) redirect("/auth/signin");
   return (
     <main className="dark:bg-background bg-white">
       <Navbar />

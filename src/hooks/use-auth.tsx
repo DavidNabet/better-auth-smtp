@@ -34,13 +34,13 @@ export function useAuthState() {
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const router = useRouter();
 
-  useEffect(() => {
-    (async function run() {
-      const { data } = await getCurrentClientSession();
-      setSession(data?.session!);
-      console.log("session provider: ", data);
-    })();
-  }, []);
+  // useEffect(() => {
+  //   (async function run() {
+  //     const { data } = await getCurrentClientSession();
+  //     setSession(data?.session!);
+  //     console.log("session provider: ", data);
+  //   })();
+  // }, []);
   useEffect(() => {
     // Role
     if (!s?.id) return;
