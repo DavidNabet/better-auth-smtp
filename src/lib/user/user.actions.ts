@@ -14,6 +14,7 @@ import { revalidatePath } from "next/cache";
 import { headers as head } from "next/headers";
 import { Role } from "@prisma/client";
 import { db } from "@/db";
+import { redirect } from "next/navigation";
 
 export interface FormState {
   message: {
@@ -48,11 +49,15 @@ export async function updateProfile(
 
   const { name, image } = validatedFields.data;
   try {
+    const authContext = await auth.$context;
+    console.log("authContext: ", authContext);
+    // await authContext.internalAdapter.updateUser(userId, {name, image})
     const { status } = await auth.api.updateUser({
       body: {
         name,
         image,
       },
+      headers: await head(),
     });
 
     console.log("status: ", status);
@@ -78,7 +83,8 @@ export async function updateProfile(
     throw error;
   }
 
-  revalidatePath("/dashboard/settings/details", "layout");
+  revalidatePath("/dashboard", "layout");
+  redirect("/dashboard");
 
   return {
     message: {

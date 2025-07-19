@@ -10,10 +10,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { updateProfile } from "@/lib/user/user.actions";
+import AvatarUpload from "@/components/AvatarUpload";
 import Alert from "@/app/_components/Alert";
 import { useActionState, useState, useTransition } from "react";
 import { UpdateProfileSchema } from "@/lib/user/user.schema";
@@ -26,7 +26,7 @@ export default function UserProfileForm({ session }: Props) {
   const [isPending, startTransition] = useTransition();
   const [formData, setFormData] = useState<UpdateProfileSchema>({
     name: "",
-    image: "",
+    image: null,
   });
   const [
     {
@@ -41,32 +41,27 @@ export default function UserProfileForm({ session }: Props) {
     },
   });
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
   return (
     <form
       className="mt-8 grid grid-cols-6 gap-6"
       method="POST"
       action={formAction}
+      encType="multipart/form-data"
     >
       <div className="col-span-6">
-        <Label htmlFor="photo" className="block text-sm font-medium ">
+        <Label htmlFor="image" className="block text-sm font-medium ">
           Photo
         </Label>
-        <div className="mt-1 flex items-center gap-x-3">
-          <div className="flex items-center space-x-4">
-            <Avatar className="h-12 w-12 rounded-full">
-              <AvatarImage src={formData.image!} alt={formData.name} />
-              <AvatarFallback className="rounded-full text-md">
-                {session?.user.name?.slice(0, 2).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-          </div>
-          <Button
-            variant="secondary"
-            className=" font-semibold text-primary hover:bg-gray-100 hover:text-gray-900"
-          >
-            Change
-          </Button>
-        </div>
+        <AvatarUpload
+          session={session}
+          value={formData.image}
+          onChange={handleChange}
+        />
       </div>
       <div className="col-span-6 sm:col-span-3">
         <Label htmlFor="Name" className="block text-sm font-medium ">
@@ -77,8 +72,9 @@ export default function UserProfileForm({ session }: Props) {
           type="text"
           id="Name"
           name="name"
-          defaultValue={session?.user?.name}
-          placeholder="john doe"
+          placeholder={session?.user?.name}
+          value={formData.name}
+          onChange={handleChange}
           className="mt-1 w-full"
         />
       </div>
@@ -108,12 +104,15 @@ export default function UserProfileForm({ session }: Props) {
         <Input
           type="email"
           id="Email"
-          name="email"
           placeholder="johndoe@example.com"
           defaultValue={session?.user.email ?? "johndoe@example.com"}
-          className="mt-1 w-full"
+          className="mt-1 w-full cursor-not-allowed"
           disabled
         />
+      </div>
+      <div className="col-span-6">
+        {error && <Alert message={error!} status="error" />}
+        {success && <Alert message={success!} status="success" />}
       </div>
       <div className="mt-6 col-span-6 sm:flex sm:items-center sm:justify-end gap-x-6">
         <Button
@@ -123,13 +122,8 @@ export default function UserProfileForm({ session }: Props) {
           // className="rounded-md bg-emerald-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-emerald-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600"
         >
           {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Update
+          Update profile
         </Button>
-
-        <div className="col-span-6">
-          {error && <Alert message={error!} status="error" />}
-          {success && <Alert message={success!} status="success" />}
-        </div>
       </div>
     </form>
   );

@@ -6,7 +6,10 @@ export const updateProfileSchema = z.object({
     .string({ required_error: "Le nom est requis" })
     .min(1, "Le nom est requis")
     .max(30, "Le nom doit contenir au maximum 30 caractères"),
-  image: z.string().optional(),
+  image: z
+    .any()
+    .refine((file) => file?.length === 1, "File is required")
+    .refine((file) => file?.size <= 3000000, "Max file size is 3MB."),
 });
 
 export const updateEmailSchema = z.object({
