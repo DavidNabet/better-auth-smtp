@@ -7,7 +7,7 @@ import { toBase64 } from "@/lib/utils";
 import { useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { PencilIcon } from "lucide-react";
+import { PencilIcon, XIcon } from "lucide-react";
 
 interface AvatarUploadProps {
   session: Session | null;
@@ -28,6 +28,11 @@ export default function AvatarUpload({
       onChange?.(base64);
     }
   };
+
+  const handleRemove = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    if (inputRef.current) inputRef.current.value = "";
+  };
   return (
     <div className="mt-1 flex items-center gap-x-3 relative">
       <div className="flex items-center space-x-4">
@@ -42,8 +47,20 @@ export default function AvatarUpload({
         variant="ghost"
         size="icon"
         className="rounded-full font-semibold text-primary hover:bg-gray-100"
+        onClick={(e) => {
+          e.preventDefault();
+          inputRef.current?.click();
+        }}
       >
         <PencilIcon className="w-4 h-4" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="rounded-full font-semibold text-primary hover:bg-destructive"
+        onClick={handleRemove}
+      >
+        <XIcon className="w-4 h-4" />
       </Button>
       <Input
         ref={inputRef}

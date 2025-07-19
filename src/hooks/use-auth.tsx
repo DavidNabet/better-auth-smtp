@@ -10,19 +10,29 @@ import {
 import { authClient, authServer } from "@/lib/auth/auth.client";
 import { useRouter } from "next/navigation";
 import { getCurrentClientSession } from "@/lib/session/client";
-import { User } from "better-auth";
 // import { Session } from "@/lib/auth";
 import { admin } from "@/lib/user/user.service";
-import { auth } from "@/lib/auth";
+// import { auth } from "@/lib/auth";
 
-type SessionClient = (typeof authClient.$Infer.Session)["session"];
+type SessionServer = typeof authServer.$Infer.Session;
 
 interface AuthContextType {
-  session?: SessionClient;
+  session?: SessionUser;
   isAdmin: boolean;
-  logOut: Function;
-  verifySession: Function;
+  logOut: () => void;
+  verifySession: () => void;
 }
+
+type SessionUser = {
+  sessionId: SessionServer["session"]["id"];
+  userId: SessionServer["session"]["userId"];
+  userEmail: SessionServer["user"]["email"];
+  userName: SessionServer["user"]["name"];
+  userRole: SessionServer["user"]["role"];
+  userImage: SessionServer["user"]["image"];
+  sessionToken: SessionServer["session"]["token"];
+  expiresAt: SessionServer["session"]["expiresAt"];
+};
 
 export const AuthContext = createContext<AuthContextType | undefined>(
   undefined
@@ -30,39 +40,52 @@ export const AuthContext = createContext<AuthContextType | undefined>(
 // type UserRole = (typeof auth.$Infer.Session)["user"];
 
 export function useAuthState() {
-  const [s, setSession] = useState<SessionClient | undefined>(undefined);
+  const [s, setSession] = useState<SessionUser | undefined>(undefined);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const router = useRouter();
 
   // useEffect(() => {
   //   (async function run() {
   //     const { data } = await getCurrentClientSession();
-  //     setSession(data?.session!);
+  //     setSession({
+  //       sessionId: data?.session.id!,
+  //       userId: data?.user.id!,
+  //       userEmail: data?.user.email!,
+  //       userName: data?.user?.name!,
+  //       userRole: data?.user.role,
+  //       userImage: data?.user.image,
+  //       sessionToken: data?.session.token!,
+  //       expiresAt: data?.session.expiresAt!,
+  //     });
   //     console.log("session provider: ", data);
   //   })();
   // }, []);
   useEffect(() => {
     // Role
-    if (!s?.id) return;
+    if (!s?.sessionId) return;
     async function run() {
-      const { data } = await authServer.admin.listUsers({
+      const { data, error } = await authServer.admin.listUsers({
         query: {
           filterField: "role",
           filterOperator: "eq",
           filterValue: "ADMIN",
         },
       });
+      if (error) {
+        console.log("error: ", error);
+        throw new Error(error.message);
+      }
       const isAdmin = !!data?.users.find((user) => user.id === s?.userId);
       console.log("isAdmin: ", isAdmin);
 
       setIsAdmin(isAdmin);
     }
     run();
-  }, [s?.id]);
+  }, [s?.sessionId]);
 
   async function logOut() {
     const { data, error } = await authClient.revokeSession({
-      token: s?.token!,
+      token: s?.sessionToken!,
     });
     console.log("logout: ", data, error);
     setSession(undefined);
@@ -71,7 +94,17 @@ export function useAuthState() {
   async function verifySessionAndSave() {
     const { data, isPending, error } = authClient.useSession();
     if (!error && !isPending) {
-      setSession(data?.session!);
+      // userRole: data?.user?.role,
+      setSession({
+        sessionId: data?.session.id!,
+        userId: data?.user.id!,
+        userEmail: data?.user.email!,
+        userName: data?.user?.name!,
+        userRole: data?.user.role,
+        userImage: data?.user.image,
+        sessionToken: data?.session.token!,
+        expiresAt: data?.session.expiresAt!,
+      });
     } else {
       router.refresh();
       router.push("/auth/signin");

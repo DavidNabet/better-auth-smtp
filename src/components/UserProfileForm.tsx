@@ -23,7 +23,7 @@ interface Props {
 }
 
 export default function UserProfileForm({ session }: Props) {
-  const [isPending, startTransition] = useTransition();
+  // const [isPending, startTransition] = useTransition();
   const [formData, setFormData] = useState<UpdateProfileSchema>({
     name: "",
     image: null,
@@ -47,12 +47,7 @@ export default function UserProfileForm({ session }: Props) {
   };
 
   return (
-    <form
-      className="mt-8 grid grid-cols-6 gap-6"
-      method="POST"
-      action={formAction}
-      encType="multipart/form-data"
-    >
+    <form className="mt-8 grid grid-cols-6 gap-6" action={formAction}>
       <div className="col-span-6">
         <Label htmlFor="image" className="block text-sm font-medium ">
           Photo
@@ -60,7 +55,9 @@ export default function UserProfileForm({ session }: Props) {
         <AvatarUpload
           session={session}
           value={formData.image}
-          onChange={handleChange}
+          onChange={(value) =>
+            setFormData((prev) => ({ ...prev, image: value }))
+          }
         />
       </div>
       <div className="col-span-6 sm:col-span-3">

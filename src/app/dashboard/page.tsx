@@ -1,20 +1,20 @@
-// "use client";
-
 // import { auth } from "@/lib/auth";
-// import { LogOut } from "../_components/LogOut";
 import LoadingIcon from "@/app/_components/LoadingIcon";
 // import { unstable_noStore as noStore } from "next/cache";
 import Wrapper from "@/app/_components/Wrapper";
-import { getCurrentServerSession } from "@/lib/session/server";
 import { Suspense } from "react";
 import { CardInner } from "@/app/_components/Card";
 import UsersTable from "@/components/UsersTable";
 import { GenerateUsers } from "@/components/GenerateUsers";
 import { redirect } from "next/navigation";
+import { useAuthState } from "@/hooks/use-auth";
+import { getCurrentServerSession } from "@/lib/session/server";
 
 export default async function Dashboard() {
   const { userEmail, userName, userRole, userId } =
     await getCurrentServerSession();
+
+  // const { session } = useAuthState();
 
   return (
     <Wrapper title={`Welcome ${userName}`}>

@@ -1,4 +1,3 @@
-import { revokeOtherSessions } from "better-auth/api";
 import z, { TypeOf } from "zod";
 
 export const updateProfileSchema = z.object({
