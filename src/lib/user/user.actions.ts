@@ -2,7 +2,7 @@
 
 import { authServer } from "@/lib/auth/auth.client";
 import { auth } from "@/lib/auth";
-import { ZodError, ZodIssue } from "zod";
+import { ZodError, ZodErrorMap, ZodFormattedError, ZodIssue } from "zod";
 import {
   CreateUsersSchema,
   createUsersSchema,
@@ -15,6 +15,7 @@ import { headers as head } from "next/headers";
 import { Role } from "@prisma/client";
 import { db } from "@/db";
 import { redirect } from "next/navigation";
+import { uploadFile } from "@/lib/utils";
 
 export interface FormState {
   message: {
@@ -23,7 +24,7 @@ export interface FormState {
   };
   header?: any;
   errors?: ZodIssue[];
-  errorMessage?: any;
+  errorMessage?: z.inferFlattenedErrors<z.ZodTypeAny>["fieldErrors"];
   // message: any;
   // data?: CreateUserSchema;
   // errors?: CreateUserErrors;
@@ -48,14 +49,24 @@ export async function updateProfile(
   }
 
   const { name, image } = validatedFields.data;
+  if (!image) {
+    return {
+      message: {
+        error: "Image is required.",
+      },
+    };
+  }
+
+  const { url } = await uploadFile(image);
   try {
     const authContext = await auth.$context;
     console.log("authContext: ", authContext);
     // await authContext.internalAdapter.updateUser(userId, {name, image})
+
     const { status } = await auth.api.updateUser({
       body: {
         name,
-        image,
+        image: url,
       },
       headers: await head(),
     });
@@ -118,6 +129,7 @@ export async function createUsers(
   const USER_EMAILS = process.env.USER_EMAILS?.split(";") || [];
   const isUsersExisted = await db.user.findMany({
     where: {
+      id: userId,
       email: {
         in: USER_EMAILS,
       },

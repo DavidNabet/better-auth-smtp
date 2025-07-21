@@ -15,15 +15,15 @@ import { Label } from "@/components/ui/label";
 import { updateProfile } from "@/lib/user/user.actions";
 import AvatarUpload from "@/components/AvatarUpload";
 import Alert from "@/app/_components/Alert";
-import { useActionState, useState, useTransition } from "react";
+import { useActionState, useState, startTransition } from "react";
 import { UpdateProfileSchema } from "@/lib/user/user.schema";
+import { ErrorMessages } from "@/app/_components/ErrorMessages";
 
 interface Props {
   session: Session | null;
 }
 
 export default function UserProfileForm({ session }: Props) {
-  // const [isPending, startTransition] = useTransition();
   const [formData, setFormData] = useState<UpdateProfileSchema>({
     name: "",
     image: null,
@@ -31,6 +31,7 @@ export default function UserProfileForm({ session }: Props) {
   const [
     {
       message: { error, success },
+      errorMessage,
     },
     formAction,
     pending,
@@ -39,7 +40,18 @@ export default function UserProfileForm({ session }: Props) {
       error: "",
       success: "",
     },
+    errorMessage: {},
   });
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    startTransition(async () => {
+      const formData = new FormData(e.target as HTMLFormElement);
+      const data = Object.fromEntries(formData);
+      console.log(data);
+      // formAction(formData);
+    });
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -47,7 +59,7 @@ export default function UserProfileForm({ session }: Props) {
   };
 
   return (
-    <form className="mt-8 grid grid-cols-6 gap-6" action={formAction}>
+    <form className="mt-8 grid grid-cols-6 gap-6" onSubmit={handleSubmit}>
       <div className="col-span-6">
         <Label htmlFor="image" className="block text-sm font-medium ">
           Photo
@@ -59,6 +71,7 @@ export default function UserProfileForm({ session }: Props) {
             setFormData((prev) => ({ ...prev, image: value }))
           }
         />
+        <ErrorMessages />
       </div>
       <div className="col-span-6 sm:col-span-3">
         <Label htmlFor="Name" className="block text-sm font-medium ">
@@ -74,6 +87,7 @@ export default function UserProfileForm({ session }: Props) {
           onChange={handleChange}
           className="mt-1 w-full"
         />
+        <ErrorMessages errors={errorMessage?.name} />
       </div>
       <div className="col-span-6 sm:col-span-3">
         <Label htmlFor="Role" className="block text-sm font-medium ">
