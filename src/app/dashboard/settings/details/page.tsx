@@ -15,7 +15,11 @@ export default async function DetailsPage() {
     <Wrapper title="Details">
       <div className="grid grid-cols-1 gap-4">
         <Suspense fallback={<LoadingIcon />}>
-          <CardInner title="Profile" description="Change your name and photo">
+          <CardInner
+            title="Profile"
+            description="Change your name and photo"
+            boxed
+          >
             <UserProfileForm session={session as Session} />
           </CardInner>
         </Suspense>

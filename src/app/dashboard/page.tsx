@@ -6,8 +6,8 @@ import { Suspense } from "react";
 import { CardInner } from "@/app/_components/Card";
 import UsersTable from "@/components/UsersTable";
 import { GenerateUsers } from "@/components/GenerateUsers";
-import { redirect } from "next/navigation";
-import { useAuthState } from "@/hooks/use-auth";
+// import { redirect } from "next/navigation";
+// import { useAuthState } from "@/hooks/use-auth";
 import { getCurrentServerSession } from "@/lib/session/server";
 
 export default async function Dashboard() {
@@ -31,6 +31,7 @@ export default async function Dashboard() {
               <CardInner
                 title="Créer des utilisateurs ?"
                 description="Générer des utlisateurs"
+                boxed
               >
                 <GenerateUsers userId={userId.slice(2, 6)} />
               </CardInner>

@@ -18,6 +18,7 @@ interface ICard {
   description: string;
   children?: ReactNode;
   icon?: ReactNode;
+  boxed?: boolean;
 }
 
 interface ICardLink {
@@ -30,10 +31,11 @@ export function CardInner({
   description,
   children,
   className,
+  boxed,
   ...props
 }: ICard & CardProps) {
   return (
-    <Card className={cn("w-[380px] mt-8", className)} {...props}>
+    <Card className={cn("mt-8", className, boxed && "w-[380px]")} {...props}>
       <CardHeader>
         <CardTitle>{title}</CardTitle>
         {description && <CardDescription>{description}</CardDescription>}

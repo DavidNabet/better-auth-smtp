@@ -1,16 +1,20 @@
 import { ZodIssue } from "zod";
 
 export const ErrorMessages = ({
-  // error,
+  error,
   errors,
 }: // error,
 {
   errors?: string[] | null;
-  // error?: string | null;
+  error?: string | null;
 }) => {
   if (!errors) return null;
   const text = errors.join(", ");
-  return <p className="text-sm text-red-600">{text}</p>;
+  return error ? (
+    <p className="text-sm text-red-600">{error}</p>
+  ) : (
+    <p className="text-sm text-red-600">{text}</p>
+  );
 };
 
 export const findErrors = (fieldName: string, errors: ZodIssue[]) => {

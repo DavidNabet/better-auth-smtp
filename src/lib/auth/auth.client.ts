@@ -5,7 +5,7 @@ import {
   adminClient,
   inferAdditionalFields,
 } from "better-auth/client/plugins";
-import { ac, user, admin } from "../user/user.service";
+import { ac, user, admin, moderate } from "../user/user.service";
 import { Role } from "@prisma/client";
 import { auth } from "@/lib/auth";
 
@@ -26,6 +26,7 @@ export const authServer = createAuthServer({
       roles: {
         user,
         admin,
+        moderate,
       },
     }),
   ],
