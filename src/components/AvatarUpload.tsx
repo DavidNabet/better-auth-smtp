@@ -52,9 +52,14 @@ export default function AvatarUpload({
                 src={URL.createObjectURL(value)}
                 className="object-cover"
               />
-              <AvatarFallback className="rounded-full text-md bg-teal-600 text-white">
-                {session?.user.name?.slice(0, 2).toUpperCase()}
-              </AvatarFallback>
+            </>
+          ) : !!session?.user.image ? (
+            <>
+              <AvatarImage
+                src={session?.user.image!}
+                alt="avatar"
+                className="object-cover"
+              />
             </>
           ) : (
             <span className="rounded-full text-md bg-teal-600 text-white size-12 grid place-items-center">

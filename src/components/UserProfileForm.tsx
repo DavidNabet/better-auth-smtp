@@ -49,7 +49,11 @@ export default function UserProfileForm({ session }: Props) {
       const formData = new FormData(e.target as HTMLFormElement);
       const data = Object.fromEntries(formData);
       console.log(data);
-      // formAction(formData);
+      formAction(formData);
+      setFormData({
+        name: "",
+        image: null,
+      });
     });
   };
 

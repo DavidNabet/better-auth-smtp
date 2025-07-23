@@ -10,6 +10,7 @@ export async function getCurrentServerSession() {
     userId: session?.user.id!,
     userEmail: session?.user.email!,
     userRole: session?.user.role!,
+    userImage: session?.user.image!,
     userName: session?.user ? session.user.name : "",
     sessionToken: session?.session.token,
     expiresAt: session?.session.expiresAt,

@@ -15,7 +15,7 @@ import { headers as head } from "next/headers";
 import { Role } from "@prisma/client";
 import { db } from "@/db";
 import { redirect } from "next/navigation";
-import { uploadFile } from "@/lib/utils";
+import { uploadFile } from "@/lib/upload";
 
 export interface FormState {
   message: {
@@ -47,30 +47,25 @@ export async function updateProfile(
       errorMessage: validatedFields.error.flatten().fieldErrors,
     };
   }
+  let upload;
 
   const { name, image } = validatedFields.data;
-  if (!image) {
-    return {
-      message: {
-        error: "Image is required.",
-      },
-    };
+  if (image && image.size !== 0) {
+    upload = await uploadFile(image);
+    console.log("url: ", upload);
   }
 
-  const { url } = await uploadFile(image);
   try {
-    const authContext = await auth.$context;
-    console.log("authContext: ", authContext);
+    // const authContext = await auth.$context;
+    // console.log("authContext: ", authContext);
     // await authContext.internalAdapter.updateUser(userId, {name, image})
-
     const { status } = await auth.api.updateUser({
       body: {
         name,
-        image: url,
+        image: upload?.url,
       },
       headers: await head(),
     });
-
     console.log("status: ", status);
   } catch (error) {
     if (error instanceof APIError) {
@@ -95,7 +90,7 @@ export async function updateProfile(
   }
 
   revalidatePath("/dashboard", "layout");
-  redirect("/dashboard");
+  // redirect("/dashboard");
 
   return {
     message: {
