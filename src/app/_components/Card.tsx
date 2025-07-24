@@ -1,6 +1,7 @@
 import { ComponentProps, ReactNode } from "react";
 import {
   Card,
+  CardAction,
   CardContent,
   CardDescription,
   CardFooter,
@@ -19,6 +20,7 @@ interface ICard {
   children?: ReactNode;
   icon?: ReactNode;
   boxed?: boolean;
+  actions?: ReactNode;
 }
 
 interface ICardLink {
@@ -26,12 +28,15 @@ interface ICardLink {
   label: string;
 }
 
+// Create a responsive grid layout card
+
 export function CardInner({
   title,
   description,
   children,
   className,
   boxed,
+  actions,
   ...props
 }: ICard & CardProps) {
   return (
@@ -39,6 +44,7 @@ export function CardInner({
       <CardHeader>
         <CardTitle>{title}</CardTitle>
         {description && <CardDescription>{description}</CardDescription>}
+        {actions && <CardAction>{actions}</CardAction>}
       </CardHeader>
       <CardContent>{children}</CardContent>
     </Card>

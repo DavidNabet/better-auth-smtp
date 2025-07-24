@@ -2,13 +2,15 @@ import { Suspense } from "react";
 import Link from "next/link";
 import Icon from "@/lib/icon";
 import { NavLink } from "./NavLink";
-import { menu } from "@/components/routes";
+import { adminRoute, menu } from "@/components/routes";
 import { UserNav } from "./UserNav";
 import { Button } from "@/components/ui/button";
 import LoadingIcon from "./LoadingIcon";
 import ModeToggle from "@/components/theme-toggle";
+import { getCurrentServerSession } from "@/lib/session/server";
 
-export default function Navbar() {
+export default async function Navbar() {
+  const { userRole } = await getCurrentServerSession();
   return (
     <header className="border border-b border-primary/10">
       <div className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">
@@ -25,11 +27,17 @@ export default function Navbar() {
           </div>
           <div className="md:flex md:items-center md:gap-12">
             <nav className="flex items-center space-x-4 lg:space-x-6">
-              {menu.map((item, idx) => (
+              {menu.map((item) => (
                 <NavLink key={item.name} {...item}>
                   {item.name}
                 </NavLink>
               ))}
+              {userRole === "ADMIN" &&
+                adminRoute.map((item) => (
+                  <NavLink key={item.name} {...item}>
+                    {item.name}
+                  </NavLink>
+                ))}
             </nav>
             <div className="hidden md:flex items-center space-x-4 gap-3">
               <Suspense fallback={<LoadingIcon />}>

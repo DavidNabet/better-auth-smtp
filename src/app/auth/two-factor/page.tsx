@@ -4,7 +4,7 @@ import AuthTwoFactor from "@/components/AuthTwoFactor";
 
 export default function TwoFactorPage() {
   return (
-    <section className="h-full grid place-items-center bg-[#EAF5F6]">
+    <section className="min-h-screen grid place-items-center dark:bg-background">
       <Suspense fallback={<LoadingIcon />}>
         <AuthTwoFactor />
       </Suspense>

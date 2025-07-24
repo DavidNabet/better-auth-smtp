@@ -5,9 +5,10 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 interface NavLinkProps {
-  href: string;
-  name: string;
+  href?: string;
+  name?: string;
   className?: string;
+  submenu?: string[];
   icon?: React.ReactNode;
   children?: React.ReactNode;
 }
@@ -27,9 +28,9 @@ export const NavLink = ({
 
   return (
     <Link
-      href={href}
+      href={href!}
+      title={name}
       className={cn(classNames, isActive && "text-teal-500")}
-      prefetch={null}
     >
       <span>{children}</span>
     </Link>

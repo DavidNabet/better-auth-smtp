@@ -6,6 +6,7 @@ import { requestOTP } from "@/lib/auth/auth.service";
 import { TwoFactorSchema, twoFactorSchema } from "@/lib/auth/auth.schema";
 import Alert from "@/app/_components/Alert";
 import { ErrorMessages } from "@/app/_components/ErrorMessages";
+import { Button } from "@/components/ui/button";
 
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "./ui/input-otp";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
@@ -81,13 +82,13 @@ const AuthTwoFactor: FC = () => {
   };
 
   return (
-    <div className="max-w-md bg-white p-12 rounded-xl">
+    <div className="max-w-md bg-card text-card-foreground p-12 rounded-xl shadow-sm border">
       <form onSubmit={handleSubmit}>
-        <h3 className="text-2xl font-bold text-foreground mb-6">
+        <h3 className="text-2xl font-bold text-card-foreground mb-6">
           OTP Verification
         </h3>
         <>
-          <p className="text-[#b5bab8] text-sm mb-6">
+          <p className="text-muted-foreground text-sm mb-6">
             Enter the OTP you received to your email.
           </p>
 
@@ -105,7 +106,7 @@ const AuthTwoFactor: FC = () => {
             <InputOTPGroup>
               {Array.from({ length: 6 }).map((_, i) => (
                 <InputOTPSlot
-                  className="w-12 leading-[75px] text-[32px] bg-[#eaf5f6] text-center uppercase text-foreground mb-[25px] rounded-sm border-none focus:outline-hidden"
+                  className="w-12 leading-[75px] text-[32px] bg-input text-center uppercase text-foreground mb-[25px] rounded-sm border-none focus:outline-hidden"
                   key={i}
                   index={i}
                 />
@@ -119,30 +120,32 @@ const AuthTwoFactor: FC = () => {
           {success && <Alert message={success!} status="success" />}
         </div>
 
-        <div className="mt-6 col-span-6 sm:flex sm:items-center sm:justify-end gap-x-6">
-          <button
+        <div className="mt-6 col-span-6 sm:flex sm:items-center sm:justify-between gap-x-6">
+          <Button
             type="button"
             disabled={isLoading}
             onClick={handleResendOTP}
             className={cn(
-              "text-sm/6 font-semibold text-gray-900 cursor-pointer",
-              isLoading && "cursor-not-allowed bg-gray-500"
+              "dark:bg-primary text-primary-foreground bg-primary shrink-0 transition-colors focus:ring-offset-2 focus:ring-offset-secondary cursor-pointer",
+              isLoading && "cursor-not-allowed dark:bg-primary/50"
             )}
           >
             Resend OTP
-          </button>
-          <input
+          </Button>
+          <Button
             type="submit"
-            className={cn(
-              "bg-blue-600 border border-blue-600 inline-block shrink-0 rounded-md px-12 py-3 text-sm font-medium text-white transition  focus:outline-none focus:ring cursor-pointer",
-              isLoading && "cursor-not-allowed bg-blue-600/50"
-            )}
             disabled={isLoading}
-            value="Verify"
-          />
-          <p className="mt-4 text-sm text-gray-500 sm:mt-0">
-            Come back ?{" "}
-            <Link href="/auth/signin" className="text-gray-700 underline">
+            className={cn(
+              "dark:bg-teal-500 bg-teal-600 text-white shrink-0 transition-colors focus:ring-offset-2 focus:ring-offset-secondary cursor-pointer",
+              isLoading && "cursor-not-allowed bg-teal-700/50"
+            )}
+          >
+            Verify
+          </Button>
+          <p className="mt-4 text-sm sm:mt-0">
+            <span>Come back ?</span>
+            <br />
+            <Link href="/auth/signin" className=" underline">
               Log in
             </Link>
             .

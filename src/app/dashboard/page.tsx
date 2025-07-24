@@ -9,6 +9,8 @@ import { GenerateUsers } from "@/components/GenerateUsers";
 // import { redirect } from "next/navigation";
 // import { useAuthState } from "@/hooks/use-auth";
 import { getCurrentServerSession } from "@/lib/session/server";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default async function Dashboard() {
   const { userEmail, userName, userRole, userId } =
@@ -43,6 +45,14 @@ export default async function Dashboard() {
                 title="Nombre de users"
                 description="Nombre de users inscrits"
                 className="w-full!"
+                actions={
+                  <Link
+                    href="/dashboard/admin"
+                    className="text-primary text-sm underline"
+                  >
+                    Voir plus
+                  </Link>
+                }
               >
                 <UsersTable />
               </CardInner>

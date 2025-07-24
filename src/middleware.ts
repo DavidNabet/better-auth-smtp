@@ -1,10 +1,6 @@
-import { NextResponse, NextFetchEvent } from "next/server";
+import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getSessionCookie } from "better-auth/cookies";
-import { betterFetch } from "@better-fetch/fetch";
-import type { auth } from "@/lib/auth";
-import { Session } from "@/lib/auth";
-
 /**
  * L'admin a accès à certaines routes, le user non !
  * Pour comparer un admin d'un user, soit on met un userId param, soit on crée un accessToken** encoded qui est stocké dans le cookie et dont le role est soit user soit admin.
@@ -15,8 +11,8 @@ import { Session } from "@/lib/auth";
  */
 
 export async function middleware(req: NextRequest) {
-  const routes = ["/auth/signin", "/auth/signup"];
-  // const adminRoute = ["/admin"];
+  const routes = ["/auth/signin", "/auth/signup", "/auth/two-factor"];
+  // const adminRoute = ["/dashboard/admin"];
 
   const root = ["/"];
   const { nextUrl } = req;

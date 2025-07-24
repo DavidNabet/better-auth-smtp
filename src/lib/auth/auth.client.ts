@@ -21,7 +21,7 @@ export const authServer = createAuthServer({
     twoFactorClient(),
     adminClient({
       defaultRole: Role.USER,
-      adminRoles: [Role.ADMIN],
+      adminRoles: [Role.ADMIN, Role.MODERATOR],
       ac,
       roles: {
         user,

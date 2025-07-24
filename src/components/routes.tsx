@@ -22,3 +22,12 @@ export const menu = [
     ],
   },
 ];
+
+export const adminRoute = [
+  {
+    name: "Admin",
+    href: "/dashboard/admin",
+    icon: <Icon name="user-cog" className="mr-3" />,
+    isAdmin: true,
+  },
+];
