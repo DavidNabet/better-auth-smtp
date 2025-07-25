@@ -9,10 +9,25 @@ import { ac, user, admin, moderate } from "../user/user.service";
 import { Role } from "@prisma/client";
 import { auth } from "@/lib/auth";
 
+export type User = (typeof authServer.$Infer.Session)["user"];
+
 // Access role from server in the client
 export const authClient = createAuthClient({
   baseURL: process.env.NEXT_PUBLIC_APP_URL!,
-  plugins: [twoFactorClient(), inferAdditionalFields<typeof auth>()],
+  plugins: [
+    twoFactorClient(),
+    inferAdditionalFields<typeof auth>(),
+    adminClient({
+      defaultRole: Role.USER,
+      adminRoles: [Role.ADMIN, Role.MODERATOR],
+      ac,
+      roles: {
+        user,
+        admin,
+        moderate,
+      },
+    }),
+  ],
 });
 
 export const authServer = createAuthServer({

@@ -44,22 +44,22 @@ export function useAuthState() {
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const router = useRouter();
 
-  // useEffect(() => {
-  //   (async function run() {
-  //     const { data } = await getCurrentClientSession();
-  //     setSession({
-  //       sessionId: data?.session.id!,
-  //       userId: data?.user.id!,
-  //       userEmail: data?.user.email!,
-  //       userName: data?.user?.name!,
-  //       userRole: data?.user.role,
-  //       userImage: data?.user.image,
-  //       sessionToken: data?.session.token!,
-  //       expiresAt: data?.session.expiresAt!,
-  //     });
-  //     console.log("session provider: ", data);
-  //   })();
-  // }, []);
+  useEffect(() => {
+    (async function run() {
+      const { data } = await getCurrentClientSession();
+      setSession({
+        sessionId: data?.session.id!,
+        userId: data?.user.id!,
+        userEmail: data?.user.email!,
+        userName: data?.user?.name!,
+        userRole: data?.user.role,
+        userImage: data?.user.image,
+        sessionToken: data?.session.token!,
+        expiresAt: data?.session.expiresAt!,
+      });
+      console.log("session provider: ", data);
+    })();
+  }, []);
   useEffect(() => {
     // Role
     if (!s?.sessionId) return;
@@ -76,7 +76,6 @@ export function useAuthState() {
         throw new Error(error.message);
       }
       const isAdmin = !!data?.users.find((user) => user.id === s?.userId);
-      console.log("isAdmin: ", isAdmin);
 
       setIsAdmin(isAdmin);
     }

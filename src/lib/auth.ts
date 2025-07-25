@@ -17,6 +17,7 @@ import { getUserIdByEmail } from "@/lib/auth/auth.utils";
 import { Role } from "@prisma/client";
 
 export type Session = typeof auth.$Infer.Session;
+export type User = (typeof auth.$Infer.Session)["user"];
 
 export const auth = betterAuth({
   database: prismaAdapter(db, {
@@ -40,7 +41,9 @@ export const auth = betterAuth({
   onAPIError: {
     throw: true,
     onError: (error, ctx) => {
-      console.error("Auth error: ", error, " ctx: ", ctx);
+      if (error instanceof Error) {
+        console.error("Auth error: ", error, " ctx: ", ctx);
+      }
     },
   },
   user: {

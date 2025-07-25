@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getSessionCookie } from "better-auth/cookies";
+import { betterFetch } from "@better-fetch/fetch";
+import { Session } from "./lib/auth";
 /**
  * L'admin a accès à certaines routes, le user non !
  * Pour comparer un admin d'un user, soit on met un userId param, soit on crée un accessToken** encoded qui est stocké dans le cookie et dont le role est soit user soit admin.
@@ -12,24 +14,24 @@ import { getSessionCookie } from "better-auth/cookies";
 
 export async function middleware(req: NextRequest) {
   const routes = ["/auth/signin", "/auth/signup", "/auth/two-factor"];
-  // const adminRoute = ["/dashboard/admin"];
+  const adminRoute = ["/dashboard/admin"];
 
   const root = ["/"];
   const { nextUrl } = req;
   const isAuthRoute = routes.includes(nextUrl.pathname);
-  // const isAdminRoute = adminRoute.includes(nextUrl.pathname);
+  const isAdminRoute = adminRoute.includes(nextUrl.pathname);
   const isRoot = root.includes(nextUrl.pathname);
   const sessionCookie = getSessionCookie(req);
 
-  // const { data: session, error } = await betterFetch<Session>(
-  //   "/api/auth/get-session",
-  //   {
-  //     baseURL: process.env.NEXT_PUBLIC_APP_URL,
-  //     headers: {
-  //       cookie: cookies || "",
-  //     },
-  //   }
-  // );
+  const { data: session, error } = await betterFetch<Session>(
+    "/api/auth/get-session",
+    {
+      baseURL: process.env.NEXT_PUBLIC_APP_URL,
+      headers: {
+        cookie: req.headers.get("cookie") || "",
+      },
+    }
+  );
 
   console.log("sessionCookie: ", sessionCookie);
 
@@ -72,9 +74,10 @@ export async function middleware(req: NextRequest) {
   //   return NextResponse.redirect(new URL("/auth/signin", req.url));
   // }
 
-  // if (isAdminRoute && data?.user.role !== "admin") {
-  //   return NextResponse.redirect(new URL("/auth/signin", req.url));
-  // }
+  if (sessionCookie && isAdminRoute && session?.user.role !== "ADMIN") {
+    console.log("not admin");
+    return NextResponse.redirect(new URL("/dashboard", req.url));
+  }
 
   return NextResponse.next();
 }
