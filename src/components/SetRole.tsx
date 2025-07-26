@@ -1,3 +1,5 @@
+"use client";
+
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -11,17 +13,15 @@ import { Button } from "./ui/button";
 import Alert from "@/app/_components/Alert";
 import { Loader2 } from "lucide-react";
 import { getNotAdminUsers } from "@/lib/user/user.utils";
-// import type {User} from "@/lib/auth/auth.client"
+import type { User } from "@prisma/client";
 import { authServer } from "@/lib/auth/auth.client";
 import React from "react";
 
 interface Props {
-  session: Session | null;
+  users: User[];
 }
 
-export default async function SetRole({ session }: Props) {
-  const users = await getNotAdminUsers();
-
+export default function SetRole({ users }: Props) {
   return (
     <form>
       <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">

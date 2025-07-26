@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/table";
 import { db } from "@/db";
 
-export default async function UsersTable() {
+export async function UsersTable() {
   const users = await db.user.findMany();
   return (
     <Table>

@@ -4,7 +4,7 @@ import LoadingIcon from "@/app/_components/LoadingIcon";
 import Wrapper from "@/app/_components/Wrapper";
 import { Suspense } from "react";
 import { CardInner } from "@/app/_components/Card";
-import UsersTable from "@/components/UsersTable";
+import { UsersTable } from "@/components/Table/UsersTable";
 import { GenerateUsers } from "@/components/GenerateUsers";
 // import { redirect } from "next/navigation";
 // import { useAuthState } from "@/hooks/use-auth";
