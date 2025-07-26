@@ -8,6 +8,8 @@ import {
   getFilteredRowModel,
 } from "@tanstack/react-table";
 
+import { ChevronDown, ChevronUp } from "lucide-react";
+
 import type {
   SortingState,
   ColumnDef,
@@ -42,6 +44,7 @@ export function DataTable<TData>({ columns, data }: DataTableProps<TData>) {
   const table = useReactTable({
     data,
     columns,
+    enableRowSelection: true,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -62,14 +65,27 @@ export function DataTable<TData>({ columns, data }: DataTableProps<TData>) {
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => {
+                const direction = header.column.getIsSorted();
+                const arrow = {
+                  asc: <ChevronUp className="w-4 h-4" />,
+                  desc: <ChevronDown className="w-4 h-4" />,
+                };
+                const sort_indicator = direction && arrow[direction];
                 return (
                   <TableHead key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
+                    {header.isPlaceholder ? null : (
+                      <div
+                        onChange={header.column.getToggleVisibilityHandler()}
+                        onClick={header.column.getToggleSortingHandler()}
+                        className="flex cursor-pointer gap-2 items-center"
+                      >
+                        {flexRender(
                           header.column.columnDef.header,
                           header.getContext()
                         )}
+                        {direction && <span>{sort_indicator}</span>}
+                      </div>
+                    )}
                   </TableHead>
                 );
               })}

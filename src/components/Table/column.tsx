@@ -21,6 +21,7 @@ const usersHelper = createColumnHelper<User>();
 export const usersColumns = [
   usersHelper.accessor((row) => row.id, {
     id: "select",
+    enableSorting: false,
     header: ({ table }) => (
       <div className="flex items-center justify-center">
         <Checkbox
@@ -47,15 +48,18 @@ export const usersColumns = [
     id: "name",
     header: "Name",
     cell: (info) => <span>{info.getValue()}</span>,
+    enableSorting: true,
   }),
   usersHelper.accessor((row) => row.email, {
     id: "email",
     header: "Email",
     cell: (info) => <span>{info.getValue()}</span>,
+    enableSorting: true,
   }),
   usersHelper.accessor((row) => row.role, {
     id: "role",
     header: "Role",
+    enableSorting: false,
     cell: ({ row }) => {
       const isNotAdmin = row.original.role !== "ADMIN";
 
@@ -91,5 +95,6 @@ export const usersColumns = [
     cell: (info) => (
       <span>{info.cell.row.original.twoFactorEnabled ? "Yes" : "No"}</span>
     ),
+    enableSorting: true,
   }),
 ];
