@@ -5,6 +5,16 @@ import type { User } from "@prisma/client";
 
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 
 import {
   Select,
@@ -13,6 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CheckCircle, Loader, EllipsisVertical } from "lucide-react";
 
 const usersHelper = createColumnHelper<User>();
 
@@ -44,6 +55,21 @@ export const usersColumns = [
       </div>
     ),
   }),
+  usersHelper.accessor((row) => row.image, {
+    id: "avatar",
+    header: "Avatar",
+    cell: ({ row }) => (
+      <Avatar className="size-8">
+        {row.original.image ? (
+          <AvatarImage src={row.original.image} className="object-cover" />
+        ) : (
+          <AvatarFallback className="dark:bg-neutral-100 bg-neutral-700 text-accent text-xs">
+            {row.original.name?.slice(0, 2).toUpperCase()}
+          </AvatarFallback>
+        )}
+      </Avatar>
+    ),
+  }),
   usersHelper.accessor((row) => row.name, {
     id: "name",
     header: "Name",
@@ -55,6 +81,26 @@ export const usersColumns = [
     header: "Email",
     cell: (info) => <span>{info.getValue()}</span>,
     enableSorting: true,
+  }),
+  usersHelper.accessor((row) => row.emailVerified, {
+    id: "emailVerified",
+    header: "Email Verified",
+    cell: ({ row }) => (
+      <Badge variant="outline" className="text-muted-foreground px-1.5">
+        {row.original.emailVerified ? (
+          <span className="flex items-center gap-2">
+            <CheckCircle className="w-4 h-4 text-green-500 dark:text-green-700" />
+            Done
+          </span>
+        ) : (
+          <span className="flex items-center gap-2">
+            <Loader className="w-4 h-4" />
+            In Process
+          </span>
+        )}
+      </Badge>
+    ),
+    enableSorting: false,
   }),
   usersHelper.accessor((row) => row.role, {
     id: "role",
@@ -96,5 +142,29 @@ export const usersColumns = [
       <span>{info.cell.row.original.twoFactorEnabled ? "Yes" : "No"}</span>
     ),
     enableSorting: true,
+  }),
+  usersHelper.accessor((row) => row.banned, {
+    id: "banned",
+    header: "Ban",
+    cell: ({ row }) => <span>{row.original.banned ? "Yes" : "No"}</span>,
+    enableSorting: true,
+  }),
+  usersHelper.accessor((row) => row.id, {
+    header: "",
+    id: "actions",
+    cell: () => (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon">
+            <EllipsisVertical className="w-4 h-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-32">
+          <DropdownMenuItem>Edit</DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    ),
   }),
 ];

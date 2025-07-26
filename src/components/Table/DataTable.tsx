@@ -28,14 +28,15 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-import { useState, useId } from "react";
+import { useState, useId, useEffect } from "react";
 
 interface DataTableProps<TData> {
   columns: ColumnDef<TData, any>[];
   data: TData[];
+  id?: string;
 }
 
-export function DataTable<TData>({ columns, data }: DataTableProps<TData>) {
+export function DataTable<TData>({ columns, data, id }: DataTableProps<TData>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -57,11 +58,13 @@ export function DataTable<TData>({ columns, data }: DataTableProps<TData>) {
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
+    onColumnVisibilityChange: setColumnVisibility,
   });
+
   return (
     <div className="overflow-hidden rounded-md border relative">
       <Table>
-        <TableHeader className="bg-muted sticky top-0 z-10">
+        <TableHeader className="dark:bg-muted bg-accent sticky top-0 z-10">
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => {
@@ -98,6 +101,7 @@ export function DataTable<TData>({ columns, data }: DataTableProps<TData>) {
               <TableRow
                 key={row.id}
                 data-state={row.getIsSelected() && "selected"}
+                className="relative z-0 data-[state=selected]:bg-accent hover:bg-accent/50 dark:data-[state=selected]:bg-muted dark:hover:bg-muted/50"
               >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id}>
