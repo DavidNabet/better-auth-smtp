@@ -1,6 +1,14 @@
 "use client";
 
-import { createColumnHelper } from "@tanstack/react-table";
+import {
+  createColumnHelper,
+  TableMeta,
+  ColumnDef,
+  Column,
+  Row,
+  CellContext,
+  RowData,
+} from "@tanstack/react-table";
 import type { User } from "@prisma/client";
 
 import { Label } from "@/components/ui/label";
@@ -24,10 +32,65 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CheckCircle, Loader, EllipsisVertical } from "lucide-react";
+import { ChangeEvent, useEffect, useState, MouseEvent } from "react";
 
 const usersHelper = createColumnHelper<User>();
 
-// Checkbox Header
+declare module "@tanstack/react-table" {
+  interface ColumnMeta<TData extends RowData, TValue> {
+    type: string;
+    options?: Option[];
+  }
+}
+
+type Option = {
+  label: string;
+  value: string;
+};
+
+const TableCell = ({
+  getValue,
+  row,
+  column,
+  table,
+}: CellContext<User, string>) => {
+  const initialValue = getValue();
+  const [value, setValue] = useState(initialValue);
+  const tableMeta = table.options.meta;
+  const columnMeta = column.columnDef.meta;
+
+  useEffect(() => {
+    setValue(initialValue);
+  }, [initialValue]);
+
+  const onBlur = () => {
+    tableMeta?.updateData(row.index, column.id, value);
+  };
+
+  const onSelectChange = (e: ChangeEvent<HTMLSelectElement>) => {
+    setValue(e.target.value);
+    tableMeta?.updateData(row.index, column.id, e.target.value);
+  };
+
+  return columnMeta?.type === "select" ? (
+    <select onChange={onSelectChange} value={initialValue}>
+      {columnMeta?.options?.map((option: Option) => (
+        <option key={option.value} value={option.value}>
+          {option.label}
+        </option>
+      ))}
+    </select>
+  ) : (
+    <input
+      value={value as string}
+      onChange={(e) => setValue(e.target.value)}
+      onBlur={onBlur}
+      type={columnMeta?.type || "text"}
+    />
+  );
+};
+
+// TODO: Generate useremail api
 
 export const usersColumns = [
   usersHelper.accessor((row) => row.id, {
@@ -73,8 +136,12 @@ export const usersColumns = [
   usersHelper.accessor((row) => row.name, {
     id: "name",
     header: "Name",
-    cell: (info) => <span>{info.getValue()}</span>,
+    // cell: (info) => <span>{info.getValue()}</span>,
+    cell: TableCell,
     enableSorting: true,
+    meta: {
+      type: "text",
+    },
   }),
   usersHelper.accessor((row) => row.email, {
     id: "email",
@@ -106,34 +173,42 @@ export const usersColumns = [
     id: "role",
     header: "Role",
     enableSorting: false,
-    cell: ({ row }) => {
-      const isNotAdmin = row.original.role !== "ADMIN";
-
-      if (!isNotAdmin) {
-        return row.original.role;
-      }
-
-      return (
-        <>
-          <Label htmlFor={`${row.original.id}-role`} className="sr-only">
-            Role
-          </Label>
-          <Select defaultValue={row.original.role}>
-            <SelectTrigger
-              className="**:data-[slot=select-value]:block **:data-[slot-select-value]:truncate"
-              size="sm"
-              id={`${row.original.id}-role`}
-            >
-              <SelectValue aria-label={row.original.role} />
-            </SelectTrigger>
-            <SelectContent align="end">
-              <SelectItem value="USER">USER</SelectItem>
-              <SelectItem value="MODERATE">MODERATE</SelectItem>
-            </SelectContent>
-          </Select>
-        </>
-      );
+    meta: {
+      type: "select",
+      options: [
+        { value: "MODERATE", label: "MODERATE" },
+        { value: "USER", label: "USER" },
+      ],
     },
+    cell: TableCell,
+    // cell: ({ row }) => {
+    //   const isNotAdmin = row.original.role !== "ADMIN";
+
+    //   if (!isNotAdmin) {
+    //     return row.original.role;
+    //   }
+
+    //   return (
+    //     <>
+    //       <Label htmlFor={`${row.original.id}-role`} className="sr-only">
+    //         Role
+    //       </Label>
+    //       <Select defaultValue={row.original.role}>
+    //         <SelectTrigger
+    //           className="**:data-[slot=select-value]:block **:data-[slot-select-value]:truncate"
+    //           size="sm"
+    //           id={`${row.original.id}-role`}
+    //         >
+    //           <SelectValue aria-label={row.original.role} />
+    //         </SelectTrigger>
+    //         <SelectContent align="end">
+    //           <SelectItem value="USER">USER</SelectItem>
+    //           <SelectItem value="MODERATE">MODERATE</SelectItem>
+    //         </SelectContent>
+    //       </Select>
+    //     </>
+    //   );
+    // },
   }),
   usersHelper.accessor((row) => row.twoFactorEnabled, {
     id: "twoFactorEnabled",
@@ -149,7 +224,7 @@ export const usersColumns = [
     cell: ({ row }) => <span>{row.original.banned ? "Yes" : "No"}</span>,
     enableSorting: true,
   }),
-  usersHelper.accessor((row) => row.id, {
+  usersHelper.display({
     header: "",
     id: "actions",
     cell: () => (

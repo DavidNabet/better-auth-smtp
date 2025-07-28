@@ -16,6 +16,7 @@ import type {
   VisibilityState,
   Row,
   ColumnFiltersState,
+  RowData,
 } from "@tanstack/react-table";
 
 import {
@@ -28,7 +29,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-import { useState, useId, useEffect } from "react";
+import { useState, SetStateAction, Dispatch } from "react";
+
+declare module "@tanstack/react-table" {
+  interface TableMeta<TData extends RowData> {
+    updateData: (rowIndex: number, columnId: string, value: unknown) => void;
+  }
+}
 
 interface DataTableProps<TData> {
   columns: ColumnDef<TData, any>[];
@@ -37,6 +44,7 @@ interface DataTableProps<TData> {
 }
 
 export function DataTable<TData>({ columns, data, id }: DataTableProps<TData>) {
+  const [initialData, setInitialData] = useState(() => [...data]);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -54,6 +62,21 @@ export function DataTable<TData>({ columns, data, id }: DataTableProps<TData>) {
       columnFilters,
       sorting,
       rowSelection,
+    },
+    meta: {
+      updateData: (rowIndex, columnId, value) => {
+        setInitialData((prev) =>
+          prev.map((row, idx) => {
+            if (idx === rowIndex) {
+              return {
+                ...prev[rowIndex],
+                [columnId]: value,
+              };
+            }
+            return row;
+          })
+        );
+      },
     },
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
