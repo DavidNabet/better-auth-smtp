@@ -8,6 +8,7 @@ import {
   Row,
   CellContext,
   RowData,
+  ColumnMeta,
 } from "@tanstack/react-table";
 import type { User } from "@prisma/client";
 
@@ -31,8 +32,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CheckCircle, Loader, EllipsisVertical } from "lucide-react";
+import {
+  CheckCircle,
+  Loader,
+  EllipsisVertical,
+  Check,
+  EditIcon,
+  X,
+} from "lucide-react";
 import { ChangeEvent, useEffect, useState, MouseEvent } from "react";
+import { Input } from "../ui/input";
 
 const usersHelper = createColumnHelper<User>();
 
@@ -67,30 +76,110 @@ const TableCell = ({
     tableMeta?.updateData(row.index, column.id, value);
   };
 
-  const onSelectChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    setValue(e.target.value);
-    tableMeta?.updateData(row.index, column.id, e.target.value);
+  const onSelectChange = (value: string) => {
+    setValue(value);
+    // impersionate authContext.infer.updateUser
+    tableMeta?.updateData(row.index, column.id, value);
   };
 
-  return columnMeta?.type === "select" ? (
-    <select onChange={onSelectChange} value={initialValue}>
-      {columnMeta?.options?.map((option: Option) => (
-        <option key={option.value} value={option.value}>
-          {option.label}
-        </option>
-      ))}
-    </select>
-  ) : (
-    <input
-      value={value as string}
-      onChange={(e) => setValue(e.target.value)}
-      onBlur={onBlur}
-      type={columnMeta?.type || "text"}
-    />
+  if (tableMeta?.editedRows[row.id]) {
+    return columnMeta?.type === "select" ? (
+      <SelectCell
+        columnMeta={columnMeta}
+        initialValue={initialValue}
+        row={row}
+        onChange={onSelectChange}
+      />
+    ) : (
+      <Input
+        value={value as string}
+        onChange={(e) => setValue(e.target.value)}
+        onBlur={onBlur}
+        className="w-2/3"
+        type={columnMeta?.type || "text"}
+      />
+    );
+  }
+  return value;
+};
+
+const SelectCell = ({
+  row,
+  initialValue,
+  columnMeta,
+  onChange,
+}: {
+  row: Row<User>;
+  initialValue: string;
+  columnMeta: ColumnMeta<User, string>;
+  onChange: (v: string) => void;
+}) => {
+  const isNotAdmin = row.original.role !== "ADMIN";
+
+  if (!isNotAdmin) {
+    return row.original.role;
+  }
+  return (
+    <>
+      <Label htmlFor={`${row.original.id}-role`} className="sr-only">
+        Role
+      </Label>
+      <Select onValueChange={onChange} value={initialValue}>
+        <SelectTrigger
+          className="**:data-[slot=select-value]:block **:data-[slot-select-value]:truncate"
+          size="sm"
+          id={`${row.original.id}-role`}
+        >
+          <SelectValue aria-label={row.original.role} />
+        </SelectTrigger>
+        <SelectContent align="end">
+          {columnMeta?.options?.map((option: Option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </>
   );
 };
 
-// TODO: Generate useremail api
+const EditCell = ({ row, table }: CellContext<User, any>) => {
+  const meta = table.options.meta;
+
+  const setEditedRows = (e: MouseEvent<HTMLButtonElement>) => {
+    meta?.setEditedRows((prev: []) => ({
+      ...prev,
+      [row.id]: !prev[Number(row.id)],
+    }));
+  };
+  return meta?.editedRows[row.id] ? (
+    <>
+      <Button size="icon" className="rounded-full" variant="ghost">
+        <X className="w-4 h-4 text-white" />
+      </Button>
+      <Button
+        onClick={setEditedRows}
+        className="rounded-full"
+        size="icon"
+        variant="ghost"
+      >
+        <Check className="w-4 h-4 text-white" />
+      </Button>
+    </>
+  ) : (
+    <Button
+      onClick={setEditedRows}
+      size="icon"
+      variant="ghost"
+      className="rounded-full"
+    >
+      <EditIcon className="w-4 h-4 text-white" />
+    </Button>
+  );
+};
+
+// TODO: Generate Yopmail email api
 
 export const usersColumns = [
   usersHelper.accessor((row) => row.id, {
@@ -181,34 +270,6 @@ export const usersColumns = [
       ],
     },
     cell: TableCell,
-    // cell: ({ row }) => {
-    //   const isNotAdmin = row.original.role !== "ADMIN";
-
-    //   if (!isNotAdmin) {
-    //     return row.original.role;
-    //   }
-
-    //   return (
-    //     <>
-    //       <Label htmlFor={`${row.original.id}-role`} className="sr-only">
-    //         Role
-    //       </Label>
-    //       <Select defaultValue={row.original.role}>
-    //         <SelectTrigger
-    //           className="**:data-[slot=select-value]:block **:data-[slot-select-value]:truncate"
-    //           size="sm"
-    //           id={`${row.original.id}-role`}
-    //         >
-    //           <SelectValue aria-label={row.original.role} />
-    //         </SelectTrigger>
-    //         <SelectContent align="end">
-    //           <SelectItem value="USER">USER</SelectItem>
-    //           <SelectItem value="MODERATE">MODERATE</SelectItem>
-    //         </SelectContent>
-    //       </Select>
-    //     </>
-    //   );
-    // },
   }),
   usersHelper.accessor((row) => row.twoFactorEnabled, {
     id: "twoFactorEnabled",
@@ -225,21 +286,22 @@ export const usersColumns = [
     enableSorting: true,
   }),
   usersHelper.display({
-    header: "",
+    header: "Actions",
     id: "actions",
-    cell: () => (
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon">
-            <EllipsisVertical className="w-4 h-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-32">
-          <DropdownMenuItem>Edit</DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    ),
+    cell: EditCell,
+    // cell: () => (
+    //   <DropdownMenu>
+    //     <DropdownMenuTrigger asChild>
+    //       <Button variant="ghost" size="icon">
+    //         <EllipsisVertical className="w-4 h-4" />
+    //       </Button>
+    //     </DropdownMenuTrigger>
+    //     <DropdownMenuContent align="end" className="w-32">
+    //       <DropdownMenuItem>Edit</DropdownMenuItem>
+    //       <DropdownMenuSeparator />
+    //       <DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>
+    //     </DropdownMenuContent>
+    //   </DropdownMenu>
+    // ),
   }),
 ];

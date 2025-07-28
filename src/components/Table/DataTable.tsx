@@ -29,11 +29,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-import { useState, SetStateAction, Dispatch } from "react";
+import { useState, useEffect, SetStateAction, Dispatch } from "react";
 
 declare module "@tanstack/react-table" {
   interface TableMeta<TData extends RowData> {
     updateData: (rowIndex: number, columnId: string, value: unknown) => void;
+    editedRows: any;
+    setEditedRows: Dispatch<SetStateAction<{}>>;
   }
 }
 
@@ -49,6 +51,7 @@ export function DataTable<TData>({ columns, data, id }: DataTableProps<TData>) {
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [rowSelection, setRowSelection] = useState({});
+  const [editedRows, setEditedRows] = useState({});
 
   const table = useReactTable({
     data,
@@ -77,6 +80,8 @@ export function DataTable<TData>({ columns, data, id }: DataTableProps<TData>) {
           })
         );
       },
+      editedRows,
+      setEditedRows,
     },
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
