@@ -148,14 +148,24 @@ const EditCell = ({ row, table }: CellContext<User, any>) => {
   const meta = table.options.meta;
 
   const setEditedRows = (e: MouseEvent<HTMLButtonElement>) => {
+    const el = e.currentTarget.name;
     meta?.setEditedRows((prev: []) => ({
       ...prev,
       [row.id]: !prev[Number(row.id)],
     }));
+    if (el !== "edit") {
+      meta?.revertData(row.index, e.currentTarget.name === "cancel");
+    }
   };
   return meta?.editedRows[row.id] ? (
     <>
-      <Button size="icon" className="rounded-full" variant="ghost">
+      <Button
+        onClick={setEditedRows}
+        size="icon"
+        className="rounded-full"
+        variant="ghost"
+        name="cancel"
+      >
         <X className="w-4 h-4 text-white" />
       </Button>
       <Button
@@ -163,6 +173,7 @@ const EditCell = ({ row, table }: CellContext<User, any>) => {
         className="rounded-full"
         size="icon"
         variant="ghost"
+        name="done"
       >
         <Check className="w-4 h-4 text-white" />
       </Button>
@@ -173,6 +184,7 @@ const EditCell = ({ row, table }: CellContext<User, any>) => {
       size="icon"
       variant="ghost"
       className="rounded-full"
+      name="edit"
     >
       <EditIcon className="w-4 h-4 text-white" />
     </Button>

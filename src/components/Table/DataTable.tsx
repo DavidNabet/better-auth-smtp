@@ -34,6 +34,7 @@ import { useState, useEffect, SetStateAction, Dispatch } from "react";
 declare module "@tanstack/react-table" {
   interface TableMeta<TData extends RowData> {
     updateData: (rowIndex: number, columnId: string, value: unknown) => void;
+    revertData: (rowIndex: number, revert: boolean) => void;
     editedRows: any;
     setEditedRows: Dispatch<SetStateAction<{}>>;
   }
@@ -47,6 +48,7 @@ interface DataTableProps<TData> {
 
 export function DataTable<TData>({ columns, data, id }: DataTableProps<TData>) {
   const [initialData, setInitialData] = useState(() => [...data]);
+  const [originalData, setOriginalData] = useState(() => [...data]);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -54,7 +56,7 @@ export function DataTable<TData>({ columns, data, id }: DataTableProps<TData>) {
   const [editedRows, setEditedRows] = useState({});
 
   const table = useReactTable({
-    data,
+    data: initialData,
     columns,
     enableRowSelection: true,
     getCoreRowModel: getCoreRowModel(),
@@ -82,6 +84,21 @@ export function DataTable<TData>({ columns, data, id }: DataTableProps<TData>) {
       },
       editedRows,
       setEditedRows,
+      revertData(rowIndex, revert) {
+        if (revert) {
+          setInitialData((prev) =>
+            prev.map((row, idx) =>
+              idx === rowIndex ? originalData[rowIndex] : row
+            )
+          );
+        } else {
+          setOriginalData((prev) =>
+            prev.map((row, idx) =>
+              idx === rowIndex ? initialData[rowIndex] : row
+            )
+          );
+        }
+      },
     },
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
