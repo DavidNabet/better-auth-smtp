@@ -37,6 +37,7 @@ declare module "@tanstack/react-table" {
     revertData: (rowIndex: number, revert: boolean) => void;
     editedRows: any;
     setEditedRows: Dispatch<SetStateAction<{}>>;
+    removeRow: (rowIndex: number) => void;
   }
 }
 
@@ -98,6 +99,12 @@ export function DataTable<TData>({ columns, data, id }: DataTableProps<TData>) {
             )
           );
         }
+      },
+      removeRow(rowIndex) {
+        const setFilter = (prev: TData[]) =>
+          prev.filter((_: TData, idx: number) => idx !== rowIndex);
+        setInitialData(setFilter);
+        setOriginalData(setFilter);
       },
     },
     onRowSelectionChange: setRowSelection,

@@ -39,6 +39,7 @@ import {
   Check,
   EditIcon,
   X,
+  Minus,
 } from "lucide-react";
 import { ChangeEvent, useEffect, useState, MouseEvent } from "react";
 import { Input } from "../ui/input";
@@ -157,37 +158,54 @@ const EditCell = ({ row, table }: CellContext<User, any>) => {
       meta?.revertData(row.index, e.currentTarget.name === "cancel");
     }
   };
-  return meta?.editedRows[row.id] ? (
-    <>
+
+  const removeRow = () => {
+    meta?.removeRow(row.index);
+  };
+
+  return row.getIsSelected() ? (
+    <Button
+      onClick={removeRow}
+      size="icon"
+      className="rounded-full border hover:bg-destructive"
+      variant="secondary"
+      name="remove"
+    >
+      <X className="w-4 h-4 text-white" />
+    </Button>
+  ) : meta?.editedRows[row.id] ? (
+    <div className="flex items-center gap-3">
       <Button
         onClick={setEditedRows}
         size="icon"
-        className="rounded-full"
-        variant="ghost"
+        className="rounded-full border hover:bg-slate-500"
+        variant="secondary"
         name="cancel"
       >
-        <X className="w-4 h-4 text-white" />
+        <Minus className="w-4 h-4 text-white" />
       </Button>
       <Button
         onClick={setEditedRows}
-        className="rounded-full"
+        className="rounded-full border hover:bg-emerald-500"
         size="icon"
-        variant="ghost"
+        variant="secondary"
         name="done"
       >
         <Check className="w-4 h-4 text-white" />
       </Button>
-    </>
+    </div>
   ) : (
-    <Button
-      onClick={setEditedRows}
-      size="icon"
-      variant="ghost"
-      className="rounded-full"
-      name="edit"
-    >
-      <EditIcon className="w-4 h-4 text-white" />
-    </Button>
+    <div className="flex items-center gap-3">
+      <Button
+        onClick={setEditedRows}
+        size="icon"
+        variant="secondary"
+        className="rounded-full border hover:bg-amber-700"
+        name="edit"
+      >
+        <EditIcon className="w-4 h-4 text-white" />
+      </Button>
+    </div>
   );
 };
 
