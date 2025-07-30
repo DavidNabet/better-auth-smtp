@@ -24,6 +24,7 @@ import {
   TableBody,
   TableCaption,
   TableCell,
+  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
@@ -114,8 +115,11 @@ export function DataTable<TData>({ columns, data, id }: DataTableProps<TData>) {
   });
 
   return (
-    <div className="overflow-hidden rounded-md border relative">
+    <div className="overflow-hidden rounded-md border relative ">
       <Table>
+        <TableCaption className="p-2.5">
+          Nombre de users: {initialData.length}
+        </TableCaption>
         <TableHeader className="dark:bg-muted bg-accent sticky top-0 z-10">
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>

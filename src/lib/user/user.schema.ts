@@ -75,7 +75,20 @@ export const createUsersSchema = z.object({
   role: z.enum(["ADMIN", "USER"]).default("USER"),
 });
 
+export const updateUserSchema = z.object({
+  userId: z.string().min(1, "User ID is required"),
+  name: z
+    .string()
+    .min(1, "Name is required")
+    .max(30, "Name must be at most 30 characters")
+    .optional(),
+  role: z.enum(["ADMIN", "USER", "MODERATOR"]).optional(),
+  banned: z.boolean().optional(),
+  twoFactorEnabled: z.boolean().optional(),
+});
+
 export type UpdateProfileSchema = TypeOf<typeof updateProfileSchema>;
 export type UpdateEmailSchema = TypeOf<typeof updateEmailSchema>;
 export type UpdatePasswordSchema = TypeOf<typeof updatePasswordSchema>;
 export type CreateUsersSchema = TypeOf<typeof createUsersSchema>;
+export type UpdateUserSchema = TypeOf<typeof updateUserSchema>;

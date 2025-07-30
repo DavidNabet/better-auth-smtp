@@ -79,7 +79,6 @@ const TableCell = ({
 
   const onSelectChange = (value: string) => {
     setValue(value);
-    // impersionate authContext.infer.updateUser
     tableMeta?.updateData(row.index, column.id, value);
   };
 
@@ -98,6 +97,7 @@ const TableCell = ({
         onBlur={onBlur}
         className="w-2/3"
         type={columnMeta?.type || "text"}
+        required
       />
     );
   }
@@ -125,7 +125,7 @@ const SelectCell = ({
       <Label htmlFor={`${row.original.id}-role`} className="sr-only">
         Role
       </Label>
-      <Select onValueChange={onChange} value={initialValue}>
+      <Select onValueChange={onChange} value={initialValue} required>
         <SelectTrigger
           className="**:data-[slot=select-value]:block **:data-[slot-select-value]:truncate"
           size="sm"

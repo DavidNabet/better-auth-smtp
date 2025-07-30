@@ -7,6 +7,8 @@ import {
   CreateUsersSchema,
   createUsersSchema,
   updateProfileSchema,
+  updateUserSchema,
+  UpdateUserSchema,
 } from "@/lib/user/user.schema";
 import { z } from "zod";
 import { APIError } from "better-auth/api";
@@ -186,4 +188,94 @@ export async function createUsers(
       success: "Users added successfully!",
     },
   };
+}
+
+export async function updateUser(data: UpdateUserSchema): Promise<{
+  success: boolean;
+  message: string;
+  user?: any;
+}> {
+  try {
+    // Validate the input data
+    const validatedFields = updateUserSchema.safeParse(data);
+    if (!validatedFields.success) {
+      return {
+        success: false,
+        message: "Invalid form data.",
+      };
+    }
+
+    const { userId, ...updateData } = validatedFields.data;
+
+    // Check if user exists
+    const existingUser = await db.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!existingUser) {
+      return {
+        success: false,
+        message: "User not found.",
+      };
+    }
+
+    // Check if current user has permission to update this user
+    const session = await auth.api.getSession({
+      headers: await head(),
+    });
+
+    if (!session?.user) {
+      return {
+        success: false,
+        message: "Unauthorized.",
+      };
+    }
+
+    // Only admins can update other users, or users can update themselves
+    const isAdmin = session.user.role === "ADMIN";
+    const isSelfUpdate = session.user.id === userId;
+
+    if (!isAdmin && !isSelfUpdate) {
+      return {
+        success: false,
+        message: "Insufficient permissions.",
+      };
+    }
+
+    // Prevent non-admins from changing role or banned status
+    if (!isAdmin && (updateData.role || updateData.banned !== undefined)) {
+      return {
+        success: false,
+        message: "Only admins can change role or ban status.",
+      };
+    }
+
+    // Update user using better-auth's internal adapter
+    const authContext = await auth.$context;
+    const updatedUser = await authContext.internalAdapter.updateUser(userId, updateData);
+
+    // Revalidate the dashboard to refresh the table data
+    revalidatePath("/dashboard", "layout");
+    revalidatePath("/dashboard/admin", "page");
+
+    return {
+      success: true,
+      message: "User updated successfully!",
+      user: updatedUser,
+    };
+  } catch (error) {
+    console.error("Error updating user:", error);
+    
+    if (error instanceof APIError) {
+      return {
+        success: false,
+        message: error.message,
+      };
+    }
+
+    return {
+      success: false,
+      message: "Something went wrong while updating the user.",
+    };
+  }
 }
