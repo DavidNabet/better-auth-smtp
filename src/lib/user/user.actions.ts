@@ -243,7 +243,7 @@ export async function updateUser(data: UpdateUserSchema): Promise<{
     }
 
     // Prevent non-admins from changing role or banned status
-    if (!isAdmin && (updateData.role || updateData.banned !== undefined)) {
+    if (!isAdmin && updateData.role) {
       return {
         success: false,
         message: "Only admins can change role or ban status.",
@@ -252,7 +252,28 @@ export async function updateUser(data: UpdateUserSchema): Promise<{
 
     // Update user using better-auth's internal adapter
     const authContext = await auth.$context;
-    const updatedUser = await authContext.internalAdapter.updateUser(userId, updateData);
+    const { user } = await auth.api.setRole({
+      body: {
+        userId,
+        role: updateData.role,
+      },
+      headers: await head(),
+    });
+
+    // Optionally, update other fields like name or image
+    if (updateData.name) {
+      await authContext.internalAdapter.updateUser(userId, {
+        name: updateData.name,
+      });
+
+      // invalidating cache
+      await auth.api.listUserSessions({
+        body: {
+          userId,
+        },
+        headers: await head(),
+      });
+    }
 
     // Revalidate the dashboard to refresh the table data
     revalidatePath("/dashboard", "layout");
@@ -261,11 +282,11 @@ export async function updateUser(data: UpdateUserSchema): Promise<{
     return {
       success: true,
       message: "User updated successfully!",
-      user: updatedUser,
+      user,
     };
   } catch (error) {
     console.error("Error updating user:", error);
-    
+
     if (error instanceof APIError) {
       return {
         success: false,

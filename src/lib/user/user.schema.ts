@@ -81,10 +81,11 @@ export const updateUserSchema = z.object({
     .string()
     .min(1, "Name is required")
     .max(30, "Name must be at most 30 characters")
-    .optional(),
-  role: z.enum(["ADMIN", "USER", "MODERATOR"]).optional(),
-  banned: z.boolean().optional(),
-  twoFactorEnabled: z.boolean().optional(),
+    .nullable(),
+
+  role: z.string(),
+  // banned: z.boolean().optional(),
+  // twoFactorEnabled: z.boolean().optional(),
 });
 
 export type UpdateProfileSchema = TypeOf<typeof updateProfileSchema>;

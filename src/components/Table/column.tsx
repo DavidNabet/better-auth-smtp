@@ -43,6 +43,7 @@ import {
 } from "lucide-react";
 import { ChangeEvent, useEffect, useState, MouseEvent } from "react";
 import { Input } from "../ui/input";
+import { updateProfile, updateUser } from "@/lib/user/user.actions";
 
 const usersHelper = createColumnHelper<User>();
 
@@ -77,8 +78,9 @@ const TableCell = ({
     tableMeta?.updateData(row.index, column.id, value);
   };
 
-  const onSelectChange = (value: string) => {
+  const onSelectChange = async (value: string) => {
     setValue(value);
+
     tableMeta?.updateData(row.index, column.id, value);
   };
 
@@ -147,17 +149,109 @@ const SelectCell = ({
 
 const EditCell = ({ row, table }: CellContext<User, any>) => {
   const meta = table.options.meta;
+  const [isUpdating, setIsUpdating] = useState(false);
 
-  const setEditedRows = (e: MouseEvent<HTMLButtonElement>) => {
+  const setEditedRows = async (e: MouseEvent<HTMLButtonElement>) => {
     const el = e.currentTarget.name;
+
+    if (el === "done") {
+      setIsUpdating(true);
+
+      try {
+        const currentRowData = table.getRow(row.id).original;
+
+        if (!currentRowData?.id)
+          console.log("No changes detected, skipping update");
+
+        const updateData = {
+          userId: currentRowData.id,
+          role: currentRowData.role,
+          name: currentRowData.name,
+        };
+
+        const setRoleResult = await updateUser(updateData);
+        if (setRoleResult.success) {
+          console.log("✅ setEditedRows success: ", setRoleResult.message);
+        } else {
+          console.error("❌ setEditedRows error: ", setRoleResult.message);
+          // Revert changes on error
+          meta?.revertData(row.index, true);
+        }
+      } catch (error) {
+        console.error("Failed to update user: ", error);
+        // Revert changes on error
+        meta?.revertData(row.index, true);
+      } finally {
+        setIsUpdating(false);
+      }
+    }
+
     meta?.setEditedRows((prev: []) => ({
       ...prev,
       [row.id]: !prev[Number(row.id)],
     }));
     if (el !== "edit") {
-      meta?.revertData(row.index, e.currentTarget.name === "cancel");
+      meta?.revertData(row.index, el === "cancel");
     }
   };
+
+  /**
+     * // Save changes to server when not reverting
+          const currentRow = initialData[rowIndex] as any;
+          const originalRow = originalData[rowIndex] as any;
+          
+          // Check if there are actual changes
+          const hasChanges = JSON.stringify(currentRow) !== JSON.stringify(originalRow);
+          
+          if (hasChanges && currentRow?.id) {
+            // Prepare update data
+            const updateData: any = { userId: currentRow.id };
+            
+            // Only include changed fields
+            if (currentRow.name !== originalRow.name) {
+              updateData.name = currentRow.name;
+            }
+            if (currentRow.role !== originalRow.role) {
+              updateData.role = currentRow.role;
+            }
+            if (currentRow.banned !== originalRow.banned) {
+              updateData.banned = currentRow.banned;
+            }
+            if (currentRow.twoFactorEnabled !== originalRow.twoFactorEnabled) {
+              updateData.twoFactorEnabled = currentRow.twoFactorEnabled;
+            }
+            
+            // Call server action
+            updateUser(updateData).then((result) => {
+              if (result.success) {
+                toast.success(result.message);
+                // Update original data to reflect saved state
+                setOriginalData((prev) =>
+                  prev.map((row, idx) =>
+                    idx === rowIndex ? initialData[rowIndex] : row
+                  )
+                );
+              } else {
+                toast.error(result.message);
+                // Revert changes on error
+                setInitialData((prev) =>
+                  prev.map((row, idx) =>
+                    idx === rowIndex ? originalData[rowIndex] : row
+                  )
+                );
+              }
+            }).catch((error) => {
+              toast.error("Failed to update user");
+              console.error("Update error:", error);
+              // Revert changes on error
+              setInitialData((prev) =>
+                prev.map((row, idx) =>
+                  idx === rowIndex ? originalData[rowIndex] : row
+                )
+              );
+            });
+          } else {
+    */
 
   const removeRow = () => {
     meta?.removeRow(row.index);
@@ -181,6 +275,7 @@ const EditCell = ({ row, table }: CellContext<User, any>) => {
         className="rounded-full border hover:bg-slate-500"
         variant="secondary"
         name="cancel"
+        disabled={isUpdating}
       >
         <Minus className="w-4 h-4 text-white" />
       </Button>
@@ -190,6 +285,7 @@ const EditCell = ({ row, table }: CellContext<User, any>) => {
         size="icon"
         variant="secondary"
         name="done"
+        disabled={isUpdating}
       >
         <Check className="w-4 h-4 text-white" />
       </Button>
@@ -295,7 +391,7 @@ export const usersColumns = [
     meta: {
       type: "select",
       options: [
-        { value: "MODERATE", label: "MODERATE" },
+        { value: "MODERATOR", label: "MODERATOR" },
         { value: "USER", label: "USER" },
       ],
     },
