@@ -100,7 +100,9 @@ export default function UserProfileForm({ session }: Props) {
 
         <Select
           defaultValue={session?.user.role!}
-          disabled={session?.user.role === "USER"}
+          disabled={
+            session?.user.role === "USER" || session?.user.role === "MODERATOR"
+          }
         >
           <SelectTrigger className="mt-1 w-full">
             <SelectValue aria-label={session?.user.role!} />
@@ -108,6 +110,7 @@ export default function UserProfileForm({ session }: Props) {
           <SelectContent>
             <SelectItem value="USER">USER</SelectItem>
             <SelectItem value="ADMIN">ADMIN</SelectItem>
+            <SelectItem value="MODERATOR">MODERATOR</SelectItem>
           </SelectContent>
         </Select>
       </div>

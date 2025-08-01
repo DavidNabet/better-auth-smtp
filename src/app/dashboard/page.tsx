@@ -12,6 +12,8 @@ import { getCurrentServerSession } from "@/lib/session/server";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
+// TODO: ⚠ Si l'utilisateur est MODERATOR, il peut consulter un tableau de role USER
+
 export default async function Dashboard() {
   const { userEmail, userName, userRole, userId } =
     await getCurrentServerSession();
