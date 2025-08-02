@@ -15,17 +15,6 @@ export default async function AdminPage() {
   return (
     <Wrapper title="Admin Permissions">
       <div className="flex items-stretch justify-between gap-4 mt-5">
-        {/* <div className="col-span-6 sm:col-span-4">
-          <Suspense fallback={<LoadingIcon />}>
-            <CardInner
-              title="Set Role"
-              description="Switch role from user to member"
-              className="mt-0"
-            >
-              <SetRole users={users!} />
-            </CardInner>
-          </Suspense>
-        </div> */}
         <div className="col-span-6 sm:col-span-8 flex-1">
           <Suspense fallback={<LoadingIcon />}>
             <div className="space-y-4">

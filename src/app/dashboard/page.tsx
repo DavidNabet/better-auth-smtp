@@ -49,7 +49,7 @@ export default async function Dashboard() {
                 className="w-full!"
                 actions={
                   <Link
-                    href="/dashboard/admin"
+                    href="/dashboard/users"
                     className="text-primary text-sm underline"
                   >
                     Voir plus

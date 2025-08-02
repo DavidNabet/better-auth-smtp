@@ -75,11 +75,7 @@ export async function middleware(req: NextRequest) {
   //   return NextResponse.redirect(new URL("/auth/signin", req.url));
   // }
 
-  if (
-    sessionCookie &&
-    isAdminRoute &&
-    session?.user.role.includes(role.join(""))
-  ) {
+  if (sessionCookie && isAdminRoute && session?.user.role === "ADMIN") {
     console.log("not admin");
     return NextResponse.redirect(new URL("/dashboard", req.url));
   }
