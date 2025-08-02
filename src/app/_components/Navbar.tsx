@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import LoadingIcon from "./LoadingIcon";
 import ModeToggle from "@/components/theme-toggle";
 import { getCurrentServerSession } from "@/lib/session/server";
+import { capitalize } from "@/lib/utils";
 
 export default async function Navbar() {
   const { userRole } = await getCurrentServerSession();
@@ -32,12 +33,14 @@ export default async function Navbar() {
                   {item.name}
                 </NavLink>
               ))}
-              {userRole === "ADMIN" &&
-                adminRoute.map((item) => (
-                  <NavLink key={item.name} {...item}>
-                    {item.name}
-                  </NavLink>
-                ))}
+              {userRole !== "USER" &&
+                adminRoute
+                  .filter((route) => route.name === userRole)
+                  .map((item) => (
+                    <NavLink key={item.name} {...item}>
+                      {capitalize(item.name)}
+                    </NavLink>
+                  ))}
             </nav>
             <div className="hidden md:flex items-center space-x-4 gap-3">
               <Suspense fallback={<LoadingIcon />}>

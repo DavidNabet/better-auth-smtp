@@ -7,21 +7,21 @@ import {
 
 const statements = {
   ...defaultStatements,
-  content: ["create", "read", "update", "delete"],
+  users: ["create", "read", "update", "delete"],
 } as const;
 
 export const ac = createAccessControl(statements);
 
 export const user = ac.newRole({
-  content: ["read", "update"],
+  users: ["read", "update"],
 });
 
 export const moderate = ac.newRole({
   ...userAc.statements,
-  content: ["create", "read", "update"],
+  users: ["create", "read", "update"],
 });
 
 export const admin = ac.newRole({
   ...adminAc.statements,
-  content: ["create", "read", "update", "delete"],
+  users: ["create", "read", "update", "delete"],
 });

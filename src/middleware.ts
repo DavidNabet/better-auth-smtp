@@ -14,7 +14,7 @@ import { Session } from "./lib/auth";
 
 export async function middleware(req: NextRequest) {
   const routes = ["/auth/signin", "/auth/signup", "/auth/two-factor"];
-  const adminRoute = ["/dashboard/users"];
+  const adminRoute = ["/dashboard/users/admin", "/dashboard/users/moderator"];
   const role = ["ADMIN", "MODERATOR"];
 
   const root = ["/"];
@@ -35,8 +35,6 @@ export async function middleware(req: NextRequest) {
   );
 
   console.log("sessionCookie: ", sessionCookie);
-
-  // const authRoutes = routes.some((route) => nextUrl.pathname.startsWith(route));
 
   if (isRoot) {
     console.log("root");
@@ -75,8 +73,8 @@ export async function middleware(req: NextRequest) {
   //   return NextResponse.redirect(new URL("/auth/signin", req.url));
   // }
 
-  if (sessionCookie && isAdminRoute && session?.user.role === "ADMIN") {
-    console.log("not admin");
+  if (sessionCookie && isAdminRoute && session?.user.role !== "USER") {
+    console.log("not user");
     return NextResponse.redirect(new URL("/dashboard", req.url));
   }
 

@@ -79,7 +79,9 @@ export function useAuthState() {
 
       setIsAdmin(isAdmin);
     }
-    run();
+    if (s.userRole === "ADMIN") {
+      run();
+    }
   }, [s?.sessionId]);
 
   async function logOut() {

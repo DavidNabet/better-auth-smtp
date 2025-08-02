@@ -12,13 +12,9 @@ import { getCurrentServerSession } from "@/lib/session/server";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
-// TODO: ⚠ Si l'utilisateur est MODERATOR, il peut consulter un tableau de role USER
-
 export default async function Dashboard() {
   const { userEmail, userName, userRole, userId } =
     await getCurrentServerSession();
-
-  // const { session } = useAuthState();
 
   return (
     <Wrapper title={`Welcome ${userName}`}>
@@ -28,8 +24,8 @@ export default async function Dashboard() {
           ? userEmail.replace(/^[^@]+/, "*".repeat(userEmail.indexOf("@")))
           : null}
       </span>
-      {userRole === "ADMIN" && (
-        <div className="flex items-stretch justify-between gap-2">
+      <div className="flex items-stretch justify-between gap-2">
+        {userRole === "ADMIN" ? (
           <div className="col-span-6 sm:col-span-4">
             <Suspense fallback={<LoadingIcon />}>
               <CardInner
@@ -41,27 +37,32 @@ export default async function Dashboard() {
               </CardInner>
             </Suspense>
           </div>
-          <div className="col-span-6 sm:col-span-8 flex-1">
-            <Suspense fallback={<LoadingIcon />}>
-              <CardInner
-                title="Nombre de users"
-                description="Nombre de users inscrits"
-                className="w-full!"
-                actions={
-                  <Link
-                    href="/dashboard/users"
-                    className="text-primary text-sm underline"
-                  >
-                    Voir plus
-                  </Link>
-                }
-              >
-                <UsersTable />
-              </CardInner>
-            </Suspense>
-          </div>
-        </div>
-      )}
+        ) : (
+          userRole !== "USER" && (
+            <div className="col-span-6 sm:col-span-8 flex-1">
+              <Suspense fallback={<LoadingIcon />}>
+                <CardInner
+                  title="Nombre de users"
+                  description="Nombre de users inscrits"
+                  className="w-full!"
+                  actions={
+                    <>
+                      <Link
+                        href={`/dashboard/users/${userRole.toLowerCase()}`}
+                        className="text-primary text-sm underline"
+                      >
+                        Voir plus
+                      </Link>
+                    </>
+                  }
+                >
+                  <UsersTable />
+                </CardInner>
+              </Suspense>
+            </div>
+          )
+        )}
+      </div>
     </Wrapper>
   );
 }

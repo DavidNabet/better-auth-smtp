@@ -3,17 +3,29 @@ import Wrapper from "@/app/_components/Wrapper";
 import LoadingIcon from "@/app/_components/LoadingIcon";
 import { CardInner } from "@/app/_components/Card";
 import SetRole from "@/components/SetRole";
-import { getCurrentServerSession } from "@/lib/session/server";
+// import { getCurrentServerSession } from "@/lib/session/server";
+// import { getCurrentClientSession } from "@/lib/session/client";
 import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { getNotAdminUsers } from "@/lib/user/user.utils";
 import { DataTable } from "@/components/Table/DataTable";
 import { usersColumns } from "@/components/Table/column";
+import { capitalize } from "@/lib/utils";
 
-export default async function AdminPage() {
+export const dynamicParams = true;
+export async function generateStaticParams() {
+  return [{ role: "admin" }, { role: "moderator" }];
+}
+
+export default async function UserRolePage({
+  params,
+}: {
+  params: Promise<{ role: string }>;
+}) {
   const users = await getNotAdminUsers();
+  const { role } = await params;
   return (
-    <Wrapper title="Admin Permissions">
+    <Wrapper title={`${capitalize(role)} Permissions`}>
       <div className="flex items-stretch justify-between gap-4 mt-5">
         <div className="col-span-6 sm:col-span-8 flex-1">
           <Suspense fallback={<LoadingIcon />}>
@@ -26,11 +38,19 @@ export default async function AdminPage() {
                   Manage all users
                 </p>
               </div>
-              <DataTable
-                columns={usersColumns}
-                data={users!}
-                id="usersColumns"
-              />
+              {role === "admin" ? (
+                <DataTable
+                  columns={usersColumns}
+                  data={users!}
+                  id="adminColumns"
+                />
+              ) : (
+                <DataTable
+                  columns={usersColumns}
+                  data={users!}
+                  id="moderatorColumns"
+                />
+              )}
             </div>
           </Suspense>
         </div>

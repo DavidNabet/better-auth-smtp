@@ -17,6 +17,8 @@ export default function Breadcrumbs() {
   const paths = usePathname();
   const pathNames = paths.split("/").filter((path) => path);
 
+  // TODO: ⚠ useSelectedLayoutSegments pathname
+
   return (
     <Breadcrumb className={cn(paths === `/${pathNames[0]}` && "hidden")}>
       <BreadcrumbList>
