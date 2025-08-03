@@ -38,6 +38,7 @@ import {
 import { Button } from "@/components/ui/button";
 
 import { useState, useEffect, SetStateAction, Dispatch } from "react";
+import { useAuthState } from "@/hooks/use-auth";
 
 declare module "@tanstack/react-table" {
   interface TableMeta<TData extends RowData> {
@@ -57,6 +58,7 @@ interface DataTableProps<TData> {
 }
 
 export function DataTable<TData>({ columns, data, id }: DataTableProps<TData>) {
+  const { session } = useAuthState();
   const [initialData, setInitialData] = useState(() => [...data]);
   const [originalData, setOriginalData] = useState(() => [...data]);
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -202,7 +204,9 @@ export function DataTable<TData>({ columns, data, id }: DataTableProps<TData>) {
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  className="relative z-0 data-[state=selected]:bg-accent hover:bg-accent/50 dark:data-[state=selected]:bg-muted dark:hover:bg-muted/50"
+                  // @ts-ignore
+                  data-disabled={row.original?.id === session?.userId && "on"}
+                  className="relative z-0 data-[state=selected]:bg-accent hover:bg-accent/50 dark:data-[state=selected]:bg-muted dark:hover:bg-muted/50 data-[disabled=on]:opacity-50 data-[disabled=on]:cursor-not-allowed"
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>

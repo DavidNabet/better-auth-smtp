@@ -12,16 +12,16 @@ const statements = {
 
 export const ac = createAccessControl(statements);
 
-export const user = ac.newRole({
+export const USER = ac.newRole({
   users: ["read", "update"],
 });
 
-export const moderate = ac.newRole({
-  ...userAc.statements,
+export const MODERATOR = ac.newRole({
+  ...adminAc.statements,
   users: ["create", "read", "update"],
 });
 
-export const admin = ac.newRole({
+export const ADMIN = ac.newRole({
   ...adminAc.statements,
   users: ["create", "read", "update", "delete"],
 });

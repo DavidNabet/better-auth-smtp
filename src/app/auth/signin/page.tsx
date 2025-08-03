@@ -1,5 +1,4 @@
 import Image from "next/image";
-import LoginForm from "./login";
 import AuthSignIn from "@/components/SignIn";
 import { Suspense } from "react";
 import LoadingIcon from "@/app/_components/LoadingIcon";
@@ -37,12 +36,12 @@ export default async function SignInPage() {
             </a>
 
             <h1 className="mt-6 text-2xl font-bold text-gray-900 dark:text-gray-200 sm:text-3xl md:text-4xl">
-              NextAuth SMTP App
+              BetterAuth SMTP App
             </h1>
 
             <p className="mt-4 leading-relaxed text-gray-500 dark:text-gray-300">
-              Lorem, ipsum dolor sit amet consectetur adipisicing elit. Eligendi
-              nam dolorum aliquam, quibusdam aperiam voluptatum.
+              Créez un compte pour vous connecter à BetterAuth SMTP App et
+              envoyer des emails avec votre propre SMTP server.
             </p>
             <Suspense fallback={<LoadingIcon />}>
               <AuthSignIn />

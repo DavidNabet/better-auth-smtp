@@ -83,7 +83,7 @@ export const updateUserSchema = z.object({
     .max(30, "Name must be at most 30 characters")
     .nullable(),
 
-  role: z.string(),
+  role: z.enum(["ADMIN", "MODERATOR", "USER"]),
   // banned: z.boolean().optional(),
   // twoFactorEnabled: z.boolean().optional(),
 });

@@ -7,12 +7,7 @@ import { createMiddleware } from "better-auth";
 import { db } from "@/db";
 import { admin, twoFactor, username } from "better-auth/plugins";
 import { sendMagicLinkforLogin, sendOTPforLogin } from "@/lib/auth/auth.mails";
-import {
-  ac,
-  user,
-  admin as adminRole,
-  moderate,
-} from "@/lib/user/user.service";
+import { ac, USER, ADMIN, MODERATOR } from "@/lib/user/user.service";
 import { getUserIdByEmail } from "@/lib/auth/auth.utils";
 import { Role } from "@prisma/client";
 
@@ -98,9 +93,9 @@ export const auth = betterAuth({
       adminRoles: [Role.ADMIN, Role.MODERATOR],
       ac,
       roles: {
-        user,
-        admin: adminRole,
-        moderate,
+        USER,
+        ADMIN,
+        MODERATOR,
       },
       adminUserIds: ["opyVqfdmTzClHczOzdwmxI5vOgbC9asO"],
     }),

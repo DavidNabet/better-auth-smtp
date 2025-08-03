@@ -231,19 +231,19 @@ export async function updateUser(data: UpdateUserSchema): Promise<{
       };
     }
 
-    // Only admins can update other users, or users can update themselves
-    const isAdmin = session.user.role === "ADMIN";
+    // Only admins and moderators can update other users, or users can update themselves
+    const isNotUser = session.user.role !== "USER";
     const isSelfUpdate = session.user.id === userId;
 
-    if (!isAdmin && !isSelfUpdate) {
+    if (!isNotUser && !isSelfUpdate) {
       return {
         success: false,
         message: "Insufficient permissions.",
       };
     }
 
-    // Prevent non-admins from changing role or banned status
-    if (!isAdmin && updateData.role) {
+    // Prevent non-role user from changing role or banned status
+    if (!isNotUser && updateData.role) {
       return {
         success: false,
         message: "Only admins can change role or ban status.",
