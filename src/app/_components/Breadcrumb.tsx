@@ -35,7 +35,9 @@ export default function Breadcrumbs() {
               <BreadcrumbItem>
                 {idx !== pathNames.length - 1 ? (
                   <BreadcrumbLink asChild>
-                    <Link href={href}>{itemLink}</Link>
+                    <Link href={href} className="text-metal">
+                      {itemLink}
+                    </Link>
                   </BreadcrumbLink>
                 ) : (
                   <BreadcrumbPage>{itemLink}</BreadcrumbPage>

@@ -26,17 +26,40 @@ export default async function Dashboard() {
       </span>
       <div className="flex items-stretch justify-between gap-2">
         {userRole === "ADMIN" ? (
-          <div className="col-span-6 sm:col-span-4">
-            <Suspense fallback={<LoadingIcon />}>
-              <CardInner
-                title="Créer des utilisateurs ?"
-                description="Générer des utlisateurs"
-                boxed
-              >
-                <GenerateUsers userId={userId.slice(2, 6)} />
-              </CardInner>
-            </Suspense>
-          </div>
+          <>
+            <div className="col-span-6 sm:col-span-4">
+              <Suspense fallback={<LoadingIcon />}>
+                <CardInner
+                  title="Créer des utilisateurs ?"
+                  description="Générer des utlisateurs"
+                  boxed
+                >
+                  <GenerateUsers userId={userId.slice(2, 6)} />
+                </CardInner>
+              </Suspense>
+            </div>
+            <div className="col-span-6 sm:col-span-8 flex-1">
+              <Suspense fallback={<LoadingIcon />}>
+                <CardInner
+                  title="Nombre de users"
+                  description="Nombre de users inscrits"
+                  className="w-full!"
+                  actions={
+                    <>
+                      <Link
+                        href={`/dashboard/users/${userRole?.toLowerCase()}`}
+                        className="text-primary text-sm underline"
+                      >
+                        Voir plus
+                      </Link>
+                    </>
+                  }
+                >
+                  <UsersTable />
+                </CardInner>
+              </Suspense>
+            </div>
+          </>
         ) : userRole !== "USER" ? (
           <div className="col-span-6 sm:col-span-8 flex-1">
             <Suspense fallback={<LoadingIcon />}>

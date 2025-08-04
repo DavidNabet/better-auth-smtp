@@ -24,7 +24,7 @@ export const NavLink = ({
   const isActive = segment === href;
   const classNames =
     className ??
-    "text-sm font-medium transitions-colors hover:text-primary text-muted-foreground";
+    "text-sm font-medium transitions-colors hover:text-primary text-metal";
 
   return (
     <Link

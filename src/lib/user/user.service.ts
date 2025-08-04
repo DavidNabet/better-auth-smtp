@@ -17,8 +17,8 @@ export const USER = ac.newRole({
 });
 
 export const MODERATOR = ac.newRole({
-  ...adminAc.statements,
   users: ["create", "read", "update"],
+  ...adminAc.statements,
 });
 
 export const ADMIN = ac.newRole({

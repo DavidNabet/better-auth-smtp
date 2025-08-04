@@ -34,7 +34,7 @@ export default async function UserRolePage({
                 <h3 className="text-primary leading-tight tracking-tight max-w-xl text-xl font-semibold">
                   All Users
                 </h3>
-                <p className="text-muted-foreground text-base text-balance">
+                <p className="text-metal text-base text-balance">
                   Manage all users
                 </p>
               </div>

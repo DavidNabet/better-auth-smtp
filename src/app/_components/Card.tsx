@@ -43,7 +43,11 @@ export function CardInner({
     <Card className={cn("mt-8", className, boxed && "w-[380px]")} {...props}>
       <CardHeader>
         <CardTitle>{title}</CardTitle>
-        {description && <CardDescription>{description}</CardDescription>}
+        {description && (
+          <CardDescription className="text-metal">
+            {description}
+          </CardDescription>
+        )}
         {actions && <CardAction>{actions}</CardAction>}
       </CardHeader>
       <CardContent>{children}</CardContent>

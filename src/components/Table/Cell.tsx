@@ -225,7 +225,7 @@ export const EditCell = ({ row, table }: CellContext<User, any>) => {
     <Button
       onClick={removeRow}
       size="icon"
-      className="rounded-full border hover:bg-destructive"
+      className="rounded-full border bg-metal dark:bg-accent hover:bg-destructive dark:hover:bg-destructive"
       variant="secondary"
       name="remove"
     >
@@ -236,7 +236,7 @@ export const EditCell = ({ row, table }: CellContext<User, any>) => {
       <Button
         onClick={setEditedRows}
         size="icon"
-        className="rounded-full border hover:bg-slate-500"
+        className="rounded-full border bg-metal dark:bg-accent hover:bg-slate-500 dark:hover:bg-slate-500"
         variant="secondary"
         name="cancel"
         disabled={isUpdating}
@@ -245,7 +245,7 @@ export const EditCell = ({ row, table }: CellContext<User, any>) => {
       </Button>
       <Button
         onClick={setEditedRows}
-        className="rounded-full border hover:bg-emerald-500"
+        className="rounded-full border bg-metal dark:bg-accent hover:bg-emerald-500 dark:hover:bg-emerald-500"
         size="icon"
         variant="secondary"
         name="done"
@@ -264,7 +264,7 @@ export const EditCell = ({ row, table }: CellContext<User, any>) => {
         onClick={setEditedRows}
         size="icon"
         variant="secondary"
-        className="rounded-full border hover:bg-amber-700 in-disabled:cursor-not-allowed"
+        className="rounded-full border dark:bg-accent bg-metal hover:bg-amber-700 dark:hover:bg-amber-700"
         name="edit"
         disabled={session?.userId === row.original.id}
       >

@@ -30,8 +30,15 @@ export const auth = betterAuth({
     autoSignInAfterVerification: true,
     expiresIn: 3600,
 
-    sendVerificationEmail: async ({ user, url }) =>
-      sendMagicLinkforLogin(user.name, user.email, url),
+    sendVerificationEmail: async ({ user, url }) => {
+      console.log("sendVerificationEmail: ", url);
+      await sendMagicLinkforLogin(user.name, user.email, url);
+    },
+    afterEmailVerification: async (user, request) => {
+      console.log(
+        `${user.email} has successfully verified their email address!`
+      );
+    },
   },
   onAPIError: {
     throw: true,
@@ -86,6 +93,13 @@ export const auth = betterAuth({
       },
     },
   },
+  logger: {
+    disabled: false,
+    level: "error",
+    log(level, message, ...args) {
+      console.log(`${[level]} ${message}`, ...args);
+    },
+  },
   plugins: [
     nextCookies(),
     admin({
@@ -107,7 +121,6 @@ export const auth = betterAuth({
       },
       skipVerificationOnEnable: true,
     }),
-    username(),
     // multiSession(),
     // magicLink({
     //   sendMagicLink: async ({ email, url, token }) => {

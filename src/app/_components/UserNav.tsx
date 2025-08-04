@@ -28,7 +28,7 @@ export async function UserNav() {
             {userImage ? (
               <AvatarImage src={userImage} className="object-cover" />
             ) : (
-              <AvatarFallback className="bg-neutral-800 text-primary-forground text-md">
+              <AvatarFallback className="dark:bg-neutral-100 bg-neutral-700 text-accent text-md">
                 {userName.slice(0, 2).toUpperCase()}
               </AvatarFallback>
             )}
