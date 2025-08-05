@@ -23,6 +23,8 @@ interface Props {
   session: Session | null;
 }
 
+// TODO: Tabs between Generate avatar or pick avatar file
+
 export default function UserProfileForm({ session }: Props) {
   const [formData, setFormData] = useState<UpdateProfileSchema>({
     name: "",

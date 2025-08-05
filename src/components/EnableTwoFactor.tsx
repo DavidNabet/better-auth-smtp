@@ -14,6 +14,9 @@ import { Switch } from "@/components/ui/switch";
 import { authClient } from "@/lib/auth/auth.client";
 import { cn } from "@/lib/utils";
 import { Input } from "./ui/input";
+import { z } from "zod";
+import { Button } from "./ui/button";
+import { Loader2 } from "lucide-react";
 
 export default function EnableTwoFactor() {
   const { data } = authClient.useSession();
@@ -24,8 +27,10 @@ export default function EnableTwoFactor() {
     password: "",
   });
   const [error, setError] = useState("");
-  const [errorMessage, setErrorMessage] = useState<any>({
-    password: "",
+  const [errorMessage, setErrorMessage] = useState<
+    z.inferFlattenedErrors<z.ZodTypeAny>["fieldErrors"]
+  >({
+    password: [""],
   });
 
   if (data?.user.twoFactorEnabled === null) {
@@ -43,7 +48,7 @@ export default function EnableTwoFactor() {
     if (!validateFields.success) {
       const { fieldErrors } = validateFields.error.flatten();
       setErrorMessage({
-        password: fieldErrors.password?.[0] ?? "",
+        password: fieldErrors.password ?? [""],
       });
       return;
     }
@@ -119,7 +124,7 @@ export default function EnableTwoFactor() {
           placeholder="••••••••"
           className="mt-1 w-full"
         />
-        <ErrorMessages error={errorMessage?.password} />
+        <ErrorMessages errors={errorMessage?.password} />
       </div>
       <div className="col-span-full sm:col-span-3">
         <Label htmlFor="AcceptConditions">Activer le 2FA ?</Label>
@@ -136,15 +141,17 @@ export default function EnableTwoFactor() {
         {success && <Alert message={success!} status="success" />}
       </div>
       <div className="mt-6 col-span-6 sm:flex sm:items-center sm:justify-end gap-x-6">
-        <input
+        <Button
           type="submit"
           className={cn(
             "rounded-md bg-emerald-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-emerald-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600",
             isPending && "cursor-not-allowed bg-gray-500"
           )}
           disabled={isPending}
-          value="Update"
-        />
+        >
+          {isPending && <Loader2 className="mr-2 w-4 h-4 animate-spin" />}
+          Update
+        </Button>
       </div>
     </form>
   );

@@ -6,6 +6,7 @@ import { ZodError, ZodErrorMap, ZodFormattedError, ZodIssue } from "zod";
 import {
   CreateUsersSchema,
   createUsersSchema,
+  updatePasswordSchema,
   updateProfileSchema,
   updateUserSchema,
   UpdateUserSchema,
@@ -299,4 +300,64 @@ export async function updateUser(data: UpdateUserSchema): Promise<{
       message: "Something went wrong while updating the user.",
     };
   }
+}
+
+export async function updateUserPassword(
+  formState: FormState,
+  formData: FormData
+): Promise<FormState> {
+  const data = Object.fromEntries(formData);
+  const validatedFields = updatePasswordSchema.safeParse(data);
+  if (!validatedFields.success) {
+    return {
+      message: {
+        error: "Invalid form data.",
+      },
+      errors: validatedFields.error.issues,
+      errorMessage: validatedFields.error.flatten().fieldErrors,
+    };
+  }
+
+  const { currentPassword, newPassword, revokeOtherSessions } =
+    validatedFields.data;
+
+  try {
+    const { user, token } = await auth.api.changePassword({
+      body: {
+        newPassword,
+        currentPassword,
+        revokeOtherSessions,
+      },
+      headers: await head(),
+    });
+    console.log("user: ", user, "token: ", token);
+  } catch (error) {
+    if (error instanceof APIError) {
+      console.log(error.message, error.body?.code);
+      const errorCode = error.body?.code as ErrorTypes;
+      switch (errorCode) {
+        case errorCode:
+          return {
+            message: {
+              error: error.message,
+            },
+          };
+        default:
+          return {
+            message: {
+              error: "Something went wrong.",
+            },
+          };
+      }
+    }
+    throw error;
+  }
+
+  revalidatePath("/dashboard/settings/security", "page");
+
+  return {
+    message: {
+      success: "Password updated successfully!",
+    },
+  };
 }

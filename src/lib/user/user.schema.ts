@@ -23,14 +23,7 @@ export const updateEmailSchema = z.object({
 
 export const updatePasswordSchema = z
   .object({
-    revokeOtherSessions: z.boolean().optional(),
-    password: z
-      .string({
-        required_error: "Le mot de passe est requis",
-        invalid_type_error: "Le mot de passe est requis",
-      })
-      .min(5, "Le mot de passe doit contenir plus de 5 caractères")
-      .max(32, "Le mot de passe doit contenir moins de 32 caractères"),
+    revokeOtherSessions: z.boolean(),
     currentPassword: z
       .string({
         required_error: "Le mot de passe est requis",
@@ -38,14 +31,21 @@ export const updatePasswordSchema = z
       })
       .min(5, "Le mot de passe doit contenir plus de 5 caractères")
       .max(32, "Le mot de passe doit contenir moins de 32 caractères"),
-    passwordConfirm: z
+    newPassword: z
+      .string({
+        required_error: "Le mot de passe est requis",
+        invalid_type_error: "Le mot de passe est requis",
+      })
+      .min(5, "Le mot de passe doit contenir plus de 5 caractères")
+      .max(32, "Le mot de passe doit contenir moins de 32 caractères"),
+    newPasswordConfirm: z
       .string({
         required_error: "Veuillez confirmer votre mot de passe",
         invalid_type_error: "Veuillez confirmer votre mot de passe",
       })
       .min(1, "Veuillez confirmer votre mot de passe"),
   })
-  .refine((data) => data.password === data.passwordConfirm, {
+  .refine((data) => data.newPassword === data.newPasswordConfirm, {
     path: ["passwordConfirm"],
     message: "Les mots de passe ne correspondent pas",
   });

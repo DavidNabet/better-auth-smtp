@@ -25,7 +25,7 @@ export default function AuthSignUp() {
     password: "",
     passwordConfirm: "",
   });
-  const [errorMessage, setErrorMessage] = useState<any>({
+  const [errorMessage, setErrorMessage] = useState<CreateUserSchema>({
     name: "",
     email: "",
     password: "",
