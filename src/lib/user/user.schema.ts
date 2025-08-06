@@ -9,6 +9,8 @@ export const updateProfileSchema = z.object({
     .instanceof(File, { message: "Please select an image" })
     .nullable()
     .refine((file) => file && file.size <= 3000000, "Max file size is 3MB."),
+
+  avatar: z.string().url().optional(),
 });
 
 export const updateEmailSchema = z.object({

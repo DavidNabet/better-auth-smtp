@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { updateProfile } from "@/lib/user/user.actions";
@@ -18,6 +19,7 @@ import Alert from "@/app/_components/Alert";
 import { useActionState, useState, startTransition } from "react";
 import { UpdateProfileSchema } from "@/lib/user/user.schema";
 import { ErrorMessages } from "@/app/_components/ErrorMessages";
+import GenerateAvatar from "./GenerateAvatar";
 
 interface Props {
   session: Session | null;
@@ -67,17 +69,38 @@ export default function UserProfileForm({ session }: Props) {
   return (
     <form className="mt-8 grid grid-cols-6 gap-6" onSubmit={handleSubmit}>
       <div className="col-span-6">
-        <Label htmlFor="image" className="block text-sm font-medium ">
-          Photo
-        </Label>
-        <AvatarUpload
-          session={session}
-          value={formData.image}
-          onChange={(value) =>
-            setFormData((prev) => ({ ...prev, image: value }))
-          }
-        />
-        <ErrorMessages />
+        <Tabs defaultValue="image" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 bg-secondary">
+            <TabsTrigger value="image">Upload an image</TabsTrigger>
+            <TabsTrigger value="avatar">Generate avatar</TabsTrigger>
+          </TabsList>
+          <div className="mt-2 p-4 border rounded-md">
+            <TabsContent value="image">
+              <div>
+                <Label htmlFor="image" className="block text-sm font-medium ">
+                  Photo
+                </Label>
+                <AvatarUpload
+                  session={session}
+                  value={formData.image}
+                  onChange={(value) =>
+                    setFormData((prev) => ({ ...prev, image: value }))
+                  }
+                />
+                <ErrorMessages errors={errorMessage?.image} />
+              </div>
+            </TabsContent>
+            <TabsContent value="avatar">
+              <GenerateAvatar
+                session={session}
+                value={formData.avatar}
+                onChange={(value) =>
+                  setFormData((prev) => ({ ...prev, avatar: value }))
+                }
+              />
+            </TabsContent>
+          </div>
+        </Tabs>
       </div>
       <div className="col-span-6 sm:col-span-3">
         <Label htmlFor="Name" className="block text-sm font-medium ">
@@ -102,14 +125,14 @@ export default function UserProfileForm({ session }: Props) {
 
         <Select
           defaultValue={session?.user.role!}
-          disabled={
-            session?.user.role === "USER" || session?.user.role === "MODERATOR"
-          }
+          disabled={session?.user.role !== "ADMIN"}
         >
           <SelectTrigger className="mt-1 w-full">
             <SelectValue aria-label={session?.user.role!} />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent
+            className={`${session?.user.role !== "ADMIN" && "disabled:cursor-pointer"}`}
+          >
             <SelectItem value="USER">USER</SelectItem>
             <SelectItem value="ADMIN">ADMIN</SelectItem>
             <SelectItem value="MODERATOR">MODERATOR</SelectItem>
@@ -126,7 +149,7 @@ export default function UserProfileForm({ session }: Props) {
           id="Email"
           placeholder="johndoe@example.com"
           defaultValue={session?.user.email ?? "johndoe@example.com"}
-          className="mt-1 w-full cursor-not-allowed"
+          className="mt-1 w-full disabled:cursor-not-allowed!"
           disabled
         />
       </div>

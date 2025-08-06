@@ -12,6 +12,7 @@ import { getCurrentServerSession } from "@/lib/session/server";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
+// ⚠ Créer un upvote avec des commentaires pour les utilisateurs, les moderateurs pourront ban les users qui ont été odieux ou insultant. Les commentaires peuvent être likés par les users.
 export default async function Dashboard() {
   const { userEmail, userName, userRole, userId } =
     await getCurrentServerSession();
@@ -25,7 +26,7 @@ export default async function Dashboard() {
           : null}
       </span>
       <div className="flex items-stretch justify-between gap-2">
-        {userRole === "ADMIN" ? (
+        {userRole && userRole === "ADMIN" ? (
           <>
             <div className="col-span-6 sm:col-span-4">
               <Suspense fallback={<LoadingIcon />}>
@@ -45,14 +46,12 @@ export default async function Dashboard() {
                   description="Nombre de users inscrits"
                   className="w-full!"
                   actions={
-                    <>
-                      <Link
-                        href={`/dashboard/users/${userRole?.toLowerCase()}`}
-                        className="text-primary text-sm underline"
-                      >
-                        Voir plus
-                      </Link>
-                    </>
+                    <Link
+                      href={`/dashboard/users/${userRole?.toLowerCase()}`}
+                      className="text-primary text-sm underline"
+                    >
+                      Voir plus
+                    </Link>
                   }
                 >
                   <UsersTable />
@@ -68,14 +67,12 @@ export default async function Dashboard() {
                 description="Nombre de users inscrits"
                 className="w-full!"
                 actions={
-                  <>
-                    <Link
-                      href={`/dashboard/users/${userRole.toLowerCase()}`}
-                      className="text-primary text-sm underline"
-                    >
-                      Voir plus
-                    </Link>
-                  </>
+                  <Link
+                    href={`/dashboard/users/${userRole?.toLowerCase()}`}
+                    className="text-primary text-sm underline"
+                  >
+                    Voir plus
+                  </Link>
                 }
               >
                 <UsersTable />

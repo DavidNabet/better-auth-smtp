@@ -73,8 +73,12 @@ export async function middleware(req: NextRequest) {
   //   return NextResponse.redirect(new URL("/auth/signin", req.url));
   // }
 
-  if (sessionCookie && isAdminRoute && session?.user.role !== "USER") {
-    console.log("not user");
+  if (
+    sessionCookie &&
+    nextUrl.pathname.endsWith("/users/user") &&
+    session?.user.role === "USER"
+  ) {
+    console.log("is user");
     return NextResponse.redirect(new URL("/dashboard", req.url));
   }
 

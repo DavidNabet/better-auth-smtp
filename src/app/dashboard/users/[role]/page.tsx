@@ -11,8 +11,9 @@ import { getNotAdminUsers } from "@/lib/user/user.utils";
 import { DataTable } from "@/components/Table/DataTable";
 import { usersColumns } from "@/components/Table/column";
 import { capitalize } from "@/lib/utils";
+import { redirect } from "next/navigation";
 
-export const dynamicParams = true;
+export const dynamic = "force-static";
 export async function generateStaticParams() {
   return [{ role: "admin" }, { role: "moderator" }];
 }
