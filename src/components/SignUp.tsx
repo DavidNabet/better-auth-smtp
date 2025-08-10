@@ -4,7 +4,6 @@ import { authClient } from "@/lib/auth/auth.client";
 import { SubmitButton } from "@/app/_components/SubmitButton";
 import { ErrorMessages } from "@/app/_components/ErrorMessages";
 import { CreateUserSchema, createUserSchema } from "@/lib/auth/auth.schema";
-import type { z } from "zod";
 import Link from "next/link";
 import { APIError } from "better-auth";
 import { useRouter } from "next/navigation";
@@ -60,7 +59,7 @@ export default function AuthSignUp() {
         password: formData.password,
         fetchOptions: {
           onError(ctx) {
-            console.log(ctx.error.message);
+            console.log(ctx.error);
             if (ctx.error.status === 403) {
               setError("Please verify your email address");
             }
@@ -196,7 +195,7 @@ export default function AuthSignUp() {
           type="submit"
           variant="secondary"
           className={cn(
-            "border text-white shrink-0 transition-colors focus:ring-offset-2 focus:ring-offset-secondary "
+            "border text-white shrink-0 transition-colors focus:ring-offset-2 focus:ring-offset-secondary cursor-pointer"
           )}
           disabled={isPending}
         >

@@ -34,11 +34,11 @@ export const auth = betterAuth({
       console.log("sendVerificationEmail: ", url);
       await sendMagicLinkforLogin(user.name, user.email, url);
     },
-    afterEmailVerification: async (user, request) => {
-      console.log(
-        `${user.email} has successfully verified their email address!`
-      );
-    },
+    // afterEmailVerification: async (user, request) => {
+    //   console.log(
+    //     `${user.email} has successfully verified their email address!`
+    //   );
+    // },
   },
   onAPIError: {
     throw: true,
@@ -80,15 +80,21 @@ export const auth = betterAuth({
   },
   databaseHooks: {
     user: {
-      create: {
-        before: async (user, ctx) => {
+      update: {
+        after: async (user) => {
           const ADMIN_EMAIL = process.env.ADMIN_EMAIL!;
 
-          if (ADMIN_EMAIL.includes(user.email)) {
-            return { data: { ...user, role: Role.ADMIN } };
+          if (ADMIN_EMAIL.includes(user.email as string)) {
+            // return { data: { ...user, role: Role.ADMIN } };
+            await db.user.update({
+              where: { id: user.id },
+              data: {
+                role: Role.ADMIN,
+              },
+            });
           }
 
-          return { data: user };
+          // return { data: user };
         },
       },
     },
@@ -111,7 +117,7 @@ export const auth = betterAuth({
         ADMIN,
         MODERATOR,
       },
-      adminUserIds: ["opyVqfdmTzClHczOzdwmxI5vOgbC9asO"],
+      adminUserIds: ["97xYFyzQ9JXQdDgNilbEwg77Nl4tXGLN"],
     }),
     twoFactor({
       otpOptions: {

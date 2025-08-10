@@ -23,7 +23,7 @@ export async function UsersTable() {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {users.length > 0 ? (
+        {users?.length > 0 ? (
           users.map((user) => (
             <TableRow key={user.name}>
               <TableCell className="font-medium">{user.name}</TableCell>

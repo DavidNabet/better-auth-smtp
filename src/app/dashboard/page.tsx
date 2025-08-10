@@ -17,6 +17,10 @@ export default async function Dashboard() {
   const { userEmail, userName, userRole, userId } =
     await getCurrentServerSession();
 
+  if (!userRole) {
+    return null;
+  }
+
   return (
     <Wrapper title={`Welcome ${userName}`}>
       <p>Content</p>
@@ -26,7 +30,7 @@ export default async function Dashboard() {
           : null}
       </span>
       <div className="flex items-stretch justify-between gap-2">
-        {userRole && userRole === "ADMIN" ? (
+        {userRole === "ADMIN" ? (
           <>
             <div className="col-span-6 sm:col-span-4">
               <Suspense fallback={<LoadingIcon />}>

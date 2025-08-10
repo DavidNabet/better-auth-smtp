@@ -35,6 +35,7 @@ export async function middleware(req: NextRequest) {
   );
 
   console.log("sessionCookie: ", sessionCookie);
+  console.log("session betterFetch: ", session);
 
   if (isRoot) {
     console.log("root");
@@ -73,14 +74,14 @@ export async function middleware(req: NextRequest) {
   //   return NextResponse.redirect(new URL("/auth/signin", req.url));
   // }
 
-  if (
-    sessionCookie &&
-    nextUrl.pathname.endsWith("/users/user") &&
-    session?.user.role === "USER"
-  ) {
-    console.log("is user");
-    return NextResponse.redirect(new URL("/dashboard", req.url));
-  }
+  // if (
+  //   sessionCookie &&
+  //   nextUrl.pathname.endsWith("/users/user") &&
+  //   session?.user.role === "USER"
+  // ) {
+  //   console.log("is user");
+  //   return NextResponse.redirect(new URL("/dashboard", req.url));
+  // }
 
   return NextResponse.next();
 }

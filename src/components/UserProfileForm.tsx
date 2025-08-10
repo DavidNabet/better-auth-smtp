@@ -30,7 +30,7 @@ interface Props {
 export default function UserProfileForm({ session }: Props) {
   const [formData, setFormData] = useState<UpdateProfileSchema>({
     name: "",
-    image: null,
+    image: undefined,
   });
   const [
     {
@@ -53,10 +53,10 @@ export default function UserProfileForm({ session }: Props) {
       const formData = new FormData(e.target as HTMLFormElement);
       const data = Object.fromEntries(formData);
       console.log(data);
-      formAction(formData);
+      // formAction(formData);
       setFormData({
         name: "",
-        image: null,
+        image: undefined,
       });
     });
   };
@@ -75,7 +75,7 @@ export default function UserProfileForm({ session }: Props) {
             <TabsTrigger value="avatar">Generate avatar</TabsTrigger>
           </TabsList>
           <div className="mt-2 p-4 border rounded-md">
-            <TabsContent value="image">
+            <TabsContent value="image" forceMount>
               <div>
                 <Label htmlFor="image" className="block text-sm font-medium ">
                   Photo
@@ -90,7 +90,7 @@ export default function UserProfileForm({ session }: Props) {
                 <ErrorMessages errors={errorMessage?.image} />
               </div>
             </TabsContent>
-            <TabsContent value="avatar">
+            <TabsContent value="avatar" forceMount>
               <GenerateAvatar
                 session={session}
                 value={formData.avatar}

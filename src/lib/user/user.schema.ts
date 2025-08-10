@@ -6,9 +6,9 @@ export const updateProfileSchema = z.object({
     .min(1, "Le nom est requis")
     .max(30, "Le nom doit contenir au maximum 30 caractères"),
   image: z
-    .instanceof(File, { message: "Please select an image" })
-    .nullable()
-    .refine((file) => file && file.size <= 3000000, "Max file size is 3MB."),
+    .instanceof(File)
+    .refine((file) => file && file.size <= 3000000, "Max file size is 3MB.")
+    .optional(),
 
   avatar: z.string().url().optional(),
 });

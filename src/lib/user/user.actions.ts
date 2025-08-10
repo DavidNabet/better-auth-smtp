@@ -52,7 +52,7 @@ export async function updateProfile(
   }
   let upload;
 
-  const { name, image } = validatedFields.data;
+  const { name, image, avatar } = validatedFields.data;
   if (image && image.size !== 0) {
     upload = await uploadFile(image);
     console.log("url: ", upload);
@@ -65,7 +65,7 @@ export async function updateProfile(
     const { status } = await auth.api.updateUser({
       body: {
         name,
-        image: upload?.url,
+        image: upload?.url || avatar,
       },
       headers: await head(),
     });
