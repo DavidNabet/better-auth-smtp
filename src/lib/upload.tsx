@@ -19,8 +19,12 @@ export const uploadFile = async (file: File) => {
   } catch (error: any) {
     if (error.name === "AbortError") {
       console.log("Operation aborted");
-    } else {
-      console.error("uploadError: ", error);
     }
+
+    console.error("uploadError: ", error);
+    return {
+      url: undefined,
+      message: "Upload failed",
+    };
   }
 };

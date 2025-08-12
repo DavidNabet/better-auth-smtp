@@ -55,10 +55,10 @@ export default function AuthSignIn() {
         fetchOptions: {
           onError(ctx) {
             console.log(ctx.error.message);
-            if (ctx.error.status === 403) {
-              setError("Please verify your email address");
+            if (ctx.error.status !== 403) {
+              setError(ctx.error.message);
             }
-            setError(ctx.error.message);
+            setError("Please verify your email address");
           },
           onRequest() {
             console.log("loading signin");

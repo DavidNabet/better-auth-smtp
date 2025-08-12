@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { useAuthState } from "@/hooks/use-auth";
+import { authClient } from "@/lib/auth/auth.client";
 
 export type Option = {
   label: string;
@@ -111,7 +112,7 @@ const SelectCell = ({
 };
 
 export const EditCell = ({ row, table }: CellContext<User, any>) => {
-  const { session } = useAuthState();
+  const { data: session } = authClient.useSession();
   const meta = table.options.meta;
   const [isUpdating, setIsUpdating] = useState(false);
 
@@ -266,7 +267,7 @@ export const EditCell = ({ row, table }: CellContext<User, any>) => {
         variant="secondary"
         className="rounded-full border dark:bg-accent bg-metal hover:bg-amber-700 dark:hover:bg-amber-700"
         name="edit"
-        disabled={session?.userId === row.original.id}
+        disabled={session?.session.userId === row.original.id}
       >
         <EditIcon className="w-4 h-4 text-white" />
       </Button>

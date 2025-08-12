@@ -19,6 +19,7 @@ import { Role } from "@prisma/client";
 import { db } from "@/db";
 import { redirect } from "next/navigation";
 import { uploadFile } from "@/lib/upload";
+import { User } from "better-auth";
 
 export interface FormState {
   message: {
@@ -148,7 +149,7 @@ export async function createUsers(
 
     const users = await Promise.all(
       USER_EMAILS.map(async (email, idx) => {
-        const { user } = await auth.api.createUser({
+        return await auth.api.createUser({
           body: {
             name: email.split("@")[0],
             email,
@@ -160,6 +161,7 @@ export async function createUsers(
       })
     );
     console.log(users);
+    // after create users sendEmailLogin
   } catch (error) {
     if (error instanceof APIError) {
       console.log(error);
@@ -191,14 +193,14 @@ export async function createUsers(
   };
 }
 
-export async function updateUser(data: UpdateUserSchema): Promise<{
+export async function updateUser(schema: UpdateUserSchema): Promise<{
   success: boolean;
   message: string;
-  user?: any;
+  user?: User;
 }> {
   try {
     // Validate the input data
-    const validatedFields = updateUserSchema.safeParse(data);
+    const validatedFields = updateUserSchema.safeParse(schema);
     if (!validatedFields.success) {
       return {
         success: false,
@@ -261,6 +263,8 @@ export async function updateUser(data: UpdateUserSchema): Promise<{
       headers: await head(),
     });
 
+    console.log("SERVER UPDATE USER: ", updateData);
+
     // Optionally, update other fields like name or image
     if (updateData.name) {
       await authContext.internalAdapter.updateUser(userId, {
@@ -277,8 +281,8 @@ export async function updateUser(data: UpdateUserSchema): Promise<{
     }
 
     // Revalidate the dashboard to refresh the table data
-    revalidatePath("/dashboard", "layout");
-    revalidatePath("/dashboard/admin", "page");
+    revalidatePath("/dashboard");
+    // revalidatePath("/dashboard/admin", "page");
 
     return {
       success: true,

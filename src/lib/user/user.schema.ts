@@ -7,8 +7,8 @@ export const updateProfileSchema = z.object({
     .max(30, "Le nom doit contenir au maximum 30 caractères"),
   image: z
     .instanceof(File)
-    .refine((file) => file && file.size <= 3000000, "Max file size is 3MB.")
-    .optional(),
+    .nullable()
+    .refine((file) => file && file.size <= 3000000, "Max file size is 3MB."),
 
   avatar: z.string().url().optional(),
 });

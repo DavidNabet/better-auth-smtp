@@ -29,6 +29,7 @@ export const auth = betterAuth({
     sendOnSignUp: true,
     autoSignInAfterVerification: true,
     expiresIn: 3600,
+    sendOnSignIn: true,
 
     sendVerificationEmail: async ({ user, url }) => {
       console.log("sendVerificationEmail: ", url);
@@ -81,10 +82,11 @@ export const auth = betterAuth({
   databaseHooks: {
     user: {
       update: {
-        after: async (user) => {
+        after: async (user, ctx) => {
           const ADMIN_EMAIL = process.env.ADMIN_EMAIL!;
 
-          if (ADMIN_EMAIL.includes(user.email as string)) {
+          if (ADMIN_EMAIL.includes(user.email!)) {
+            console.log("is admin");
             // return { data: { ...user, role: Role.ADMIN } };
             await db.user.update({
               where: { id: user.id },
@@ -93,10 +95,17 @@ export const auth = betterAuth({
               },
             });
           }
-
-          // return { data: user };
         },
       },
+      // create: {
+      //   after: async (user, ctx) => {
+      //     if (ctx?.path.startsWith("/admin/create-user")) {
+      //       console.log("after created users");
+      //       console.log("Sending emails: ", ctx?.context.session?.session);
+      //       // await sendMagicLinkforLogin(user.name, user.email, user.id)
+      //     }
+      //   },
+      // },
     },
   },
   logger: {

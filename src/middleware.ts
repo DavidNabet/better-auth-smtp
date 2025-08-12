@@ -35,7 +35,6 @@ export async function middleware(req: NextRequest) {
   );
 
   console.log("sessionCookie: ", sessionCookie);
-  console.log("session betterFetch: ", session);
 
   if (isRoot) {
     console.log("root");
@@ -53,6 +52,11 @@ export async function middleware(req: NextRequest) {
   if (!sessionCookie && nextUrl.pathname.startsWith("/dashboard")) {
     console.log("not logged in");
     return Response.redirect(new URL("/auth/signin", nextUrl));
+  }
+
+  // empeche l'infinite loop
+  if (sessionCookie && isAdminRoute) {
+    return NextResponse.next();
   }
 
   // Redirect to dashboard if user is authenticated and trying to access auth routes
