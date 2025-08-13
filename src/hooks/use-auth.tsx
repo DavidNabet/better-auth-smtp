@@ -11,7 +11,8 @@ import { authClient, authServer } from "@/lib/auth/auth.client";
 import { useRouter } from "next/navigation";
 import { getCurrentClientSession } from "@/lib/session/client";
 // import { Session } from "@/lib/auth";
-import { admin } from "@/lib/user/user.service";
+import { ADMIN } from "@/lib/user/user.service";
+import { APIError } from "better-auth/api";
 // import { auth } from "@/lib/auth";
 
 type SessionServer = typeof authServer.$Infer.Session;
@@ -64,20 +65,22 @@ export function useAuthState() {
     // Role
     if (!s?.sessionId) return;
     async function run() {
-      const { data, error } = await authServer.admin.listUsers({
-        query: {
-          filterField: "role",
-          filterOperator: "eq",
-          filterValue: "ADMIN",
-        },
+      const { data, error } = await authServer.admin.hasPermission({
+        userId: s?.userId,
+        role: "ADMIN",
+        permission: { user: ["delete"] },
       });
       if (error) {
-        console.log("error: ", error);
-        throw new Error(error.message);
+        throw new APIError("BAD_REQUEST", {
+          message: error.message,
+        });
       }
-      const isAdmin = !!data?.users.find((user) => user.id === s?.userId);
 
-      setIsAdmin(isAdmin);
+      console.log(data.success);
+
+      // const isAdmin = !!data?.users.find((user) => user.id === s?.userId);
+
+      setIsAdmin(data.success);
     }
     if (s.userRole === "ADMIN") {
       run();

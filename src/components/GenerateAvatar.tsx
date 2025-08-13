@@ -5,7 +5,8 @@ import { Session } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { UpdateProfileSchema } from "@/lib/user/user.schema";
 import { faker } from "@faker-js/faker";
-import { ChangeEvent, useRef, useState, MouseEvent } from "react";
+import { ChangeEvent, useRef, useState, MouseEvent, FormEvent } from "react";
+import { Input } from "./ui/input";
 
 interface GenerateAvatarProps {
   session: Session | null;
@@ -19,14 +20,15 @@ export default function GenerateAvatar({
   onChange,
 }: GenerateAvatarProps) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const inputRef = useRef(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleClick = (e: MouseEvent<HTMLButtonElement>) => {
+  const handleRandomClick = (e: MouseEvent<HTMLButtonElement>) => {
     // Generate a random avatar image
     e.preventDefault();
-    const randomImage = faker.image.avatar();
+    const randomImage = faker.image.avatarGitHub();
     setSelectedImage(randomImage);
     onChange?.(randomImage);
+    if (inputRef?.current) inputRef.current.value = randomImage;
   };
 
   return (
@@ -52,11 +54,18 @@ export default function GenerateAvatar({
       </Avatar>
       <Button
         variant="ghost"
-        onClick={handleClick}
         className="rounded-md font-semibold text-primary"
+        onClick={handleRandomClick}
       >
         Generate
       </Button>
+      <Input
+        ref={inputRef}
+        type="url"
+        name="avatar"
+        className="hidden"
+        onChange={(e) => (e.target.value = value!)}
+      />
     </div>
   );
 }
