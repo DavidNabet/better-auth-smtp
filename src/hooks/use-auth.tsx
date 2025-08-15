@@ -6,6 +6,7 @@ import {
   createContext,
   useContext,
   ReactNode,
+  useLayoutEffect,
 } from "react";
 import { authClient, authServer } from "@/lib/auth/auth.client";
 import { useRouter } from "next/navigation";
@@ -47,7 +48,7 @@ export function useAuthState() {
 
   useEffect(() => {
     (async function run() {
-      const { data } = await getCurrentClientSession();
+      const { data } = await authClient.getSession();
       setSession({
         sessionId: data?.session.id!,
         userId: data?.user.id!,
@@ -59,6 +60,10 @@ export function useAuthState() {
         expiresAt: data?.session.expiresAt!,
       });
       console.log("session provider: ", data);
+
+      return () => {
+        setSession(undefined);
+      };
     })();
   }, []);
   useEffect(() => {
@@ -75,9 +80,6 @@ export function useAuthState() {
           message: error.message,
         });
       }
-
-      console.log(data.success);
-
       // const isAdmin = !!data?.users.find((user) => user.id === s?.userId);
 
       setIsAdmin(data.success);

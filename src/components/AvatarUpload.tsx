@@ -23,7 +23,7 @@ export default function AvatarUpload({
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileSelection = (file: File | null) => {
+  const handleFileSelection = (file: File | undefined) => {
     onChange?.(file);
   };
 
@@ -32,14 +32,13 @@ export default function AvatarUpload({
       const file = e.target.files[0];
       const base64 = (await toBase64(file)) as string;
       setSelectedImage(base64);
-      handleFileSelection(file ?? null);
-      //onChange?.(file);
+      handleFileSelection(file ?? undefined);
     }
   };
 
   const handleRemove = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    handleFileSelection(null);
+    handleFileSelection(undefined);
     if (inputRef?.current) inputRef.current.value = "";
   };
   return (

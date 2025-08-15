@@ -2,15 +2,17 @@ import z, { TypeOf } from "zod";
 
 export const updateProfileSchema = z.object({
   name: z
-    .string({ required_error: "Le nom est requis" })
+    .string()
     .min(1, "Le nom est requis")
-    .max(30, "Le nom doit contenir au maximum 30 caractères"),
+    .max(30, "Le nom doit contenir au maximum 30 caractères")
+    .trim()
+    .optional()
+    .or(z.literal("")),
   image: z
     .instanceof(File)
-    .nullable()
-    .refine((file) => file && file.size <= 3000000, "Max file size is 3MB."),
-
-  avatar: z.string().url().optional(),
+    .refine((file) => file && file.size <= 3000000, "Max file size is 3MB.")
+    .optional(),
+  avatar: z.string().url("Must be an url").optional().or(z.literal("")),
 });
 
 export const updateEmailSchema = z.object({

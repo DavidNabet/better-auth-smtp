@@ -29,8 +29,8 @@ interface Props {
 
 export default function UserProfileForm({ session }: Props) {
   const [formData, setFormData] = useState<UpdateProfileSchema>({
-    name: "",
-    image: null,
+    name: undefined,
+    image: undefined,
     avatar: undefined,
   });
   const [
@@ -56,8 +56,8 @@ export default function UserProfileForm({ session }: Props) {
       console.log(data);
       formAction(formData);
       setFormData({
-        name: "",
-        image: null,
+        name: undefined,
+        image: undefined,
         avatar: undefined,
       });
     });
@@ -86,7 +86,10 @@ export default function UserProfileForm({ session }: Props) {
                   session={session}
                   value={formData.image}
                   onChange={(value) =>
-                    setFormData((prev) => ({ ...prev, image: value }))
+                    setFormData((prev) => ({
+                      ...prev,
+                      image: value,
+                    }))
                   }
                 />
                 <ErrorMessages errors={errorMessage?.image} />
@@ -97,7 +100,10 @@ export default function UserProfileForm({ session }: Props) {
                 session={session}
                 value={formData.avatar}
                 onChange={(value) =>
-                  setFormData((prev) => ({ ...prev, avatar: value }))
+                  setFormData((prev) => ({
+                    ...prev,
+                    avatar: value,
+                  }))
                 }
               />
             </TabsContent>
@@ -114,7 +120,7 @@ export default function UserProfileForm({ session }: Props) {
           id="Name"
           name="name"
           placeholder={session?.user?.name}
-          value={formData.name}
+          value={session?.user.name || formData.name}
           onChange={handleChange}
           className="mt-1 w-full"
         />

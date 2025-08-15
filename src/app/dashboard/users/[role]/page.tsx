@@ -14,7 +14,7 @@ import { capitalize } from "@/lib/utils";
 import { redirect } from "next/navigation";
 
 // export const dynamic = "force-static";
-export const revalidate = 60;
+// export const revalidate = 60;
 export async function generateStaticParams() {
   return [{ role: "admin" }, { role: "moderator" }];
 }

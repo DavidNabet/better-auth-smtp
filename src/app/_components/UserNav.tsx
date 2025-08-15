@@ -48,7 +48,9 @@ export async function UserNav() {
         <DropdownMenuGroup>
           {menu[1].subMenu?.map((item, idx) => (
             <DropdownMenuItem key={item.name}>
-              <Link href={item.href}>{item.name}</Link>
+              <Link href={item.href} autoFocus>
+                {item.name}
+              </Link>
             </DropdownMenuItem>
           ))}
         </DropdownMenuGroup>
