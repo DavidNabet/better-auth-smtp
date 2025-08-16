@@ -127,6 +127,7 @@ export const auth = betterAuth({
         MODERATOR,
       },
       adminUserIds: ["97xYFyzQ9JXQdDgNilbEwg77Nl4tXGLN"],
+      impersonationSessionDuration: 60 * 60 * 24,
     }),
     twoFactor({
       otpOptions: {

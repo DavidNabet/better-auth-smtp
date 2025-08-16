@@ -1,11 +1,26 @@
-import { CellContext, Row, Column, ColumnMeta } from "@tanstack/react-table";
+import {
+  CellContext,
+  Row,
+  Column,
+  ColumnMeta,
+  TableMeta,
+} from "@tanstack/react-table";
+import {
+  ChangeEvent,
+  useEffect,
+  useState,
+  MouseEvent,
+  SyntheticEvent,
+  FormEvent,
+} from "react";
 import type { User } from "@prisma/client";
-
-import { ChangeEvent, useEffect, useState, MouseEvent } from "react";
-import { Input } from "../ui/input";
 import { updateProfile, updateUser } from "@/lib/user/user.actions";
-import { Check, EditIcon, X, Minus, Loader2 } from "lucide-react";
+import { useAuthState } from "@/hooks/use-auth";
+import { authClient } from "@/lib/auth/auth.client";
+
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Check, EditIcon, X, Minus, Loader2 } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -13,9 +28,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogClose,
+  DialogDescription,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { useAuthState } from "@/hooks/use-auth";
-import { authClient } from "@/lib/auth/auth.client";
+import { cn } from "@/lib/utils";
 
 export type Option = {
   label: string;
@@ -160,8 +184,7 @@ export const EditCell = ({ row, table }: CellContext<User, any>) => {
     }
   };
 
-  /**
-     * // Save changes to server when not reverting
+  /* // Save changes to server when not reverting
           const currentRow = initialData[rowIndex] as any;
           const originalRow = originalData[rowIndex] as any;
           
@@ -218,20 +241,47 @@ export const EditCell = ({ row, table }: CellContext<User, any>) => {
           } else {
     */
 
-  const removeRow = () => {
+  const removeRow = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    console.log("removeRow");
     meta?.removeRow(row.index);
   };
 
   return row.getIsSelected() ? (
-    <Button
-      onClick={removeRow}
-      size="icon"
-      className="rounded-full border bg-metal dark:bg-accent hover:bg-destructive dark:hover:bg-destructive"
-      variant="secondary"
-      name="remove"
-    >
-      <X className="w-4 h-4 text-white" />
-    </Button>
+    <Dialog>
+      <form onSubmit={removeRow}>
+        <DialogTrigger asChild>
+          <Button
+            size="icon"
+            className="rounded-full border bg-metal dark:bg-accent hover:bg-destructive dark:hover:bg-destructive"
+            variant="secondary"
+          >
+            <X className="w-4 h-4 text-white" />
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Confirm User Deletion</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete your account? This action is
+              irreversible. Please confirm if you wish to proceed.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              type="submit"
+              name="remove"
+              variant="destructive"
+              className={cn(
+                "shrink-0 transition-colors focus:ring-offset-2 focus:ring-offset-secondary cursor-pointer w-full text-white bg-destructive/90 hover:bg-destructive"
+              )}
+            >
+              Delete this user !
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </form>
+    </Dialog>
   ) : meta?.editedRows[row.id] ? (
     <div className="flex items-center gap-3">
       <Button

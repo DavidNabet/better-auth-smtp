@@ -41,7 +41,7 @@ import { useState, useEffect, SetStateAction, Dispatch } from "react";
 import { useAuthState } from "@/hooks/use-auth";
 
 declare module "@tanstack/react-table" {
-  interface TableMeta<TData extends RowData> {
+  export interface TableMeta<TData extends RowData> {
     updateData: (rowIndex: number, columnId: string, value: unknown) => void;
     revertData: (rowIndex: number, revert: boolean) => void;
     editedRows: any;
