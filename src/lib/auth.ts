@@ -1,4 +1,4 @@
-import { betterAuth } from "better-auth";
+import { betterAuth, logger } from "better-auth";
 
 import { APIError } from "better-auth/api";
 import { prismaAdapter } from "better-auth/adapters/prisma";
@@ -22,7 +22,6 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
-
     autoSignIn: false,
   },
   emailVerification: {
@@ -32,7 +31,7 @@ export const auth = betterAuth({
     sendOnSignIn: true,
 
     sendVerificationEmail: async ({ user, url }) => {
-      console.log("sendVerificationEmail: ", url);
+      logger.info("Email verification", `Sending verification url ${url}`);
       await sendMagicLinkforLogin(user.name, user.email, url);
     },
     // afterEmailVerification: async (user, request) => {
@@ -41,13 +40,26 @@ export const auth = betterAuth({
     //   );
     // },
   },
+  logger: {
+    disabled: false,
+    level: "error",
+    log(level, message, ...args) {
+      console.log(`${[level]} ${message}`, ...args);
+    },
+  },
   onAPIError: {
-    throw: true,
+    throw: false,
     onError: (error, ctx) => {
       if (error instanceof Error) {
-        console.error("Auth error: ", error, " ctx: ", ctx);
+        logger.error("Auth error: ", error, " ctx: ", ctx);
       }
     },
+  },
+  rateLimit: {
+    window: 30,
+    max: 50,
+    storage: "database",
+    modelName: "rateLimit",
   },
   user: {
     additionalFields: {
@@ -71,6 +83,14 @@ export const auth = betterAuth({
       },
     },
   },
+  session: {
+    cookieCache: {
+      enabled: true,
+      maxAge: 60 * 60 * 24 * 30,
+    },
+    expiresIn: 60 * 60 * 24 * 30,
+    updateAge: 60 * 60 * 24 * 3,
+  },
   advanced: {
     defaultCookieAttributes: {
       maxAge: 60 * 60 * 24 * 7,
@@ -86,7 +106,7 @@ export const auth = betterAuth({
           const ADMIN_EMAIL = process.env.ADMIN_EMAIL!;
 
           if (ADMIN_EMAIL.includes(user.email!)) {
-            console.log("is admin");
+            logger.info("db.user.update.after");
             // return { data: { ...user, role: Role.ADMIN } };
             await db.user.update({
               where: { id: user.id },
@@ -108,13 +128,6 @@ export const auth = betterAuth({
       // },
     },
   },
-  logger: {
-    disabled: false,
-    level: "error",
-    log(level, message, ...args) {
-      console.log(`${[level]} ${message}`, ...args);
-    },
-  },
   plugins: [
     nextCookies(),
     admin({
@@ -132,6 +145,7 @@ export const auth = betterAuth({
     twoFactor({
       otpOptions: {
         async sendOTP({ user, otp }) {
+          logger.info("OTP sent to: ", user.email);
           await sendOTPforLogin(user.name, user.email, otp);
         },
       },

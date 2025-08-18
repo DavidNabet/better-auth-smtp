@@ -12,6 +12,8 @@ import {
   MouseEvent,
   SyntheticEvent,
   FormEvent,
+  useRef,
+  DialogHTMLAttributes,
 } from "react";
 import type { User } from "@prisma/client";
 import { updateProfile, updateUser } from "@/lib/user/user.actions";
@@ -40,6 +42,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { DialogCloseProps, DialogTriggerProps } from "@radix-ui/react-dialog";
 
 export type Option = {
   label: string;
@@ -139,6 +142,7 @@ export const EditCell = ({ row, table }: CellContext<User, any>) => {
   const { data: session } = authClient.useSession();
   const meta = table.options.meta;
   const [isUpdating, setIsUpdating] = useState(false);
+  const dialogRef = useRef<HTMLButtonElement>(null);
 
   const setEditedRows = async (e: MouseEvent<HTMLButtonElement>) => {
     const el = e.currentTarget.name;
@@ -245,12 +249,14 @@ export const EditCell = ({ row, table }: CellContext<User, any>) => {
     e.preventDefault();
     console.log("removeRow");
     meta?.removeRow(row.index);
+    // hide dialog after removal
+    dialogRef.current?.click();
   };
 
   return row.getIsSelected() ? (
     <Dialog>
-      <form onSubmit={removeRow}>
-        <DialogTrigger asChild>
+      <form id="rowUser" onSubmit={removeRow}>
+        <DialogTrigger asChild ref={dialogRef}>
           <Button
             size="icon"
             className="rounded-full border bg-metal dark:bg-accent hover:bg-destructive dark:hover:bg-destructive"
@@ -272,6 +278,7 @@ export const EditCell = ({ row, table }: CellContext<User, any>) => {
               type="submit"
               name="remove"
               variant="destructive"
+              form="rowUser"
               className={cn(
                 "shrink-0 transition-colors focus:ring-offset-2 focus:ring-offset-secondary cursor-pointer w-full text-white bg-destructive/90 hover:bg-destructive"
               )}
