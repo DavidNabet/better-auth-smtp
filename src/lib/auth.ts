@@ -55,7 +55,9 @@ export const auth = betterAuth({
       }
     },
   },
+  // Secondary storage uniquement
   rateLimit: {
+    enabled: process.env.NODE_ENV === "production",
     window: 30,
     max: 50,
     storage: "database",
@@ -94,6 +96,9 @@ export const auth = betterAuth({
   advanced: {
     defaultCookieAttributes: {
       maxAge: 60 * 60 * 24 * 7,
+    },
+    ipAddress: {
+      ipAddressHeaders: ["x-client-ip", "x-forwarded-for"],
     },
   },
   verification: {
