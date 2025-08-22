@@ -78,7 +78,9 @@ export default function DeleteUser() {
     <Dialog>
       <form onSubmit={handleSubmit}>
         <DialogTrigger asChild>
-          <Button variant="destructive">Delete Account</Button>
+          <Button variant="destructive" className="focus-within:ring-2">
+            Delete Account
+          </Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>

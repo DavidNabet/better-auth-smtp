@@ -20,6 +20,8 @@ import { useActionState, useState, startTransition } from "react";
 import { UpdateProfileSchema } from "@/lib/user/user.schema";
 import { ErrorMessages } from "@/app/_components/ErrorMessages";
 import GenerateAvatar from "./GenerateAvatar";
+import { useRouter } from "next/navigation";
+import { wait } from "@/lib/auth/auth.utils";
 
 interface Props {
   session: Session | null;
@@ -28,6 +30,7 @@ interface Props {
 // TODO: Tabs between Generate avatar or pick avatar file
 
 export default function UserProfileForm({ session }: Props) {
+  const router = useRouter();
   const [formData, setFormData] = useState<UpdateProfileSchema>({
     name: undefined,
     image: undefined,
@@ -60,6 +63,9 @@ export default function UserProfileForm({ session }: Props) {
         image: undefined,
         avatar: undefined,
       });
+      // Refresh data
+      wait(2000);
+      router.refresh();
     });
   };
 

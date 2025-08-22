@@ -83,6 +83,9 @@ export const auth = betterAuth({
           });
         }
       },
+      afterDelete: async (user, request) => {
+        logger.info(`User ${user.email} account is deleted`);
+      },
     },
   },
   session: {
