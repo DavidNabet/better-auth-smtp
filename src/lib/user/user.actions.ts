@@ -20,6 +20,7 @@ import { db } from "@/db";
 import { redirect } from "next/navigation";
 import { uploadFile } from "@/lib/upload";
 import { User } from "better-auth";
+import { getUserById } from "../auth/auth.utils";
 
 export interface FormState {
   message: {
@@ -104,7 +105,7 @@ export async function updateProfile(
 }
 
 const FormSchema = z.object({
-  userId: z.string(),
+  userId: z.string().min(1, "User ID is required"),
 });
 
 export async function createUsers(
@@ -263,7 +264,7 @@ export async function updateUser(schema: UpdateUserSchema): Promise<{
       headers: await head(),
     });
 
-    console.log("SERVER UPDATE USER: ", updateData);
+    console.log("SERVER ACTION UPDATE USER: ", updateData);
 
     // Optionally, update other fields like name or image
     if (updateData.name) {
@@ -304,6 +305,74 @@ export async function updateUser(schema: UpdateUserSchema): Promise<{
       message: "Something went wrong while updating the user.",
     };
   }
+}
+
+export async function deleteUser(
+  formState: FormState,
+  formData: FormData
+): Promise<FormState> {
+  const data = Object.fromEntries(formData);
+  const validatedFields = FormSchema.safeParse(data);
+
+  if (!validatedFields.success) {
+    return {
+      message: {
+        error: "Invalid form data.",
+      },
+      errors: validatedFields.error.issues,
+      errorMessage: validatedFields.error.flatten().fieldErrors,
+    };
+  }
+
+  const { userId } = validatedFields.data;
+
+  const isUser = await getUserById(userId);
+  if (!isUser) {
+    return {
+      message: {
+        error: "The user does not exist.",
+      },
+    };
+  }
+
+  try {
+    const { success } = await auth.api.removeUser({
+      body: {
+        userId: isUser.id,
+      },
+      headers: await head(),
+    });
+    console.log("Is the user deleted ? :", success);
+  } catch (error) {
+    if (error instanceof APIError) {
+      console.log(error);
+      const errorCode = error.body?.code as ErrorTypes;
+      switch (errorCode) {
+        case errorCode:
+          return {
+            message: {
+              error: error.message,
+            },
+          };
+        default:
+          return {
+            message: {
+              error: "Something went wrong.",
+            },
+          };
+      }
+    }
+    throw error;
+  }
+
+  // Revalidate the dashboard to refresh the table data
+  revalidatePath("/dashboard", "layout");
+
+  return {
+    message: {
+      success: "User deleted successfully!",
+    },
+  };
 }
 
 export async function updateUserPassword(
