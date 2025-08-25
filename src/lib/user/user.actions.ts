@@ -135,6 +135,8 @@ export async function createUsers(
       },
     },
   });
+  const allUsers = isUsersExisted.some(({ email }) => email);
+  console.log("allUsers: ", allUsers);
   if (isUsersExisted.length > 0) {
     return {
       message: {
@@ -143,9 +145,12 @@ export async function createUsers(
     };
   }
   // const { name, email, password, role } = validatedFields.data;
+  console.log(
+    "every: ",
+    isUsersExisted.every((email) => email)
+  );
 
   try {
-    // console.log("headers: ", headers);
     // console.log("response: ", response);
 
     const users = await Promise.all(
@@ -161,11 +166,11 @@ export async function createUsers(
         });
       })
     );
-    console.log(users);
+    console.log("users: ", users);
     // after create users sendEmailLogin
   } catch (error) {
     if (error instanceof APIError) {
-      console.log(error);
+      console.log("Error creating users:", error);
       const errorCode = error.body?.code as ErrorTypes;
       switch (errorCode) {
         case errorCode:

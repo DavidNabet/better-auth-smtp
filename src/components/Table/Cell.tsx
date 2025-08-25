@@ -16,7 +16,7 @@ import {
   DialogHTMLAttributes,
 } from "react";
 import type { User } from "@prisma/client";
-import { updateProfile, updateUser } from "@/lib/user/user.actions";
+import { deleteUser, updateProfile, updateUser } from "@/lib/user/user.actions";
 import { useAuthState } from "@/hooks/use-auth";
 import { authClient } from "@/lib/auth/auth.client";
 
@@ -142,6 +142,7 @@ export const EditCell = ({ row, table }: CellContext<User, any>) => {
   const { data: session } = authClient.useSession();
   const meta = table.options.meta;
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const dialogRef = useRef<HTMLButtonElement>(null);
 
   const setEditedRows = async (e: MouseEvent<HTMLButtonElement>) => {
@@ -245,12 +246,34 @@ export const EditCell = ({ row, table }: CellContext<User, any>) => {
           } else {
     */
 
-  const removeRow = (e: FormEvent<HTMLFormElement>) => {
+  const removeRow = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("removeRow");
-    meta?.removeRow(row.index);
-    // hide dialog after removal
-    dialogRef.current?.click();
+    setIsDeleting(true);
+    try {
+      const formData = new FormData();
+      formData.append("userId", row.original.id);
+
+      // Call the deleteUser server action
+      const result = await deleteUser(
+        {
+          message: { success: "", error: "" },
+        },
+        formData
+      );
+      if (result.message.success) {
+        console.log("✅ remove row success: ", result.message.success);
+        meta?.removeRow(row.index);
+        // hide dialog after removal
+        dialogRef.current?.click();
+      } else if (result.message.error) {
+        console.error("❌ remowe row error: ", result.message.error);
+        // Revert changes on error
+      }
+    } catch (error) {
+      console.log("❌ Failed to delete user:", error);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return row.getIsSelected() ? (
@@ -282,7 +305,9 @@ export const EditCell = ({ row, table }: CellContext<User, any>) => {
               className={cn(
                 "shrink-0 transition-colors focus:ring-offset-2 focus:ring-offset-secondary cursor-pointer w-full text-white bg-destructive/90 hover:bg-destructive"
               )}
+              disabled={isDeleting}
             >
+              {isDeleting && <Loader2 className="h-4 w-4 animate-spin" />}
               Delete this user !
             </Button>
           </DialogFooter>
