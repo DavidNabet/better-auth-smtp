@@ -137,7 +137,7 @@ export async function createUsers(
   });
   const allUsers = isUsersExisted.some(({ email }) => email);
   console.log("allUsers: ", allUsers);
-  if (isUsersExisted.length > 0) {
+  if (isUsersExisted.length > 0 || allUsers) {
     return {
       message: {
         error: "Users already existed.",
@@ -145,15 +145,13 @@ export async function createUsers(
     };
   }
   // const { name, email, password, role } = validatedFields.data;
-  console.log(
-    "every: ",
-    isUsersExisted.every((email) => email)
-  );
+  // TODO : Trouver comment faire un compteur pour chaque user créé à partir de USER_EMAILS
+  // TODO : Puis décrémenter à chaque fois qu'on génere un user avec une quantité (Exemple du panier à l'envers)
 
   try {
     // console.log("response: ", response);
 
-    const users = await Promise.all(
+    const users = await Promise.allSettled(
       USER_EMAILS.map(async (email, idx) => {
         return await auth.api.createUser({
           body: {
@@ -310,6 +308,71 @@ export async function updateUser(schema: UpdateUserSchema): Promise<{
       message: "Something went wrong while updating the user.",
     };
   }
+}
+
+export async function banUser(
+  formState: FormState,
+  formData: FormData
+): Promise<FormState> {
+  const data = Object.fromEntries(formData);
+  const validatedFields = FormSchema.safeParse(data);
+
+  if (!validatedFields.success) {
+    return {
+      message: {
+        error: "Invalid form data.",
+      },
+      errors: validatedFields.error.issues,
+      errorMessage: validatedFields.error.flatten().fieldErrors,
+    };
+  }
+
+  const { userId } = validatedFields.data;
+  const isUser = await getUserById(userId);
+  if (!isUser) {
+    return {
+      message: {
+        error: "The user does not exist.",
+      },
+    };
+  }
+
+  try {
+    const { user } = await auth.api.banUser({
+      body: {
+        userId,
+        banReason: "Spamming",
+        banExpiresIn: 60 * 60 * 24 * 7,
+      },
+      headers: await head(),
+    });
+  } catch (error) {
+    if (error instanceof APIError) {
+      console.log(error);
+      const errorCode = error.body?.code as ErrorTypes;
+      switch (errorCode) {
+        case errorCode:
+          return {
+            message: {
+              error: error.message,
+            },
+          };
+        default:
+          return {
+            message: {
+              error: "Something went wrong.",
+            },
+          };
+      }
+    }
+    throw error;
+  }
+
+  return {
+    message: {
+      success: "User banned successfully!",
+    },
+  };
 }
 
 export async function deleteUser(
