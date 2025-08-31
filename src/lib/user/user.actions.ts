@@ -106,6 +106,7 @@ export async function updateProfile(
 
 const FormSchema = z.object({
   userId: z.string().min(1, "User ID is required"),
+  banReason: z.string().optional(),
 });
 
 export async function createUsers(
@@ -314,8 +315,10 @@ export async function banUser(
   formState: FormState,
   formData: FormData
 ): Promise<FormState> {
-  const data = Object.fromEntries(formData);
-  const validatedFields = FormSchema.safeParse(data);
+  const validatedFields = FormSchema.safeParse({
+    userId: formData.get("userId"),
+    banReason: formData.get("banReason"),
+  });
 
   if (!validatedFields.success) {
     return {
@@ -327,7 +330,7 @@ export async function banUser(
     };
   }
 
-  const { userId } = validatedFields.data;
+  const { userId, banReason } = validatedFields.data;
   const isUser = await getUserById(userId);
   if (!isUser) {
     return {
@@ -341,7 +344,7 @@ export async function banUser(
     const { user } = await auth.api.banUser({
       body: {
         userId,
-        banReason: "Spamming",
+        banReason,
         banExpiresIn: 60 * 60 * 24 * 7,
       },
       headers: await head(),
