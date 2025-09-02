@@ -136,9 +136,7 @@ export async function createUsers(
       },
     },
   });
-  const allUsers = isUsersExisted.some(({ email }) => email);
-  console.log("allUsers: ", allUsers);
-  if (isUsersExisted.length > 0 || allUsers) {
+  if (isUsersExisted.length === USER_EMAILS.length) {
     return {
       message: {
         error: "Users already existed.",

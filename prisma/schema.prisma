@@ -1,4 +1,3 @@
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -29,6 +28,10 @@ model User {
   banned     Boolean?
   banReason  String?
   banExpires DateTime?
+
+  // relations
+  feedbacks Feedback[]
+  upvotes   Upvote[]
 
   twoFactorEnabled Boolean     @default(false)
   twofactors       TwoFactor[]
@@ -100,4 +103,39 @@ model RateLimit {
   lastRequest BigInt?
 
   @@map("rateLimit")
+}
+
+model Feedback {
+  id          String         @id @default(cuid())
+  title       String
+  description String
+  status      FeedbackStatus @default(PENDING)
+
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id])
+
+  upvotes   Upvote[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum FeedbackStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  COMPLETED
+}
+
+model Upvote {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  feedbackId String
+  feedback   Feedback @relation(fields: [feedbackId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, feedbackId]) // Un seul vote par user/feedback
 }

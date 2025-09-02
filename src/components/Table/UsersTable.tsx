@@ -10,7 +10,9 @@ import {
 import { db } from "@/db";
 
 export async function UsersTable() {
-  const users = await db.user.findMany();
+  const users = await db.user.findMany({
+    take: 5,
+  });
   return (
     <Table>
       <TableCaption>Nombre de users: {users.length}</TableCaption>
