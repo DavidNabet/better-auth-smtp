@@ -16,7 +16,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 export type Feedback = {
   id: string;
-  user: string;
+  title: string;
   date: string | Date;
   subject: string;
   content: string;
@@ -54,6 +54,9 @@ export function FeedbackList({ feedbacks = [] }: { feedbacks: Feedback[] }) {
               <div className="flex-1 w-full py-4">
                 <CardHeader className="pl-0">
                   <CardTitle>{f.subject}</CardTitle>
+                  <span className="mt-1 text-xs text-card-foreground">
+                    {f.title}
+                  </span>
                   <CardDescription>{f.content}</CardDescription>
                 </CardHeader>
                 <CardFooter className="px-2 pt-3 flex items-center justify-between">

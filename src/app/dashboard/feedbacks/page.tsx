@@ -8,7 +8,7 @@ export default function FeedbacksPage() {
   const feedbacks: Feedback[] = [
     {
       id: "mvp_001",
-      user: "Product Team",
+      title: "Product Team",
       date: new Date("2025-09-01").toISOString(),
       subject: "Onboarding checklist",
       content:
@@ -22,7 +22,7 @@ export default function FeedbacksPage() {
     },
     {
       id: "mvp_002",
-      user: "Design",
+      title: "Design",
       date: new Date("2025-09-02").toISOString(),
       subject: "Dark mode toggle",
       content:
@@ -36,7 +36,7 @@ export default function FeedbacksPage() {
     },
     {
       id: "mvp_003",
-      user: "Customer Success",
+      title: "Customer Success",
       date: new Date("2025-09-03").toISOString(),
       subject: "In-app feedback widget",
       content:
@@ -50,7 +50,7 @@ export default function FeedbacksPage() {
     },
     {
       id: "mvp_004",
-      user: "Engineering",
+      title: "Engineering",
       date: new Date("2025-09-03").toISOString(),
       subject: "Email-based invites",
       content:
@@ -64,7 +64,7 @@ export default function FeedbacksPage() {
     },
     {
       id: "mvp_005",
-      user: "Analytics",
+      title: "Analytics",
       date: new Date("2025-09-04").toISOString(),
       subject: "Usage snapshot",
       content:
@@ -78,7 +78,7 @@ export default function FeedbacksPage() {
     },
     {
       id: "mvp_006",
-      user: "Support",
+      title: "Support",
       date: new Date("2025-09-05").toISOString(),
       subject: "Saved replies",
       content:
@@ -92,7 +92,7 @@ export default function FeedbacksPage() {
     },
     {
       id: "mvp_007",
-      user: "Growth",
+      title: "Growth",
       date: new Date("2025-09-06").toISOString(),
       subject: "CSV export",
       content:
@@ -106,7 +106,7 @@ export default function FeedbacksPage() {
     },
     {
       id: "mvp_008",
-      user: "Security",
+      title: "Security",
       date: new Date("2025-09-07").toISOString(),
       subject: "Passwordless login",
       content:
@@ -122,11 +122,11 @@ export default function FeedbacksPage() {
 
   return (
     <Wrapper title="Welcome to the users ideas">
-      <div className="flex items-stretch justify-between gap-2">
-        <div className="col-span-12 sm:col-span-8 flex-1">
-          <FeedbackList feedbacks={feedbacks} />
-        </div>
+      <div className="flex justify-end items-center my-4">
+        <FeedbackForm />
       </div>
+
+      <FeedbackList feedbacks={feedbacks} />
     </Wrapper>
   );
 }
