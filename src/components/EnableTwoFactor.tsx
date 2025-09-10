@@ -53,7 +53,7 @@ export default function EnableTwoFactor() {
       return;
     }
     startTransition(async () => {
-      if (data?.user.twoFactorEnabled === false) {
+      if (!data?.user.twoFactorEnabled) {
         await authClient.twoFactor.enable({
           password: formData.password,
           fetchOptions: {
@@ -79,7 +79,7 @@ export default function EnableTwoFactor() {
           },
         });
       }
-      if (data?.user.twoFactorEnabled === true) {
+      if (data?.user.twoFactorEnabled) {
         await authClient.twoFactor.disable({
           password: formData.password,
           fetchOptions: {

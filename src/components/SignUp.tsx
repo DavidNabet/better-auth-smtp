@@ -5,7 +5,7 @@ import { SubmitButton } from "@/app/_components/SubmitButton";
 import { ErrorMessages } from "@/app/_components/ErrorMessages";
 import { CreateUserSchema, createUserSchema } from "@/lib/auth/auth.schema";
 import Link from "next/link";
-import { APIError } from "better-auth";
+import { APIError, email } from "better-auth";
 import { useRouter } from "next/navigation";
 import Alert from "@/app/_components/Alert";
 import { Label } from "@/components/ui/label";
@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2, UserPlus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { z } from "zod";
 
 export default function AuthSignUp() {
   const router = useRouter();
@@ -24,11 +25,13 @@ export default function AuthSignUp() {
     password: "",
     passwordConfirm: "",
   });
-  const [errorMessage, setErrorMessage] = useState<CreateUserSchema>({
-    name: "",
-    email: "",
-    password: "",
-    passwordConfirm: "",
+  const [errorMessage, setErrorMessage] = useState<
+    z.inferFlattenedErrors<z.ZodTypeAny>["fieldErrors"]
+  >({
+    name: [""],
+    email: [""],
+    password: [""],
+    passwordConfirm: [""],
   });
   const [error, setError] = useState("");
 
@@ -44,10 +47,10 @@ export default function AuthSignUp() {
     if (!validateFields.success) {
       const { fieldErrors } = validateFields.error.flatten();
       setErrorMessage({
-        name: fieldErrors.name?.[0] ?? "",
-        email: fieldErrors.email?.[0] ?? "",
-        password: fieldErrors.password?.[0] ?? "",
-        passwordConfirm: fieldErrors.passwordConfirm?.[0] ?? "",
+        name: fieldErrors.name ?? [""],
+        email: fieldErrors.email ?? [""],
+        password: fieldErrors.password ?? [""],
+        passwordConfirm: fieldErrors.passwordConfirm ?? [""],
       });
       return;
     }
@@ -104,7 +107,7 @@ export default function AuthSignUp() {
             errorMessage?.name ? "border-destructive" : ""
           }`}
         />
-        <ErrorMessages error={errorMessage?.name} />
+        <ErrorMessages errors={errorMessage?.name} />
       </div>
 
       <div className="col-span-6">
@@ -126,7 +129,7 @@ export default function AuthSignUp() {
             errorMessage?.email ? "border-destructive" : ""
           }`}
         />
-        <ErrorMessages error={errorMessage?.email} />
+        <ErrorMessages errors={errorMessage?.email} />
       </div>
 
       <div className="col-span-6 sm:col-span-3">
@@ -147,7 +150,7 @@ export default function AuthSignUp() {
           placeholder="••••••••"
           className="mt-1 w-full shadow-sm "
         />
-        <ErrorMessages error={errorMessage?.password} />
+        <ErrorMessages errors={errorMessage?.password} />
       </div>
 
       <div className="col-span-6 sm:col-span-3">
@@ -167,7 +170,7 @@ export default function AuthSignUp() {
           placeholder="••••••••"
           className="mt-1 w-full shadow-sm"
         />
-        <ErrorMessages error={errorMessage?.passwordConfirm} />
+        <ErrorMessages errors={errorMessage?.passwordConfirm} />
       </div>
 
       <div className="col-span-6">

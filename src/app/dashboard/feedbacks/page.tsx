@@ -13,7 +13,7 @@ export default function FeedbacksPage() {
       subject: "Onboarding checklist",
       content:
         "Provide a lightweight onboarding checklist with 4–6 steps (profile, invite teammate, create first project, connect integration).",
-      status: "MVP",
+      status: "Merged",
       team: [
         { id: 1, avatar: "https://avatar.iran.liara.run/public" },
         { id: 2, avatar: "https://avatar.iran.liara.run/public" },
@@ -41,7 +41,7 @@ export default function FeedbacksPage() {
       subject: "In-app feedback widget",
       content:
         "Basic modal with subject + description + optional screenshot upload. Sends to a feedback inbox.",
-      status: "MVP",
+      status: "New Post",
       team: [
         { id: 1, avatar: "https://avatar.iran.liara.run/public" },
         { id: 2, avatar: "https://avatar.iran.liara.run/public" },
@@ -55,7 +55,7 @@ export default function FeedbacksPage() {
       subject: "Email-based invites",
       content:
         "Allow admins to invite teammates by email with role selection (viewer/editor). One-time magic link.",
-      status: "MVP",
+      status: "Merged",
       team: [
         { id: 1, avatar: "https://avatar.iran.liara.run/public" },
         { id: 2, avatar: "https://avatar.iran.liara.run/public" },
