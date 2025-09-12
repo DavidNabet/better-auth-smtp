@@ -20,7 +20,6 @@ export type Feedback = {
   date: string | Date;
   subject: string;
   content: string;
-  status: string;
   team: {
     id: number;
     avatar: string;
@@ -52,13 +51,7 @@ export function FeedbackList({ feedbacks = [] }: { feedbacks: Feedback[] }) {
                     </Button>
                   </div>
                 </div>
-                <div className="flex-1 w-full py-4 relative">
-                  <Badge
-                    className="absolute right-3 top-3 text-xs z-30"
-                    variant="secondary"
-                  >
-                    {f.status}
-                  </Badge>
+                <div className="flex-1 w-full py-4">
                   <CardHeader className="pl-0">
                     <CardTitle>{f.subject}</CardTitle>
                     <span className="mt-1 text-xs text-card-foreground">

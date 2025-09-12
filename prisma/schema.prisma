@@ -110,6 +110,7 @@ model Feedback {
   title       String
   description String
   status      FeedbackStatus @default(PENDING)
+  subject     String?
 
   authorId String
   author   User   @relation(fields: [authorId], references: [id])

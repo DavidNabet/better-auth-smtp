@@ -1,9 +1,11 @@
 import { APIError } from "better-auth/api";
 import { db } from "@/db";
 import { revalidatePath } from "next/cache";
+import { headers as head } from "next/headers";
 import { auth } from "../auth";
 import { ErrorTypes, FormState } from "../user/user.actions";
 import { createFeedbackSchema } from "@/lib/feedback/feedback.schema";
+import { getUserById, getUserIdByEmail } from "../auth/auth.utils";
 
 export async function createFeedback(
   formState: FormState,
@@ -21,16 +23,43 @@ export async function createFeedback(
     };
   }
 
-  const { title, description, status } = validatedFields.data;
+  const { title, description, subject } = validatedFields.data;
 
   try {
-    // const feedback = await db.feedback.create({
-    //     data: {
-    //         title: title ?? "",
-    //         description,
-    //         status,
-    //     }
-    // })
+    const session = await auth.api.getSession({
+      headers: await head(),
+    });
+
+    if (!session?.user) {
+      return {
+        message: {
+          error: "Unauthorized.",
+        },
+      };
+    }
+    const userId = await getUserIdByEmail(session.user.email);
+    if (!userId) {
+      return {
+        message: {
+          error: "User not found",
+        },
+      };
+    }
+
+    const feedback = await db.feedback.create({
+      data: {
+        title: title!,
+        description,
+        status: "PENDING",
+        subject,
+        author: {
+          connect: {
+            id: userId,
+          },
+        },
+      },
+    });
+    console.log("feedback: ", feedback);
   } catch (error) {
     if (error instanceof APIError) {
       console.log(error.message, error.body?.code);

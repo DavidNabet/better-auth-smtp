@@ -2,6 +2,7 @@ import Wrapper from "@/app/_components/Wrapper";
 import FeedbackForm from "@/components/feedback/FeedbackForm";
 import { Feedback, FeedbackList } from "@/components/feedback/FeedbackList";
 import { Suspense } from "react";
+import LoadingIcon from "@/app/_components/LoadingIcon";
 
 export default function FeedbacksPage() {
   // MVP idea-style
@@ -13,7 +14,6 @@ export default function FeedbacksPage() {
       subject: "Onboarding checklist",
       content:
         "Provide a lightweight onboarding checklist with 4–6 steps (profile, invite teammate, create first project, connect integration).",
-      status: "Merged",
       team: [
         { id: 1, avatar: "https://avatar.iran.liara.run/public" },
         { id: 2, avatar: "https://avatar.iran.liara.run/public" },
@@ -27,7 +27,6 @@ export default function FeedbacksPage() {
       subject: "Dark mode toggle",
       content:
         "Add a simple theme toggle persisted per user. No scheduling—just system and manual modes for now.",
-      status: "Planned",
       team: [
         { id: 1, avatar: "https://avatar.iran.liara.run/public" },
         { id: 2, avatar: "https://avatar.iran.liara.run/public" },
@@ -41,7 +40,6 @@ export default function FeedbacksPage() {
       subject: "In-app feedback widget",
       content:
         "Basic modal with subject + description + optional screenshot upload. Sends to a feedback inbox.",
-      status: "New Post",
       team: [
         { id: 1, avatar: "https://avatar.iran.liara.run/public" },
         { id: 2, avatar: "https://avatar.iran.liara.run/public" },
@@ -55,7 +53,6 @@ export default function FeedbacksPage() {
       subject: "Email-based invites",
       content:
         "Allow admins to invite teammates by email with role selection (viewer/editor). One-time magic link.",
-      status: "Merged",
       team: [
         { id: 1, avatar: "https://avatar.iran.liara.run/public" },
         { id: 2, avatar: "https://avatar.iran.liara.run/public" },
@@ -69,7 +66,6 @@ export default function FeedbacksPage() {
       subject: "Usage snapshot",
       content:
         "Minimal dashboard: daily active users, projects created this week, and top 3 engaged features.",
-      status: "Backlog",
       team: [
         { id: 1, avatar: "https://avatar.iran.liara.run/public" },
         { id: 2, avatar: "https://avatar.iran.liara.run/public" },
@@ -83,7 +79,6 @@ export default function FeedbacksPage() {
       subject: "Saved replies",
       content:
         "Allow saving canned responses for common support questions; simple insertion in the reply editor.",
-      status: "Research",
       team: [
         { id: 1, avatar: "https://avatar.iran.liara.run/public" },
         { id: 2, avatar: "https://avatar.iran.liara.run/public" },
@@ -97,7 +92,6 @@ export default function FeedbacksPage() {
       subject: "CSV export",
       content:
         "Export core entities to CSV: projects and feedback. No scheduling, just on-demand download.",
-      status: "Planned",
       team: [
         { id: 1, avatar: "https://avatar.iran.liara.run/public" },
         { id: 2, avatar: "https://avatar.iran.liara.run/public" },
@@ -111,7 +105,6 @@ export default function FeedbacksPage() {
       subject: "Passwordless login",
       content:
         "Magic link sign-in via email. Keep traditional password flow behind a feature flag.",
-      status: "Backlog",
       team: [
         { id: 1, avatar: "https://avatar.iran.liara.run/public" },
         { id: 2, avatar: "https://avatar.iran.liara.run/public" },
@@ -125,8 +118,9 @@ export default function FeedbacksPage() {
       <div className="flex justify-end items-center my-4">
         <FeedbackForm />
       </div>
-
-      <FeedbackList feedbacks={feedbacks} />
+      <Suspense fallback={<LoadingIcon />}>
+        <FeedbackList feedbacks={feedbacks} />
+      </Suspense>
     </Wrapper>
   );
 }
