@@ -1,3 +1,5 @@
+"use server";
+
 import { APIError } from "better-auth/api";
 import { db } from "@/db";
 import { revalidatePath } from "next/cache";
@@ -52,11 +54,11 @@ export async function createFeedback(
         description,
         status: "PENDING",
         subject,
-        author: {
-          connect: {
-            id: userId,
-          },
-        },
+        authorId: userId,
+      },
+      select: {
+        id: true,
+        authorId: true,
       },
     });
     console.log("feedback: ", feedback);

@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Dialog,
   DialogTrigger,
@@ -11,10 +13,62 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { createFeedback } from "@/lib/feedback/feedback.action";
 import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
+import { startTransition, useActionState, useState } from "react";
+import { useRouter } from "next/navigation";
+import { CreateFeedback } from "@/lib/feedback/feedback.schema";
+import { wait } from "@/lib/auth/auth.utils";
+import { ErrorMessages } from "@/app/_components/ErrorMessages";
+import Alert from "@/app/_components/Alert";
 
 export default function FeedbackForm() {
+  const router = useRouter();
+  const [formData, setFormData] = useState<CreateFeedback>({
+    title: "",
+    subject: "",
+    description: "",
+    status: "PENDING",
+  });
+  const [
+    {
+      message: { success, error },
+      errorMessage,
+    },
+    formAction,
+    pending,
+  ] = useActionState(createFeedback, {
+    message: {
+      error: "",
+      success: "",
+    },
+    errorMessage: {},
+  });
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    startTransition(async () => {
+      const formData = new FormData(e.target as HTMLFormElement);
+      const data = Object.fromEntries(formData);
+      console.log(data);
+      formAction(formData);
+      setFormData({
+        title: "",
+        description: "",
+        status: "ACCEPTED",
+        subject: "",
+      });
+      // Refresh data
+      wait(2000);
+      router.refresh();
+    });
+  };
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -25,7 +79,11 @@ export default function FeedbackForm() {
           <DialogTitle>Suggestions Form</DialogTitle>
           <DialogDescription>Please provide your idea below.</DialogDescription>
         </DialogHeader>
-        <form className="grid grid-cols-6 gap-3">
+        <form
+          className="grid grid-cols-6 gap-3"
+          id="feedback"
+          onSubmit={handleSubmit}
+        >
           <div className="col-span-6 sm:col-span-3">
             <Label htmlFor="title" className="block text-sm font-medium">
               Idea name
@@ -35,7 +93,10 @@ export default function FeedbackForm() {
               className="my-2 w-full"
               type="text"
               placeholder="Idea title"
+              onChange={handleChange}
+              value={formData.title}
             />
+            <ErrorMessages errors={errorMessage?.title} />
           </div>
           <div className="col-span-6 sm:col-span-3">
             <Label htmlFor="subject" className="block text-sm font-medium">
@@ -46,7 +107,10 @@ export default function FeedbackForm() {
               className="my-2 w-full"
               type="text"
               placeholder="Subject idea"
+              onChange={handleChange}
+              value={formData.subject}
             />
+            <ErrorMessages errors={errorMessage?.subject} />
           </div>
 
           <div className="col-span-6">
@@ -55,21 +119,28 @@ export default function FeedbackForm() {
               id="description"
               className="my-2 w-full"
               name="description"
+              onChange={handleChange}
+              value={formData.description}
             />
+            <ErrorMessages errors={errorMessage?.description} />
           </div>
           <div className="mt-6 col-span-6 gap-x-6">
             <Button
               type="submit"
               variant="default"
               className={cn(
-                "w-full bg-teal-600 hover:bg-teal-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600 cursor-pointer"
-                // pending && "cursor-not-allowed bg-metal"
+                "w-full bg-teal-600 hover:bg-teal-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600 cursor-pointer",
+                pending && "cursor-not-allowed bg-metal"
               )}
-              // disabled={pending}
+              disabled={pending}
             >
-              {/* {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} */}
+              {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Submit
             </Button>
+          </div>
+          <div className="col-span-6">
+            {error && <Alert message={error!} status="error" />}
+            {success && <Alert message={success!} status="success" />}
           </div>
         </form>
       </DialogContent>

@@ -3,16 +3,22 @@ import FeedbackForm from "@/components/feedback/FeedbackForm";
 import { Feedback, FeedbackList } from "@/components/feedback/FeedbackList";
 import { Suspense } from "react";
 import LoadingIcon from "@/app/_components/LoadingIcon";
+import { db } from "@/db";
 
-export default function FeedbacksPage() {
+export default async function FeedbacksPage() {
   // MVP idea-style
-  const feedbacks: Feedback[] = [
+  const feedbacks = await db.feedback.findMany({
+    orderBy: { createdAt: "desc" },
+    take: 10,
+    select: { id: true, title: true, subject: true, description: true },
+  });
+  const feedbackData: Feedback[] = [
     {
       id: "mvp_001",
       title: "Product Team",
       date: new Date("2025-09-01").toISOString(),
       subject: "Onboarding checklist",
-      content:
+      description:
         "Provide a lightweight onboarding checklist with 4–6 steps (profile, invite teammate, create first project, connect integration).",
       team: [
         { id: 1, avatar: "https://avatar.iran.liara.run/public" },
@@ -25,7 +31,7 @@ export default function FeedbacksPage() {
       title: "Design",
       date: new Date("2025-09-02").toISOString(),
       subject: "Dark mode toggle",
-      content:
+      description:
         "Add a simple theme toggle persisted per user. No scheduling—just system and manual modes for now.",
       team: [
         { id: 1, avatar: "https://avatar.iran.liara.run/public" },
@@ -38,7 +44,7 @@ export default function FeedbacksPage() {
       title: "Customer Success",
       date: new Date("2025-09-03").toISOString(),
       subject: "In-app feedback widget",
-      content:
+      description:
         "Basic modal with subject + description + optional screenshot upload. Sends to a feedback inbox.",
       team: [
         { id: 1, avatar: "https://avatar.iran.liara.run/public" },
@@ -51,7 +57,7 @@ export default function FeedbacksPage() {
       title: "Engineering",
       date: new Date("2025-09-03").toISOString(),
       subject: "Email-based invites",
-      content:
+      description:
         "Allow admins to invite teammates by email with role selection (viewer/editor). One-time magic link.",
       team: [
         { id: 1, avatar: "https://avatar.iran.liara.run/public" },
@@ -64,7 +70,7 @@ export default function FeedbacksPage() {
       title: "Analytics",
       date: new Date("2025-09-04").toISOString(),
       subject: "Usage snapshot",
-      content:
+      description:
         "Minimal dashboard: daily active users, projects created this week, and top 3 engaged features.",
       team: [
         { id: 1, avatar: "https://avatar.iran.liara.run/public" },
@@ -77,7 +83,7 @@ export default function FeedbacksPage() {
       title: "Support",
       date: new Date("2025-09-05").toISOString(),
       subject: "Saved replies",
-      content:
+      description:
         "Allow saving canned responses for common support questions; simple insertion in the reply editor.",
       team: [
         { id: 1, avatar: "https://avatar.iran.liara.run/public" },
@@ -90,7 +96,7 @@ export default function FeedbacksPage() {
       title: "Growth",
       date: new Date("2025-09-06").toISOString(),
       subject: "CSV export",
-      content:
+      description:
         "Export core entities to CSV: projects and feedback. No scheduling, just on-demand download.",
       team: [
         { id: 1, avatar: "https://avatar.iran.liara.run/public" },
@@ -103,7 +109,7 @@ export default function FeedbacksPage() {
       title: "Security",
       date: new Date("2025-09-07").toISOString(),
       subject: "Passwordless login",
-      content:
+      description:
         "Magic link sign-in via email. Keep traditional password flow behind a feature flag.",
       team: [
         { id: 1, avatar: "https://avatar.iran.liara.run/public" },

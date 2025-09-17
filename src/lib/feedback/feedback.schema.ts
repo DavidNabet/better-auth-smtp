@@ -5,9 +5,7 @@ export const createFeedbackSchema = z.object({
     .string()
     .min(1, "Le titre est requis")
     .max(30, "Le titre doit contenir au maximum 30 caractères")
-    .trim()
-    .optional()
-    .or(z.literal("")),
+    .trim(),
   description: z
     .string()
     .min(1, "La description est requise")
