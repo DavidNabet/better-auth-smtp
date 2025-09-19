@@ -4,13 +4,22 @@ import { Feedback, FeedbackList } from "@/components/feedback/FeedbackList";
 import { Suspense } from "react";
 import LoadingIcon from "@/app/_components/LoadingIcon";
 import { db } from "@/db";
+// import { UpvoteProvider } from "@/hooks/use-upvote";
 
 export default async function FeedbacksPage() {
   // MVP idea-style
   const feedbacks = await db.feedback.findMany({
     orderBy: { createdAt: "desc" },
     take: 10,
-    select: { id: true, title: true, subject: true, description: true },
+    select: {
+      id: true,
+      title: true,
+      subject: true,
+      description: true,
+      upvotes: true,
+      updatedAt: true,
+      authorId: true,
+    },
   });
   const feedbackData: Feedback[] = [
     {

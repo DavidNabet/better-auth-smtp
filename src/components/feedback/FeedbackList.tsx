@@ -1,3 +1,5 @@
+"use client";
+
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { Badge } from "../ui/badge";
@@ -13,6 +15,7 @@ import { Button } from "../ui/button";
 import { CardInner } from "@/app/_components/Card";
 import { ChevronDown, ChevronUp, Heart } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { UpvoteProvider, useUpvote } from "@/hooks/use-upvote";
 
 export type Feedback = {
   id: string;
@@ -41,17 +44,9 @@ export function FeedbackList({ feedbacks = [] }: { feedbacks: Feedback[] }) {
           <Card className="border rounded-md py-0" key={f.id}>
             <div className="flex gap-2 h-full">
               <div className="h-full py-4 bg-accent/30">
-                <div className="flex flex-col items-stretch px-2">
-                  <Button variant="ghost" size="icon">
-                    <ChevronUp />
-                  </Button>
-                  <span className="text-3xl text-primary font-light border-primary text-center">
-                    0
-                  </span>
-                  <Button variant="ghost" size="icon">
-                    <ChevronDown />
-                  </Button>
-                </div>
+                <UpvoteProvider>
+                  <UpvoteComponent itemId={f.id} />
+                </UpvoteProvider>
               </div>
               <div className="flex-1 w-full py-4">
                 <CardHeader className="pl-0">
@@ -85,5 +80,75 @@ export function FeedbackList({ feedbacks = [] }: { feedbacks: Feedback[] }) {
         ))}
       </>
     </section>
+  );
+}
+
+function UpvoteComponent({ itemId }: { itemId: string }) {
+  const {
+    upvoteCount,
+    userVoteState,
+    upvote,
+    downvote,
+    canUpvote,
+    canDownvote,
+  } = useUpvote();
+
+  const handleUpvote = () => {
+    upvote(itemId);
+  };
+
+  const handleDownvote = () => {
+    downvote(itemId);
+  };
+  return (
+    <div className="flex flex-col items-stretch px-2">
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={handleUpvote}
+        disabled={!canUpvote && userVoteState !== "upvoted"}
+        className={`${
+          userVoteState === "upvoted"
+            ? "bg-green-500/20 text-green-500/90"
+            : "hover:bg-green-50"
+        }`}
+        title={
+          userVoteState === "upvoted"
+            ? "Cliquez pour annuler votre vote positif"
+            : "Voter positivement"
+        }
+      >
+        <ChevronUp />
+      </Button>
+      <span
+        className={`text-3xl text-primary font-light border-primary text-center ${
+          upvoteCount > 0
+            ? "text-green-600"
+            : upvoteCount < 0
+              ? "current"
+              : "text-gray-600 "
+        }`}
+      >
+        {upvoteCount > 0 ? upvoteCount : upvoteCount}
+      </span>
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={handleDownvote}
+        disabled={!canDownvote && userVoteState !== "downvoted"}
+        className={`${
+          userVoteState === "downvoted"
+            ? "bg-destructive/20 text-destructive/90"
+            : "hover:bg-red-50"
+        }`}
+        title={
+          userVoteState === "downvoted"
+            ? "Cliquez pour annuler votre vote négatif"
+            : "Voter négativement"
+        }
+      >
+        <ChevronDown />
+      </Button>
+    </div>
   );
 }
