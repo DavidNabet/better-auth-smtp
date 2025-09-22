@@ -4,7 +4,10 @@ import Breadcrumbs from "../_components/Breadcrumb";
 import { redirect } from "next/navigation";
 import { getCurrentServerSession } from "@/lib/session/server";
 export const metadata: Metadata = {
-  title: "Dashboard",
+  title: {
+    template: "%s | Dashboard",
+    default: "Dashboard",
+  },
   description: "Manage your account and settings.",
 };
 

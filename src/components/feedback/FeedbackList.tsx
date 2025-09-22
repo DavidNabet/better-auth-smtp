@@ -1,8 +1,7 @@
 "use client";
 
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { cn } from "@/lib/utils";
-import { Badge } from "../ui/badge";
+import { useTransition, useState } from "react";
+import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -10,12 +9,11 @@ import {
   CardHeader,
   CardFooter,
   CardTitle,
-} from "../ui/card";
-import { Button } from "../ui/button";
-import { CardInner } from "@/app/_components/Card";
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp, Heart } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { UpvoteProvider, useUpvote } from "@/hooks/use-upvote";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { VoteProvider, useVotes } from "@/hooks/use-vote";
 
 export type Feedback = {
   id: string;
@@ -29,7 +27,19 @@ export type Feedback = {
   }[];
 };
 
-export function FeedbackList({ feedbacks = [] }: { feedbacks: Feedback[] }) {
+type InitialVotes = {
+  feedbackId: string;
+  upvote: number;
+  downvote: number;
+}[];
+
+export function FeedbackList({
+  feedbacks = [],
+  initialVotes = [],
+}: {
+  feedbacks: Feedback[];
+  initialVotes: InitialVotes;
+}) {
   if (feedbacks?.length === 0) {
     return (
       <div className="text-sm text-muted-foreground px-3 py-4 border rounded-lg">
@@ -44,9 +54,9 @@ export function FeedbackList({ feedbacks = [] }: { feedbacks: Feedback[] }) {
           <Card className="border rounded-md py-0" key={f.id}>
             <div className="flex gap-2 h-full">
               <div className="h-full py-4 bg-accent/30">
-                <UpvoteProvider>
-                  <UpvoteComponent itemId={f.id} />
-                </UpvoteProvider>
+                <VoteProvider initialVotes={initialVotes}>
+                  <UpvoteComponent feedbackId={f.id} />
+                </VoteProvider>
               </div>
               <div className="flex-1 w-full py-4">
                 <CardHeader className="pl-0">
@@ -83,37 +93,25 @@ export function FeedbackList({ feedbacks = [] }: { feedbacks: Feedback[] }) {
   );
 }
 
-function UpvoteComponent({ itemId }: { itemId: string }) {
-  const {
-    upvoteCount,
-    userVoteState,
-    upvote,
-    downvote,
-    canUpvote,
-    canDownvote,
-  } = useUpvote();
+function UpvoteComponent({ feedbackId }: { feedbackId: string }) {
+  const { votes, handleVote, isPending } = useVotes();
+  const feedbackVotes = votes[feedbackId];
 
-  const handleUpvote = () => {
-    upvote(itemId);
-  };
-
-  const handleDownvote = () => {
-    downvote(itemId);
-  };
+  if (!feedbackVotes) return null;
   return (
     <div className="flex flex-col items-stretch px-2">
       <Button
         variant="ghost"
         size="icon"
-        onClick={handleUpvote}
-        disabled={!canUpvote && userVoteState !== "upvoted"}
+        onClick={() => handleVote(feedbackId, "UP")}
+        disabled={isPending}
         className={`${
-          userVoteState === "upvoted"
+          feedbackVotes.userVote === "UP"
             ? "bg-green-500/20 text-green-500/90"
-            : "hover:bg-green-50"
+            : "hover:bg-green-200!"
         }`}
         title={
-          userVoteState === "upvoted"
+          feedbackVotes.userVote === "UP"
             ? "Cliquez pour annuler votre vote positif"
             : "Voter positivement"
         }
@@ -121,28 +119,23 @@ function UpvoteComponent({ itemId }: { itemId: string }) {
         <ChevronUp />
       </Button>
       <span
-        className={`text-3xl text-primary font-light border-primary text-center ${
-          upvoteCount > 0
-            ? "text-green-600"
-            : upvoteCount < 0
-              ? "current"
-              : "text-gray-600 "
-        }`}
+        className={`text-3xl text-primary font-light border-primary text-center`}
       >
-        {upvoteCount > 0 ? upvoteCount : upvoteCount}
+        {feedbackVotes.upvote || feedbackVotes.downvote}
       </span>
+
       <Button
         variant="ghost"
         size="icon"
-        onClick={handleDownvote}
-        disabled={!canDownvote && userVoteState !== "downvoted"}
+        onClick={() => handleVote(feedbackId, "DOWN")}
+        disabled={isPending}
         className={`${
-          userVoteState === "downvoted"
+          feedbackVotes.userVote === "DOWN"
             ? "bg-destructive/20 text-destructive/90"
-            : "hover:bg-red-50"
+            : "hover:bg-red-400!"
         }`}
         title={
-          userVoteState === "downvoted"
+          feedbackVotes.userVote === "DOWN"
             ? "Cliquez pour annuler votre vote négatif"
             : "Voter négativement"
         }

@@ -4,7 +4,12 @@ import { Feedback, FeedbackList } from "@/components/feedback/FeedbackList";
 import { Suspense } from "react";
 import LoadingIcon from "@/app/_components/LoadingIcon";
 import { db } from "@/db";
-// import { UpvoteProvider } from "@/hooks/use-upvote";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Feedbacks",
+  description: "Create new ideas/suggestions feedbacks",
+};
 
 export default async function FeedbacksPage() {
   // MVP idea-style
@@ -16,7 +21,7 @@ export default async function FeedbacksPage() {
       title: true,
       subject: true,
       description: true,
-      upvotes: true,
+      votes: true,
       updatedAt: true,
       authorId: true,
     },
@@ -128,13 +133,19 @@ export default async function FeedbacksPage() {
     },
   ];
 
+  const initialVotes = feedbacks.map((f) => ({
+    feedbackId: f.id,
+    upvote: f.votes.filter((v) => v.type === "UP").length,
+    downvote: f.votes.filter((v) => v.type === "DOWN").length,
+  }));
+
   return (
     <Wrapper title="Welcome to the users ideas">
       <div className="flex justify-end items-center my-4">
         <FeedbackForm />
       </div>
       <Suspense fallback={<LoadingIcon />}>
-        <FeedbackList feedbacks={feedbacks} />
+        <FeedbackList feedbacks={feedbacks} initialVotes={initialVotes} />
       </Suspense>
     </Wrapper>
   );

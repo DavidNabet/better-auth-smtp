@@ -93,3 +93,54 @@ export async function createFeedback(
     },
   };
 }
+
+export async function toggleVote(feedbackId: string, type: "UP" | "DOWN") {
+  const session = await auth.api.getSession({
+    headers: await head(),
+  });
+  if (!session?.user.id) {
+    return {
+      message: {
+        error: "Unauthorized.",
+      },
+    };
+  }
+
+  const existing = await db.vote.findUnique({
+    where: {
+      userId_feedbackId: {
+        feedbackId: feedbackId,
+        userId: session.user.id,
+      },
+    },
+  });
+
+  if (existing) {
+    if (existing.type === type) {
+      // Supprimer l'upvote (toggle off)
+      await db.vote.delete({
+        where: {
+          id: existing.id,
+        },
+      });
+      return { status: "removed", type };
+    } else {
+      // Vote différent -> mise à jour
+      await db.vote.update({
+        where: { id: existing.id },
+        data: { type },
+      });
+      return { status: "updated", type };
+    }
+  } else {
+    // Pas encore voté -> création
+    await db.vote.create({
+      data: {
+        feedbackId,
+        userId: session.user.id,
+        type,
+      },
+    });
+    return { status: "added", type };
+  }
+}

@@ -31,7 +31,7 @@ model User {
 
   // relations
   feedbacks Feedback[]
-  upvotes   Upvote[]
+  votes     Vote[]
 
   twoFactorEnabled Boolean     @default(false)
   twofactors       TwoFactor[]
@@ -115,7 +115,7 @@ model Feedback {
   authorId String
   author   User   @relation(fields: [authorId], references: [id])
 
-  upvotes   Upvote[]
+  votes     Vote[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -127,8 +127,14 @@ enum FeedbackStatus {
   COMPLETED
 }
 
-model Upvote {
-  id String @id @default(cuid())
+enum VoteType {
+  UP
+  DOWN
+}
+
+model Vote {
+  id   String   @id @default(cuid())
+  type VoteType
 
   userId String
   user   User   @relation(fields: [userId], references: [id])
@@ -138,5 +144,5 @@ model Upvote {
 
   createdAt DateTime @default(now())
 
-  @@unique([userId, feedbackId]) // Un seul vote par user/feedback
+  @@unique([userId, feedbackId]) // Un seul vote (UP ou DOWN) par user/feedback
 }
