@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp, Heart } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { VoteProvider, useVotes } from "@/hooks/use-vote";
+import Link from "next/link";
 
 export type Feedback = {
   id: string;
@@ -51,42 +52,47 @@ export function FeedbackList({
     <section className="grid md:grid-cols-3 w-max-lg gap-6 p-4">
       <>
         {feedbacks?.map((f) => (
-          <Card className="border rounded-md py-0" key={f.id}>
-            <div className="flex gap-2 h-full">
-              <div className="h-full py-4 bg-accent/30">
-                <VoteProvider initialVotes={initialVotes}>
-                  <UpvoteComponent feedbackId={f.id} />
-                </VoteProvider>
-              </div>
-              <div className="flex-1 w-full py-4">
-                <CardHeader className="pl-0">
-                  <CardTitle>{f.subject}</CardTitle>
-                  <span className="mt-1 text-xs text-card-foreground">
-                    {f.title}
-                  </span>
-                  <CardDescription>{f.description}</CardDescription>
-                </CardHeader>
+          <Link
+            key={f.id}
+            href={`/dashboard/feedbacks/${encodeURIComponent(f.title)}`}
+          >
+            <Card className="border rounded-md py-0">
+              <div className="flex gap-2 h-full">
+                <div className="h-full py-4 bg-accent/30">
+                  <VoteProvider initialVotes={initialVotes}>
+                    <UpvoteComponent feedbackId={f.id} />
+                  </VoteProvider>
+                </div>
+                <div className="flex-1 w-full py-4">
+                  <CardHeader className="pl-0">
+                    <CardTitle>{f.subject}</CardTitle>
+                    <span className="mt-1 text-xs text-card-foreground">
+                      {f.title}
+                    </span>
+                    <CardDescription>{f.description}</CardDescription>
+                  </CardHeader>
 
-                {f.team && (
-                  <CardFooter className="px-2 pt-3 flex items-center justify-between">
-                    <div className="*:data-[slot=avatar]:ring-accent flex -space-x-2 *:data-[slot=avatar]:ring-2">
-                      {f?.team.map((t) => (
-                        <Avatar key={t.id}>
-                          <AvatarImage
-                            src={t.avatar}
-                            alt={t.avatar.slice(2, 4).toUpperCase()}
-                          />
-                          <AvatarFallback>
-                            {t.avatar.slice(2, 4).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                      ))}
-                    </div>
-                  </CardFooter>
-                )}
+                  {f.team && (
+                    <CardFooter className="px-2 pt-3 flex items-center justify-between">
+                      <div className="*:data-[slot=avatar]:ring-accent flex -space-x-2 *:data-[slot=avatar]:ring-2">
+                        {f?.team.map((t) => (
+                          <Avatar key={t.id}>
+                            <AvatarImage
+                              src={t.avatar}
+                              alt={t.avatar.slice(2, 4).toUpperCase()}
+                            />
+                            <AvatarFallback>
+                              {t.avatar.slice(2, 4).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                        ))}
+                      </div>
+                    </CardFooter>
+                  )}
+                </div>
               </div>
-            </div>
-          </Card>
+            </Card>
+          </Link>
         ))}
       </>
     </section>
