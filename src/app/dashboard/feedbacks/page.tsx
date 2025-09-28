@@ -24,6 +24,10 @@ export default async function FeedbacksPage() {
       votes: true,
       updatedAt: true,
       authorId: true,
+      comments: {
+        include: { user: true },
+        orderBy: { createdAt: "desc" },
+      },
     },
   });
   const feedbackData: Feedback[] = [
