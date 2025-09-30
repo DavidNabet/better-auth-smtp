@@ -6,8 +6,12 @@ import { revalidatePath } from "next/cache";
 import { headers as head } from "next/headers";
 import { auth } from "../auth";
 import { ErrorTypes, FormState } from "../user/user.actions";
-import { createFeedbackSchema } from "@/lib/feedback/feedback.schema";
+import {
+  createCommentSchema,
+  createFeedbackSchema,
+} from "@/lib/feedback/feedback.schema";
 import { getUserById, getUserIdByEmail } from "../auth/auth.utils";
+import { getFeedbackTitleById } from "./feedback.utils";
 
 export async function createFeedback(
   formState: FormState,
@@ -90,6 +94,90 @@ export async function createFeedback(
   return {
     message: {
       success: "Feedback created successfully!",
+    },
+  };
+}
+export async function addComment(
+  formState: FormState,
+  formData: FormData
+): Promise<FormState> {
+  const data = Object.fromEntries(formData);
+  const validatedFields = createCommentSchema.safeParse(data);
+  if (!validatedFields.success) {
+    return {
+      message: {
+        error: "Invalid form data.",
+      },
+      errors: validatedFields.error.issues,
+      errorMessage: validatedFields.error.flatten().fieldErrors,
+    };
+  }
+
+  const { content, feedbackId } = validatedFields.data;
+
+  const slug = await getFeedbackTitleById(feedbackId);
+
+  try {
+    const session = await auth.api.getSession({
+      headers: await head(),
+    });
+
+    if (!session?.user) {
+      return {
+        message: {
+          error: "Unauthorized.",
+        },
+      };
+    }
+    const userId = await getUserIdByEmail(session.user.email);
+    if (!userId) {
+      return {
+        message: {
+          error: "User not found",
+        },
+      };
+    }
+
+    const comment = await db.comment.create({
+      data: {
+        content,
+        userId,
+        feedbackId,
+      },
+      select: {
+        id: true,
+        feedbackId: true,
+      },
+    });
+    console.log("feedback Comment: ", comment);
+  } catch (error) {
+    if (error instanceof APIError) {
+      console.log(error.message, error.body?.code);
+      const errorCode = error.body?.code as ErrorTypes;
+      switch (errorCode) {
+        case errorCode:
+          return {
+            message: {
+              error: error.message,
+            },
+          };
+        default:
+          return {
+            message: {
+              error: "Something went wrong.",
+            },
+          };
+      }
+    }
+    throw error;
+  }
+
+  revalidatePath(`/dashboard/feedback/${slug}`);
+  // redirect("/dashboard");
+
+  return {
+    message: {
+      success: "Comment created successfully!",
     },
   };
 }

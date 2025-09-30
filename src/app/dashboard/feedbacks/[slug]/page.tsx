@@ -62,7 +62,7 @@ export default async function FeedbackDetails({
           <Content content={[details?.description!]} />
         </div>
         <div className="mt-16">
-          <CommentSection comments={commentsData} />
+          <CommentSection comments={commentsData} details={details} />
         </div>
       </div>
     </section>

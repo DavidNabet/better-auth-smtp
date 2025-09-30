@@ -19,4 +19,13 @@ export const createFeedbackSchema = z.object({
     .default("PENDING"),
 });
 
+export const createCommentSchema = z.object({
+  content: z
+    .string()
+    .min(1, "Le contenu est requis")
+    .max(400, "Le contenu doit contenir 400 caractères au maximum"),
+  feedbackId: z.string(),
+});
+
 export type CreateFeedback = TypeOf<typeof createFeedbackSchema>;
+export type CreateComment = TypeOf<typeof createCommentSchema>;

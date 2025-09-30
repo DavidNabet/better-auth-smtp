@@ -1,10 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useActionState, useState, startTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Heart, MessageCircle, Send } from "lucide-react";
+import { Heart, Loader2, MessageCircle, Send } from "lucide-react";
+import { getFeedbackByTitle } from "@/lib/feedback/feedback.utils";
+import { addComment } from "@/lib/feedback/feedback.action";
+import { cn } from "@/lib/utils";
+import { ErrorMessages } from "@/app/_components/ErrorMessages";
+import Alert from "@/app/_components/Alert";
 
 interface Comment {
   id: string;
@@ -20,11 +25,13 @@ interface Comment {
 interface CommentSectionProps {
   comments: Comment[];
   onAddComment?: (content: string) => void;
+  details: Awaited<ReturnType<typeof getFeedbackByTitle>>;
 }
 
 export default function CommentSection({
   comments,
   onAddComment,
+  details,
 }: CommentSectionProps) {
   return (
     <section className="space-y-6">
@@ -34,20 +41,7 @@ export default function CommentSection({
           Comments ({comments.length})
         </h2>
         {/* Comment Form */}
-        <form className="bg-card border-accent mb-12 rounded-xl border p-6">
-          <div className="space-y-4">
-            <Textarea
-              placeholder="Share your thoughts..."
-              className="border-accent focus:border-primary min-h-[100px] resize-none"
-            />
-            <div className="flex justify-end">
-              <Button type="submit" className="gap-2">
-                <Send className="h-4 w-4" />
-                Post Comment
-              </Button>
-            </div>
-          </div>
-        </form>
+        <CommentForm feedbackId={details?.id!} />
 
         {/* Comment List */}
         <div className="space-y-6">
@@ -103,5 +97,73 @@ export default function CommentSection({
         </div>
       </div>
     </section>
+  );
+}
+
+function CommentForm({ feedbackId }: { feedbackId: string }) {
+  const [content, setContent] = useState("");
+  const [
+    {
+      message: { success, error },
+      errorMessage,
+    },
+    formAction,
+    pending,
+  ] = useActionState(addComment, {
+    message: {
+      success: "",
+      error: "",
+    },
+    errorMessage: {},
+  });
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!content.trim()) return;
+
+    startTransition(async () => {
+      const formData = new FormData(e.target as HTMLFormElement);
+      const data = Object.fromEntries(formData);
+      console.log(data);
+      formAction(formData);
+      setContent("");
+    });
+  }
+  return (
+    <form
+      className="bg-card border-accent mb-12 rounded-xl border p-6"
+      onSubmit={handleSubmit}
+    >
+      <input type="hidden" name="feedbackId" value={feedbackId} />
+      <div className="space-y-4">
+        <Textarea
+          placeholder="Share your thoughts..."
+          name="content"
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          className="border-accent focus:border-primary min-h-[100px] resize-none"
+        />
+        <ErrorMessages errors={errorMessage?.content} />
+        <div className="flex justify-end">
+          <Button
+            type="submit"
+            variant="default"
+            className={cn(
+              "gap-2 cursor-pointer",
+              pending && "cursor-not-allowed bg-metal"
+            )}
+            disabled={pending}
+          >
+            {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            <Send className="h-4 w-4" />
+            Post Comment
+          </Button>
+        </div>
+        <div className="col-span-6">
+          {error && <Alert message={error!} status="error" />}
+          {success && <Alert message={success!} status="success" />}
+        </div>
+      </div>
+    </form>
   );
 }
