@@ -5,11 +5,15 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Heart, Loader2, MessageCircle, Send } from "lucide-react";
-import { getFeedbackByTitle } from "@/lib/feedback/feedback.utils";
+import {
+  getFeedbackByTitle,
+  PrismaOptions,
+} from "@/lib/feedback/feedback.utils";
 import { addComment } from "@/lib/feedback/feedback.action";
 import { cn } from "@/lib/utils";
 import { ErrorMessages } from "@/app/_components/ErrorMessages";
 import Alert from "@/app/_components/Alert";
+import { Prisma } from "@prisma/client";
 
 interface Comment {
   id: string;
@@ -38,14 +42,14 @@ export default function CommentSection({
       <div className="border-accent border-t pt-12">
         <h2 className="text-foreground mb-8 flex items-center gap-2 text-2xl font-bold">
           <MessageCircle className="h-6 w-6" />
-          Comments ({comments.length})
+          Comments ({details?.comments.length})
         </h2>
         {/* Comment Form */}
         <CommentForm feedbackId={details?.id!} />
 
         {/* Comment List */}
         <div className="space-y-6">
-          {comments.map((comment) => (
+          {details?.comments.map((comment) => (
             <div
               key={comment.id}
               className="bg-card border-accent hover:bg-accent rounded-xl border p-6 transition-colors"
@@ -53,19 +57,21 @@ export default function CommentSection({
               <div className="flex items-start space-x-4">
                 <Avatar className="h-10 w-10">
                   <AvatarImage
-                    src={comment.author.avatar}
-                    alt={comment.author.name}
+                    src={details?.author.image!}
+                    alt={details?.author.name!}
                   />
-                  <AvatarFallback>{comment.author.name[0]}</AvatarFallback>
+                  <AvatarFallback>
+                    {details?.author.name?.charAt(0)}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 space-y-3">
                   <div className="flex items-center justify-between">
                     <span>
                       <p className="text-foreground font-medium">
-                        {comment.author.name}
+                        {details?.author.name}
                       </p>
                       <p className="text-accent-foreground text-sm">
-                        {comment.timestamp}
+                        {details?.createdAt.toLocaleDateString()}
                       </p>
                     </span>
                   </div>
@@ -80,7 +86,7 @@ export default function CommentSection({
                       variant="ghost"
                     >
                       <Heart className="h-4 w-4" />
-                      {comment.likes}
+                      {/* {comment.} */}
                     </Button>
                     <Button
                       variant="ghost"

@@ -1,5 +1,3 @@
-import React from "react";
-
 type AlertProps = {
   status: "error" | "success";
   message: string;

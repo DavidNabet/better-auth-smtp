@@ -1,7 +1,7 @@
 import Header from "./_components/header";
 import Content from "./_components/content";
 import CommentSection from "./_components/comment";
-import { getFeedbackByTitle } from "@/lib/feedback/feedback.utils";
+import { getFeedbackByTitle, getOptions } from "@/lib/feedback/feedback.utils";
 
 // Create feedback details
 export async function generateStaticParams() {
