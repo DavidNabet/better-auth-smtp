@@ -33,6 +33,7 @@ model User {
   feedbacks Feedback[]
   votes     Vote[]
   comments  Comment[]
+  likes     Like[]
 
   twoFactorEnabled Boolean     @default(false)
   twofactors       TwoFactor[]
@@ -161,4 +162,23 @@ model Comment {
 
   feedback   Feedback @relation(fields: [feedbackId], references: [id])
   feedbackId String
+
+  // facultativ : identify the answer to another comment
+  parentId String?
+
+  likes Like[]
+}
+
+model Like {
+  id     String  @id @default(cuid())
+  status Boolean @default(false)
+
+  // relations
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+
+  comment   Comment @relation(fields: [commentId], references: [id])
+  commentId String
+
+  @@unique([userId, commentId]) // Un seul like par user/comment
 }

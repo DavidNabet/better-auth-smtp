@@ -2,6 +2,7 @@ import Header from "./_components/header";
 import Content from "./_components/content";
 import CommentSection from "./_components/comment";
 import { getFeedbackByTitle, getOptions } from "@/lib/feedback/feedback.utils";
+import { decodeSlug } from "@/lib/utils";
 
 // Create feedback details
 export async function generateStaticParams() {
@@ -14,7 +15,7 @@ export default async function FeedbackDetails({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const details = await getFeedbackByTitle(decodeURIComponent(slug));
+  const details = await getFeedbackByTitle(decodeSlug(slug));
   const commentsData = [
     {
       id: "1",
@@ -25,7 +26,7 @@ export default async function FeedbackDetails({
       content:
         "This is exactly what I needed! The personalization tips are incredibly valuable. I've been struggling with low open rates, and this gives me a clear direction to improve.",
       timestamp: "2 hours ago",
-      likes: 12,
+      likes: false,
     },
     {
       id: "2",
@@ -36,7 +37,7 @@ export default async function FeedbackDetails({
       content:
         "Great insights on email personalization. I especially liked the section about adding elements that spark interest. Have you tested A/B variations of these techniques?",
       timestamp: "5 hours ago",
-      likes: 8,
+      likes: false,
     },
     {
       id: "3",
@@ -47,7 +48,7 @@ export default async function FeedbackDetails({
       content:
         "Thanks for sharing this comprehensive guide! The practical examples make it easy to understand how to implement these strategies in our own campaigns.",
       timestamp: "1 day ago",
-      likes: 15,
+      likes: true,
     },
   ];
   return (
@@ -56,6 +57,7 @@ export default async function FeedbackDetails({
         <Header
           category={details?.subject!}
           title={details?.title!}
+          author={details?.author!}
           publishedDate={details?.createdAt.toLocaleDateString()!}
         />
         <div className="mt-16">

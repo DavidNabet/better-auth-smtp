@@ -15,6 +15,7 @@ import { ChevronDown, ChevronUp, Heart } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { VoteProvider, useVotes } from "@/hooks/use-vote";
 import Link from "next/link";
+import { slugify } from "@/lib/utils";
 
 export type Feedback = {
   id: string;
@@ -52,10 +53,7 @@ export function FeedbackList({
     <section className="grid md:grid-cols-3 w-max-lg gap-6 p-4">
       <>
         {feedbacks?.map((f) => (
-          <Link
-            key={f.id}
-            href={`/dashboard/feedbacks/${encodeURIComponent(f.title)}`}
-          >
+          <Link key={f.id} href={`/dashboard/feedbacks/${slugify(f.title)}`}>
             <Card className="border rounded-md py-0">
               <div className="flex gap-2 h-full">
                 <div className="h-full py-4 bg-accent/30">

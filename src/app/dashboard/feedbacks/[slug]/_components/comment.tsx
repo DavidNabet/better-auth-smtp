@@ -5,15 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Heart, Loader2, MessageCircle, Send } from "lucide-react";
-import {
-  getFeedbackByTitle,
-  PrismaOptions,
-} from "@/lib/feedback/feedback.utils";
+import { getFeedbackByTitle } from "@/lib/feedback/feedback.utils";
 import { addComment } from "@/lib/feedback/feedback.action";
 import { cn } from "@/lib/utils";
 import { ErrorMessages } from "@/app/_components/ErrorMessages";
-import Alert from "@/app/_components/Alert";
 import { Prisma } from "@prisma/client";
+import { toast } from "sonner";
 
 interface Comment {
   id: string;
@@ -23,18 +20,16 @@ interface Comment {
   };
   content: string;
   timestamp: string;
-  likes: number;
+  likes: boolean;
 }
 
 interface CommentSectionProps {
   comments: Comment[];
-  onAddComment?: (content: string) => void;
   details: Awaited<ReturnType<typeof getFeedbackByTitle>>;
 }
 
 export default function CommentSection({
   comments,
-  onAddComment,
   details,
 }: CommentSectionProps) {
   return (
@@ -84,9 +79,14 @@ export default function CommentSection({
                       className="text-accent-foreground hover:text-primary gap-2"
                       size="sm"
                       variant="ghost"
+                      // onClick={() => !comment.likes}
                     >
-                      <Heart className="h-4 w-4" />
-                      {/* {comment.} */}
+                      <Heart
+                        className={cn(
+                          "h-4 w-4"
+                          // comment.likes ? "fill" : "stroke"
+                        )}
+                      />
                     </Button>
                     <Button
                       variant="ghost"
@@ -128,16 +128,27 @@ function CommentForm({ feedbackId }: { feedbackId: string }) {
     if (!content.trim()) return;
 
     startTransition(async () => {
-      const formData = new FormData(e.target as HTMLFormElement);
-      const data = Object.fromEntries(formData);
-      console.log(data);
-      formAction(formData);
-      setContent("");
+      try {
+        if (!success && !error) return;
+        const formData = new FormData(e.target as HTMLFormElement);
+        const data = Object.fromEntries(formData);
+        console.log(data);
+        formAction(formData);
+        setContent("");
+        toast.success(success, {
+          id: "feedbackComment",
+        });
+      } catch (err) {
+        toast.error(error, {
+          id: "feedbackComment",
+        });
+      }
     });
   }
   return (
     <form
       className="bg-card border-accent mb-12 rounded-xl border p-6"
+      id="feedbackComment"
       onSubmit={handleSubmit}
     >
       <input type="hidden" name="feedbackId" value={feedbackId} />
@@ -164,10 +175,6 @@ function CommentForm({ feedbackId }: { feedbackId: string }) {
             <Send className="h-4 w-4" />
             Post Comment
           </Button>
-        </div>
-        <div className="col-span-6">
-          {error && <Alert message={error!} status="error" />}
-          {success && <Alert message={success!} status="success" />}
         </div>
       </div>
     </form>

@@ -2,14 +2,13 @@ import { Facebook, Twitter, Linkedin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Prisma } from "@prisma/client";
+import { DefaultArgs } from "@prisma/client/runtime/library";
 
 interface BlogHeaderProps {
   category: string;
   title: string;
-  author?: {
-    name: string;
-    avatar: string;
-  };
+  author: Prisma.UserGetPayload<{}>;
   publishedDate: string;
 }
 
@@ -31,11 +30,11 @@ export default function Header({
         <div className="flex items-center space-x-4">
           <Avatar className="h-12 w-12">
             <AvatarImage
-              src={author?.avatar}
-              alt={author?.name}
+              src={author?.image!}
+              alt={author?.name!}
               className="object-cover"
             />
-            <AvatarFallback>{author?.name.charAt(0)}</AvatarFallback>
+            <AvatarFallback>{author?.name?.charAt(0)}</AvatarFallback>
           </Avatar>
           <div>
             <p className="font-medium">by {author?.name}</p>

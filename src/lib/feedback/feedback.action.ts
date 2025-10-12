@@ -54,7 +54,7 @@ export async function createFeedback(
 
     const feedback = await db.feedback.create({
       data: {
-        title: title!,
+        title,
         description,
         status: "PENDING",
         subject,
@@ -88,7 +88,7 @@ export async function createFeedback(
     throw error;
   }
 
-  revalidatePath("/dashboard/feedback", "layout");
+  revalidatePath("/dashboard/feedbacks");
   // redirect("/dashboard");
 
   return {

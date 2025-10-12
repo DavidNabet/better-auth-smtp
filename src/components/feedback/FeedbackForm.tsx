@@ -22,6 +22,7 @@ import { CreateFeedback } from "@/lib/feedback/feedback.schema";
 import { wait } from "@/lib/auth/auth.utils";
 import { ErrorMessages } from "@/app/_components/ErrorMessages";
 import Alert from "@/app/_components/Alert";
+import { toast } from "sonner";
 
 export default function FeedbackForm() {
   const router = useRouter();
@@ -54,19 +55,30 @@ export default function FeedbackForm() {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     startTransition(async () => {
-      const formData = new FormData(e.target as HTMLFormElement);
-      const data = Object.fromEntries(formData);
-      console.log(data);
-      formAction(formData);
-      setFormData({
-        title: "",
-        description: "",
-        status: "ACCEPTED",
-        subject: "",
-      });
-      // Refresh data
-      wait(2000);
-      router.refresh();
+      try {
+        if (!success && !error) return;
+        const formData = new FormData(e.target as HTMLFormElement);
+        const data = Object.fromEntries(formData);
+        console.log(data);
+        formAction(formData);
+        setFormData({
+          title: "",
+          description: "",
+          status: "ACCEPTED",
+          subject: "",
+        });
+        // Refresh data
+        wait(2000);
+        // router.refresh();
+        toast.success(success, {
+          id: "feedbackForm",
+        });
+      } catch (err) {
+        console.log(err);
+        toast.error(error, {
+          id: "feedbackForm",
+        });
+      }
     });
   };
   return (
@@ -81,7 +93,7 @@ export default function FeedbackForm() {
         </DialogHeader>
         <form
           className="grid grid-cols-6 gap-3"
-          id="feedback"
+          id="feedbackForm"
           onSubmit={handleSubmit}
         >
           <div className="col-span-6 sm:col-span-3">
@@ -137,10 +149,6 @@ export default function FeedbackForm() {
               {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Submit
             </Button>
-          </div>
-          <div className="col-span-6">
-            {error && <Alert message={error!} status="error" />}
-            {success && <Alert message={success!} status="success" />}
           </div>
         </form>
       </DialogContent>
