@@ -17,23 +17,10 @@ import { revalidatePath } from "next/cache";
 import { headers as head } from "next/headers";
 import { Role } from "@prisma/client";
 import { db } from "@/db";
-import { redirect } from "next/navigation";
 import { uploadFile } from "@/lib/upload";
 import { User } from "better-auth";
 import { getUserById } from "../auth/auth.utils";
-
-export interface FormState {
-  message: {
-    error?: string;
-    success?: string;
-  };
-  header?: any;
-  errors?: ZodIssue[];
-  errorMessage?: z.inferFlattenedErrors<z.ZodTypeAny>["fieldErrors"];
-  // message: any;
-  // data?: CreateUserSchema;
-  // errors?: CreateUserErrors;
-}
+import type { FormState } from "./user.types";
 
 export type ErrorTypes = keyof typeof authServer.$ERROR_CODES;
 

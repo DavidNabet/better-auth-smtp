@@ -5,13 +5,19 @@ import { db } from "@/db";
 import { revalidatePath } from "next/cache";
 import { headers as head } from "next/headers";
 import { auth } from "../auth";
-import { ErrorTypes, FormState } from "../user/user.actions";
+import type { ErrorTypes } from "../user/user.actions";
 import {
   createCommentSchema,
   createFeedbackSchema,
 } from "@/lib/feedback/feedback.schema";
-import { getUserById, getUserIdByEmail } from "../auth/auth.utils";
-import { getFeedbackTitleById } from "./feedback.utils";
+import { getUserIdByEmail } from "../auth/auth.utils";
+import {
+  getFeedbackTitleById,
+  toAction,
+  toActionState,
+} from "./feedback.utils";
+import type { ActionState } from "./feedback.types";
+import type { FormState } from "../user/user.types";
 
 export async function createFeedback(
   formState: FormState,
@@ -98,19 +104,13 @@ export async function createFeedback(
   };
 }
 export async function addComment(
-  formState: FormState,
+  formState: ActionState,
   formData: FormData
-): Promise<FormState> {
+): Promise<ActionState> {
   const data = Object.fromEntries(formData);
   const validatedFields = createCommentSchema.safeParse(data);
   if (!validatedFields.success) {
-    return {
-      message: {
-        error: "Invalid form data.",
-      },
-      errors: validatedFields.error.issues,
-      errorMessage: validatedFields.error.flatten().fieldErrors,
-    };
+    return toAction(validatedFields.error, "ERROR");
   }
 
   const { content, feedbackId } = validatedFields.data;
@@ -123,19 +123,11 @@ export async function addComment(
     });
 
     if (!session?.user) {
-      return {
-        message: {
-          error: "Unauthorized.",
-        },
-      };
+      return toActionState("Unauthorized", "ERROR");
     }
     const userId = await getUserIdByEmail(session.user.email);
     if (!userId) {
-      return {
-        message: {
-          error: "User not found",
-        },
-      };
+      return toActionState("User not found", "ERROR");
     }
 
     const comment = await db.comment.create({
@@ -156,17 +148,9 @@ export async function addComment(
       const errorCode = error.body?.code as ErrorTypes;
       switch (errorCode) {
         case errorCode:
-          return {
-            message: {
-              error: error.message,
-            },
-          };
+          return toActionState(error.message, "ERROR");
         default:
-          return {
-            message: {
-              error: "Something went wrong.",
-            },
-          };
+          return toActionState("Something went wrong.", "ERROR");
       }
     }
     throw error;
@@ -175,11 +159,7 @@ export async function addComment(
   revalidatePath(`/dashboard/feedback/${slug}`);
   // redirect("/dashboard");
 
-  return {
-    message: {
-      success: "Comment created successfully!",
-    },
-  };
+  return toActionState("Comment created successfully!", "SUCCESS");
 }
 
 export async function toggleVote(feedbackId: string, type: "UP" | "DOWN") {

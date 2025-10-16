@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState, startTransition } from "react";
+import { useActionState, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -9,8 +9,10 @@ import { getFeedbackByTitle } from "@/lib/feedback/feedback.utils";
 import { addComment } from "@/lib/feedback/feedback.action";
 import { cn } from "@/lib/utils";
 import { ErrorMessages } from "@/app/_components/ErrorMessages";
-import { Prisma } from "@prisma/client";
-import { toast } from "sonner";
+import {
+  createToastCallbacks,
+  withCallbacks,
+} from "@/app/_components/ServerActionToast";
 
 interface Comment {
   id: string;
@@ -108,48 +110,28 @@ export default function CommentSection({
 
 function CommentForm({ feedbackId }: { feedbackId: string }) {
   const [content, setContent] = useState("");
-  const [
-    {
-      message: { success, error },
-      errorMessage,
-    },
-    formAction,
-    pending,
-  ] = useActionState(addComment, {
-    message: {
-      success: "",
-      error: "",
-    },
-    errorMessage: {},
+
+  const toastCallbacks = createToastCallbacks({
+    loading: "Envoi du commentaire...",
   });
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    if (!content.trim()) return;
-
-    startTransition(async () => {
-      try {
-        if (!success && !error) return;
-        const formData = new FormData(e.target as HTMLFormElement);
-        const data = Object.fromEntries(formData);
-        console.log(data);
-        formAction(formData);
+  const [state, formAction, pending] = useActionState(
+    withCallbacks(addComment, {
+      ...toastCallbacks,
+      onSuccess(result) {
+        toastCallbacks.onSuccess?.(result);
         setContent("");
-        toast.success(success, {
-          id: "feedbackComment",
-        });
-      } catch (err) {
-        toast.error(error, {
-          id: "feedbackComment",
-        });
-      }
-    });
-  }
+      },
+    }),
+    null
+  );
+
+  // TODO: get toast on server action
   return (
     <form
       className="bg-card border-accent mb-12 rounded-xl border p-6"
       id="feedbackComment"
-      onSubmit={handleSubmit}
+      action={formAction}
     >
       <input type="hidden" name="feedbackId" value={feedbackId} />
       <div className="space-y-4">
@@ -160,7 +142,7 @@ function CommentForm({ feedbackId }: { feedbackId: string }) {
           onChange={(e) => setContent(e.target.value)}
           className="border-accent focus:border-primary min-h-[100px] resize-none"
         />
-        <ErrorMessages errors={errorMessage?.content} />
+        <ErrorMessages errors={state?.errorMessage?.content ?? null} />
         <div className="flex justify-end">
           <Button
             type="submit"

@@ -1,5 +1,7 @@
 import { db } from "@/db";
 import { Prisma } from "@prisma/client";
+import { z } from "zod";
+import { ActionState } from "./feedback.types";
 
 export const getOptions = <Prisma.FeedbackInclude>{
   votes: true,
@@ -18,7 +20,6 @@ export const getOptions = <Prisma.FeedbackInclude>{
 export type PrismaOptions = Prisma.FeedbackGetPayload<{
   include: typeof getOptions;
 }>;
-
 export const getFeedbackByTitle = async (title: string) => {
   try {
     const feedback = await db.feedback.findFirst({
@@ -41,4 +42,60 @@ export const getFeedbackTitleById = async (feedbackId: string) => {
   } catch (error) {
     console.log(error);
   }
+};
+
+export const allFeedback = async () => {
+  try {
+    const feedbacks = await db.feedback.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 10,
+      select: {
+        id: true,
+        title: true,
+        subject: true,
+        description: true,
+        votes: true,
+        updatedAt: true,
+        authorId: true,
+        comments: {
+          include: { user: { select: { image: true, id: true, email: true } } },
+          orderBy: { createdAt: "desc" },
+        },
+      },
+    });
+    return feedbacks;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export type allFeedbackProps = Awaited<ReturnType<typeof allFeedback>>;
+
+export const toActionState = (
+  message: string,
+  status: "SUCCESS" | "ERROR"
+): ActionState => {
+  return { message, status };
+};
+
+export const toAction = (
+  errors: string | z.ZodError<any>,
+  status: "SUCCESS" | "ERROR"
+): ActionState => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  if (typeof (errors as unknown) === "string") {
+    return { message: errors as unknown as string, status: "ERROR" };
+  }
+
+  const zodError = errors as z.ZodError<any>;
+
+  return {
+    status: "ERROR",
+    message:
+      status === "ERROR"
+        ? "Veuillez corriger les erreurs du formulaire"
+        : undefined,
+    errors: zodError.issues,
+    errorMessage: zodError.flatten().fieldErrors,
+  };
 };

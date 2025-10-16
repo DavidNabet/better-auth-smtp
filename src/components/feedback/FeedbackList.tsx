@@ -1,6 +1,5 @@
 "use client";
 
-import { useTransition, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -11,11 +10,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronUp, Heart } from "lucide-react";
+import { ChevronDown, ChevronUp, Heart, MessageCircleMore } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { VoteProvider, useVotes } from "@/hooks/use-vote";
 import Link from "next/link";
 import { slugify } from "@/lib/utils";
+import NotificationBadge from "@/app/_components/NotificationBadge";
+import { allFeedbackProps } from "@/lib/feedback/feedback.utils";
 
 export type Feedback = {
   id: string;
@@ -39,7 +40,7 @@ export function FeedbackList({
   feedbacks = [],
   initialVotes = [],
 }: {
-  feedbacks: Feedback[];
+  feedbacks: allFeedbackProps;
   initialVotes: InitialVotes;
 }) {
   if (feedbacks?.length === 0) {
@@ -53,44 +54,49 @@ export function FeedbackList({
     <section className="grid md:grid-cols-3 w-max-lg gap-6 p-4">
       <>
         {feedbacks?.map((f) => (
-          <Link key={f.id} href={`/dashboard/feedbacks/${slugify(f.title)}`}>
-            <Card className="border rounded-md py-0">
-              <div className="flex gap-2 h-full">
-                <div className="h-full py-4 bg-accent/30">
-                  <VoteProvider initialVotes={initialVotes}>
-                    <UpvoteComponent feedbackId={f.id} />
-                  </VoteProvider>
-                </div>
-                <div className="flex-1 w-full py-4">
-                  <CardHeader className="pl-0">
+          <Card key={f.id} className="border rounded-md py-0">
+            <div className="flex gap-2 h-full">
+              <div className="h-full py-4 bg-accent/30">
+                <VoteProvider initialVotes={initialVotes}>
+                  <UpvoteComponent feedbackId={f.id} />
+                </VoteProvider>
+              </div>
+              <div className="flex-1 w-full py-4">
+                <Link href={`/dashboard/feedbacks/${slugify(f.title)}`}>
+                  <CardHeader className="pl-0 relative">
                     <CardTitle>{f.subject}</CardTitle>
                     <span className="mt-1 text-xs text-card-foreground">
                       {f.title}
                     </span>
                     <CardDescription>{f.description}</CardDescription>
+                    <div className="absolute end-3.5 top-0">
+                      <NotificationBadge num={f.comments.length}>
+                        <MessageCircleMore className="size-5 text-accent-foreground/20" />
+                      </NotificationBadge>
+                    </div>
                   </CardHeader>
 
-                  {f.team && (
+                  {/* f.comments && (
                     <CardFooter className="px-2 pt-3 flex items-center justify-between">
                       <div className="*:data-[slot=avatar]:ring-accent flex -space-x-2 *:data-[slot=avatar]:ring-2">
-                        {f?.team.map((t) => (
-                          <Avatar key={t.id}>
+                        {f?.comments.map((t) => (
+                          <Avatar key={t?.user?.id}>
                             <AvatarImage
-                              src={t.avatar}
-                              alt={t.avatar.slice(2, 4).toUpperCase()}
+                              src={t?.user?.image!}
+                              alt={t?.user?.image?.slice(2, 4).toUpperCase()}
                             />
                             <AvatarFallback>
-                              {t.avatar.slice(2, 4).toUpperCase()}
+                              {t?.user?.image?.slice(2, 4).toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
                         ))}
                       </div>
                     </CardFooter>
-                  )}
-                </div>
+                  )*/}
+                </Link>
               </div>
-            </Card>
-          </Link>
+            </div>
+          </Card>
         ))}
       </>
     </section>

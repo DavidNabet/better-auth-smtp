@@ -3,8 +3,8 @@ import FeedbackForm from "@/components/feedback/FeedbackForm";
 import { Feedback, FeedbackList } from "@/components/feedback/FeedbackList";
 import { Suspense } from "react";
 import LoadingIcon from "@/app/_components/LoadingIcon";
-import { db } from "@/db";
 import { Metadata } from "next";
+import { allFeedback } from "@/lib/feedback/feedback.utils";
 
 export const metadata: Metadata = {
   title: "Feedbacks",
@@ -13,23 +13,9 @@ export const metadata: Metadata = {
 
 export default async function FeedbacksPage() {
   // MVP idea-style
-  const feedbacks = await db.feedback.findMany({
-    orderBy: { createdAt: "desc" },
-    take: 10,
-    select: {
-      id: true,
-      title: true,
-      subject: true,
-      description: true,
-      votes: true,
-      updatedAt: true,
-      authorId: true,
-      comments: {
-        include: { user: true },
-        orderBy: { createdAt: "desc" },
-      },
-    },
-  });
+  const feedbacks = await allFeedback();
+  if (!feedbacks) return null;
+
   const feedbackData: Feedback[] = [
     {
       id: "mvp_001",

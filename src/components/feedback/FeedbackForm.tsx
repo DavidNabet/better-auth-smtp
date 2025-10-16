@@ -21,7 +21,6 @@ import { useRouter } from "next/navigation";
 import { CreateFeedback } from "@/lib/feedback/feedback.schema";
 import { wait } from "@/lib/auth/auth.utils";
 import { ErrorMessages } from "@/app/_components/ErrorMessages";
-import Alert from "@/app/_components/Alert";
 import { toast } from "sonner";
 
 export default function FeedbackForm() {
@@ -56,7 +55,6 @@ export default function FeedbackForm() {
     e.preventDefault();
     startTransition(async () => {
       try {
-        if (!success && !error) return;
         const formData = new FormData(e.target as HTMLFormElement);
         const data = Object.fromEntries(formData);
         console.log(data);
