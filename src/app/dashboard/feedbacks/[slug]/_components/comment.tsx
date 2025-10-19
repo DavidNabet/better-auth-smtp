@@ -78,7 +78,10 @@ export default function CommentSection({
                   </p>
 
                   <div className="flex items-center gap-4">
-                    {/* <LikeButton commentId={comment.id} /> */}
+                    <LikeButton
+                      commentId={comment.id}
+                      likes={comment.likes.length}
+                    />
                     <Button
                       variant="ghost"
                       size="sm"
@@ -115,7 +118,6 @@ function CommentForm({ feedbackId }: { feedbackId: string }) {
     null
   );
 
-  // TODO: get toast on server action
   return (
     <form
       className="bg-card border-accent mb-12 rounded-xl border p-6"

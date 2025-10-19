@@ -8,7 +8,9 @@ import { DefaultArgs } from "@prisma/client/runtime/library";
 interface BlogHeaderProps {
   category: string;
   title: string;
-  author: Prisma.UserGetPayload<{}>;
+  author: Prisma.UserGetPayload<{
+    select: { name: true; image: true; role: true };
+  }>;
   publishedDate: string;
 }
 

@@ -11,6 +11,7 @@ import { Heart } from "lucide-react";
 
 type LikeButtonProps = {
   commentId: string;
+  likes: number;
 };
 
 const useToggleLike = () => {
@@ -25,11 +26,11 @@ const useToggleLike = () => {
   );
 };
 
-export default function LikeButton({ commentId }: LikeButtonProps) {
+export default function LikeButton({ commentId, likes }: LikeButtonProps) {
   const [, formAction, pending] = useToggleLike();
 
   return (
-    <form action={formAction}>
+    <form action={formAction} id="like">
       <input type="hidden" name="commentId" value={commentId} />
       <Button
         className="text-accent-foreground hover:text-primary gap-2"
@@ -38,7 +39,8 @@ export default function LikeButton({ commentId }: LikeButtonProps) {
         type="submit"
         disabled={pending}
       >
-        {pending ? (
+        {likes}
+        {!pending ? (
           <Heart className="h-4 w-4 fill-metal" />
         ) : (
           <Heart className="h-4 w-4 stroke-0 fill-rose-600" />

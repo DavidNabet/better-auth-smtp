@@ -12,6 +12,7 @@ import {
 } from "@/lib/feedback/feedback.schema";
 import { getUserIdByEmail } from "../auth/auth.utils";
 import {
+  getFeedbackTitleByCommentId,
   getFeedbackTitleById,
   toAction,
   toActionState,
@@ -20,6 +21,7 @@ import type { ActionState, State } from "./feedback.types";
 import type { FormState } from "../user/user.types";
 import { z } from "zod";
 import { PrismaClientValidationError } from "@prisma/client/runtime/library";
+import { slugify } from "@/lib/utils";
 
 export async function createFeedback(
   formState: FormState,
@@ -117,7 +119,7 @@ export async function addComment(
 
   const { content, feedbackId } = validatedFields.data;
 
-  const slug = await getFeedbackTitleById(feedbackId);
+  const slug = (await getFeedbackTitleById(feedbackId)) ?? "";
 
   try {
     const session = await auth.api.getSession({
@@ -158,7 +160,7 @@ export async function addComment(
     throw error;
   }
 
-  revalidatePath(`/dashboard/feedback/${slug}`);
+  revalidatePath(`/dashboard/feedback/${slugify(slug)}`);
   // redirect("/dashboard");
 
   return toActionState("Comment created successfully!", "SUCCESS");
@@ -233,36 +235,21 @@ export async function toggleLike(formState: ActionState, formData: FormData) {
   }
 
   const userId = session.user.id;
+  const slug = (await getFeedbackTitleByCommentId(commentId)) ?? "";
 
-  try {
-    const existing = await db.like.findUnique({
-      where: {
-        userId_commentId: { userId, commentId },
-      },
+  const existing = await db.like.findUnique({
+    where: {
+      userId_commentId: { userId, commentId },
+    },
+  });
+  if (existing) {
+    await db.like.delete({ where: { id: existing.id } });
+  } else {
+    await db.like.create({
+      data: { userId, commentId },
     });
-    if (existing) {
-      await db.like.delete({ where: { id: existing.id } });
-    } else {
-      await db.like.create({
-        data: { userId, commentId },
-      });
-    }
-  } catch (error) {
-    console.log(error);
-    if (error instanceof PrismaClientValidationError) {
-      console.log(error.message, error.cause);
-      return toActionState(error.message, "ERROR");
-    }
-    throw error;
   }
+
+  revalidatePath(`/dashboard/feedback/${slugify(slug)}`);
   return toActionState("Like updated!", "SUCCESS");
-
-  // const parentComment = await db.comment.findUnique({
-  //   where: { id: commentId },
-  //   select: { feedbackId: true },
-  // });
-
-  // if (parentComment) {
-  //   revalidatePath(`/feedbacks/${parentComment.feedbackId}`);
-  // }
 }

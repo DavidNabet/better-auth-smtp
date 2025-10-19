@@ -3,11 +3,18 @@ import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { ActionState } from "./feedback.types";
 
-export const getOptions = <Prisma.FeedbackInclude>{
+export const getOptions = Prisma.validator<Prisma.FeedbackInclude>()({
   votes: true,
   comments: {
     include: {
-      user: true,
+      user: {
+        select: {
+          image: true,
+          id: true,
+          email: true,
+        },
+      },
+      likes: true,
     },
     orderBy: { createdAt: "desc" },
   },
@@ -18,7 +25,7 @@ export const getOptions = <Prisma.FeedbackInclude>{
       role: true,
     },
   },
-};
+});
 export type PrismaOptions = Prisma.FeedbackGetPayload<{
   include: typeof getOptions;
 }>;
@@ -45,6 +52,25 @@ export const getFeedbackTitleById = async (feedbackId: string) => {
     console.log(error);
   }
 };
+export const getFeedbackTitleByCommentId = async (commentId: string) => {
+  try {
+    const comment = await db.comment.findUnique({
+      where: {
+        id: commentId,
+      },
+      select: {
+        feedback: {
+          select: {
+            title: true,
+          },
+        },
+      },
+    });
+    return comment?.feedback?.title;
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 export const allFeedback = async () => {
   try {
@@ -61,7 +87,10 @@ export const allFeedback = async () => {
         authorId: true,
         comments: {
           include: {
-            user: { select: { image: true, id: true, email: true } },
+            likes: true,
+            user: {
+              select: { image: true, id: true, email: true },
+            },
           },
           orderBy: { createdAt: "desc" },
         },

@@ -52,14 +52,14 @@ export function FeedbackList({
   }
   return (
     <section className="grid md:grid-cols-3 w-max-lg gap-6 p-4">
-      <>
+      <VoteProvider initialVotes={initialVotes}>
         {feedbacks?.map((f) => (
           <Card key={f.id} className="border rounded-md py-0">
             <div className="flex gap-2 h-full">
               <div className="h-full py-4 bg-accent/30">
-                <VoteProvider initialVotes={initialVotes}>
+                <>
                   <UpvoteComponent feedbackId={f.id} />
-                </VoteProvider>
+                </>
               </div>
               <div className="flex-1 w-full py-4">
                 <Link href={`/dashboard/feedbacks/${slugify(f.title)}`}>
@@ -98,7 +98,7 @@ export function FeedbackList({
             </div>
           </Card>
         ))}
-      </>
+      </VoteProvider>
     </section>
   );
 }
