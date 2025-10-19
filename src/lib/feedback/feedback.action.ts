@@ -16,8 +16,10 @@ import {
   toAction,
   toActionState,
 } from "./feedback.utils";
-import type { ActionState } from "./feedback.types";
+import type { ActionState, State } from "./feedback.types";
 import type { FormState } from "../user/user.types";
+import { z } from "zod";
+import { PrismaClientValidationError } from "@prisma/client/runtime/library";
 
 export async function createFeedback(
   formState: FormState,
@@ -211,4 +213,56 @@ export async function toggleVote(feedbackId: string, type: "UP" | "DOWN") {
     });
     return { status: "added", type };
   }
+}
+
+export async function toggleLike(formState: ActionState, formData: FormData) {
+  const data = Object.fromEntries(formData);
+  const validatedFields = z.object({ commentId: z.string() }).safeParse(data);
+  if (!validatedFields.success) {
+    return toAction(validatedFields.error, "ERROR");
+  }
+
+  const { commentId } = validatedFields.data;
+
+  const session = await auth.api.getSession({
+    headers: await head(),
+  });
+
+  if (!session?.user) {
+    return toActionState("Non authentifié", "ERROR");
+  }
+
+  const userId = session.user.id;
+
+  try {
+    const existing = await db.like.findUnique({
+      where: {
+        userId_commentId: { userId, commentId },
+      },
+    });
+    if (existing) {
+      await db.like.delete({ where: { id: existing.id } });
+    } else {
+      await db.like.create({
+        data: { userId, commentId },
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    if (error instanceof PrismaClientValidationError) {
+      console.log(error.message, error.cause);
+      return toActionState(error.message, "ERROR");
+    }
+    throw error;
+  }
+  return toActionState("Like updated!", "SUCCESS");
+
+  // const parentComment = await db.comment.findUnique({
+  //   where: { id: commentId },
+  //   select: { feedbackId: true },
+  // });
+
+  // if (parentComment) {
+  //   revalidatePath(`/feedbacks/${parentComment.feedbackId}`);
+  // }
 }

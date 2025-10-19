@@ -1,8 +1,14 @@
+import { Metadata } from "next";
 import Header from "./_components/header";
 import Content from "./_components/content";
 import CommentSection from "./_components/comment";
 import { getFeedbackByTitle, getOptions } from "@/lib/feedback/feedback.utils";
 import { decodeSlug } from "@/lib/utils";
+
+export const metadata: Metadata = {
+  title: "Details",
+  description: "Idea and suggestions details.",
+};
 
 // Create feedback details
 export async function generateStaticParams() {

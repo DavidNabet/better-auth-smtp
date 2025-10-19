@@ -13,6 +13,7 @@ import {
   createToastCallbacks,
   withCallbacks,
 } from "@/app/_components/ServerActionToast";
+import LikeButton from "./like";
 
 interface Comment {
   id: string;
@@ -77,19 +78,7 @@ export default function CommentSection({
                   </p>
 
                   <div className="flex items-center gap-4">
-                    <Button
-                      className="text-accent-foreground hover:text-primary gap-2"
-                      size="sm"
-                      variant="ghost"
-                      // onClick={() => !comment.likes}
-                    >
-                      <Heart
-                        className={cn(
-                          "h-4 w-4"
-                          // comment.likes ? "fill" : "stroke"
-                        )}
-                      />
-                    </Button>
+                    {/* <LikeButton commentId={comment.id} /> */}
                     <Button
                       variant="ghost"
                       size="sm"

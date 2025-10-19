@@ -170,8 +170,9 @@ model Comment {
 }
 
 model Like {
-  id     String  @id @default(cuid())
-  status Boolean @default(false)
+  id        String   @id @default(cuid())
+  status    Boolean  @default(true)
+  createdAt DateTime @default(now())
 
   // relations
   user   User   @relation(fields: [userId], references: [id])

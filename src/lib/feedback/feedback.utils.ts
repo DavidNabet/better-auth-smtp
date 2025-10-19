@@ -6,7 +6,9 @@ import { ActionState } from "./feedback.types";
 export const getOptions = <Prisma.FeedbackInclude>{
   votes: true,
   comments: {
-    include: { user: true },
+    include: {
+      user: true,
+    },
     orderBy: { createdAt: "desc" },
   },
   author: {
@@ -26,7 +28,7 @@ export const getFeedbackByTitle = async (title: string) => {
       where: { title },
       include: getOptions,
     });
-    if (!feedback) throw new Error("Feedback not exist");
+    // if (!feedback) throw new Error("Feedback not exist");
     return feedback;
   } catch (error) {
     console.log(error);
@@ -58,7 +60,9 @@ export const allFeedback = async () => {
         updatedAt: true,
         authorId: true,
         comments: {
-          include: { user: { select: { image: true, id: true, email: true } } },
+          include: {
+            user: { select: { image: true, id: true, email: true } },
+          },
           orderBy: { createdAt: "desc" },
         },
       },
