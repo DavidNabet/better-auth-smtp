@@ -20,7 +20,6 @@ import {
 import type { ActionState, State } from "./feedback.types";
 import type { FormState } from "../user/user.types";
 import { z } from "zod";
-import { PrismaClientValidationError } from "@prisma/client/runtime/library";
 import { slugify } from "@/lib/utils";
 
 export async function createFeedback(
@@ -117,7 +116,7 @@ export async function addComment(
     return toAction(validatedFields.error, "ERROR");
   }
 
-  const { content, feedbackId } = validatedFields.data;
+  const { content, feedbackId, parentId } = validatedFields.data;
 
   const slug = (await getFeedbackTitleById(feedbackId)) ?? "";
 
@@ -139,10 +138,12 @@ export async function addComment(
         content,
         userId,
         feedbackId,
+        parentId,
       },
       select: {
         id: true,
         feedbackId: true,
+        parentId: true,
       },
     });
     console.log("feedback Comment: ", comment);

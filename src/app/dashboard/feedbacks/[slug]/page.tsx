@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import Header from "./_components/header";
 import Content from "./_components/content";
 import CommentSection from "./_components/comment";
-import { getFeedbackByTitle, getOptions } from "@/lib/feedback/feedback.utils";
+import { getFeedbackWithComments } from "@/lib/feedback/feedback.utils";
 import { decodeSlug } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -21,7 +21,9 @@ export default async function FeedbackDetails({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const details = await getFeedbackByTitle(decodeSlug(slug));
+  // const details = await getFeedbackByTitle(decodeSlug(slug));
+  const details = await getFeedbackWithComments(decodeSlug(slug));
+  if (!details) return <div>Feedback Introuvable!</div>;
   const commentsData = [
     {
       id: "1",
@@ -61,13 +63,13 @@ export default async function FeedbackDetails({
     <section className="bg-background min-h-screen">
       <div className="mx-auto max-w-4xl px-6 py-12">
         <Header
-          category={details?.subject!}
-          title={details?.title!}
-          author={details?.author!}
-          publishedDate={details?.createdAt.toLocaleDateString()!}
+          category={details.feedback?.subject!}
+          title={details.feedback?.title!}
+          author={details.feedback?.author!}
+          publishedDate={details.feedback?.createdAt.toLocaleDateString()!}
         />
         <div className="mt-16">
-          <Content content={[details?.description!]} />
+          <Content content={[details.feedback?.description!]} />
         </div>
         <div className="mt-16">
           <CommentSection comments={commentsData} details={details} />

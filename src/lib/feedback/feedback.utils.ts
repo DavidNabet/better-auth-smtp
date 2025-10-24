@@ -12,6 +12,7 @@ export const getOptions = Prisma.validator<Prisma.FeedbackInclude>()({
           image: true,
           id: true,
           email: true,
+          name: true,
         },
       },
       likes: true,
@@ -71,6 +72,30 @@ export const getFeedbackTitleByCommentId = async (commentId: string) => {
     console.log(error);
   }
 };
+
+export async function getFeedbackWithComments(title: string) {
+  const feedback = await db.feedback.findFirstOrThrow({
+    where: { title: { equals: title } },
+    include: getOptions,
+  });
+
+  if (!feedback) return null;
+
+  // Tri et regroupement
+  const topLevel = feedback.comments.filter((c) => !c.parentId);
+  const repliesByParent = feedback.comments.reduce(
+    (acc, c) => {
+      if (c.parentId) {
+        acc[c.parentId] = acc[c.parentId] || [];
+        acc[c.parentId].push(c);
+      }
+      return acc;
+    },
+    {} as Record<string, typeof feedback.comments>
+  );
+
+  return { feedback, topLevel, repliesByParent };
+}
 
 export const allFeedback = async () => {
   try {
