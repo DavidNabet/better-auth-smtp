@@ -1,6 +1,12 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { ReactNode, useActionState, useState } from "react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -50,22 +56,26 @@ export default function CommentSection({
 
         {/* Comment List */}
         <ul className="space-y-6">
-          {topLevel.map((comment) => (
-            <li key={comment.id}>
-              <CommentItem comment={comment} />
+          {topLevel.map((comment, idx) => {
+            return (
+              <li key={comment.id}>
+                <CommentItem comment={comment} />
 
-              {/* Answer */}
-              {repliesByParent[comment.id]?.length ? (
-                <ul className="ml-6 my-6">
-                  {repliesByParent[comment.id].map((r) => (
-                    <li key={r.id}>
-                      <CommentItem comment={r} />
-                    </li>
-                  ))}
-                </ul>
-              ) : null}
-            </li>
-          ))}
+                {/* Answer */}
+                {repliesByParent[comment.id]?.length ? (
+                  <ul className="ml-6 my-6">
+                    {repliesByParent[comment.id].map((r) => (
+                      <li key={r.id}>
+                        <Accordions com={r.id}>
+                          <CommentItem comment={r} />
+                        </Accordions>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+              </li>
+            );
+          })}
         </ul>
       </div>
     </section>
@@ -227,32 +237,51 @@ function CommentItem({
   return (
     <div className="bg-card border-accent hover:bg-accent rounded-xl border p-6 transition-colors">
       <div className="flex items-start space-x-4">
-        <Avatar className="h-10 w-10">
-          <AvatarImage src={comment?.user?.image!} alt={comment?.user?.name!} />
-          <AvatarFallback>{comment?.user?.name?.charAt(0)}</AvatarFallback>
-        </Avatar>
-        <div className="flex-1 space-y-3">
-          <div className="flex items-center justify-between">
-            <p className="text-foreground font-medium">
-              {comment?.user?.name ?? "User"}
-            </p>
-            <time className="text-accent-foreground text-xs">
-              {comment?.createdAt.toLocaleDateString()}
-            </time>
-          </div>
-          <p className="text-accent-foreground leading-relaxed">
-            {comment.content}
-          </p>
-
-          <div className="flex items-center gap-4">
-            <LikeButton commentId={comment.id} likes={comment.likes.length} />
-            <ReplyComment
-              feedbackId={comment.feedbackId}
-              parentId={comment.id}
+        <>
+          <Avatar className="h-10 w-10">
+            <AvatarImage
+              src={comment?.user?.image!}
+              alt={comment?.user?.name!}
             />
+            <AvatarFallback>{comment?.user?.name?.charAt(0)}</AvatarFallback>
+          </Avatar>
+          <div className="flex-1 space-y-3">
+            <div className="flex items-center justify-between">
+              <p className="text-foreground font-medium">
+                {comment?.user?.name ?? "User"}
+              </p>
+              <time
+                className="text-accent-foreground text-xs"
+                dateTime={comment?.createdAt.toLocaleDateString()}
+              >
+                {comment?.createdAt.toLocaleDateString()}
+              </time>
+            </div>
+            <p className="text-accent-foreground leading-relaxed">
+              {comment.content}
+            </p>
+
+            <div className="flex items-center gap-4">
+              <LikeButton commentId={comment.id} likes={comment.likes.length} />
+              <ReplyComment
+                feedbackId={comment.feedbackId}
+                parentId={comment.id}
+              />
+            </div>
           </div>
-        </div>
+        </>
       </div>
     </div>
+  );
+}
+
+function Accordions({ com, children }: { com: string; children: ReactNode }) {
+  return (
+    <Accordion type="single" collapsible>
+      <AccordionItem value={com}>
+        <AccordionTrigger>More replies</AccordionTrigger>
+        <AccordionContent>{children}</AccordionContent>
+      </AccordionItem>
+    </Accordion>
   );
 }
