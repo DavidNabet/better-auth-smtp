@@ -1,9 +1,13 @@
 import { Metadata } from "next";
 import Header from "./_components/header";
 import Content from "./_components/content";
-import CommentSection from "./_components/comment";
-import { getFeedbackWithComments } from "@/lib/feedback/feedback.utils";
+import { CommentForm, CommentItem } from "./_components/comment";
+import {
+  getCommentsTree,
+  getFeedbackWithComments,
+} from "@/lib/feedback/feedback.utils";
 import { decodeSlug } from "@/lib/utils";
+import { MessageCircle } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Details",
@@ -21,44 +25,8 @@ export default async function FeedbackDetails({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  // const details = await getFeedbackByTitle(decodeSlug(slug));
   const details = await getFeedbackWithComments(decodeSlug(slug));
   if (!details) return <div>Feedback Introuvable!</div>;
-  const commentsData = [
-    {
-      id: "1",
-      author: {
-        name: "Sarah Johnson",
-        avatar: "/placeholder.svg",
-      },
-      content:
-        "This is exactly what I needed! The personalization tips are incredibly valuable. I've been struggling with low open rates, and this gives me a clear direction to improve.",
-      timestamp: "2 hours ago",
-      likes: false,
-    },
-    {
-      id: "2",
-      author: {
-        name: "Mike Chen",
-        avatar: "/placeholder.svg",
-      },
-      content:
-        "Great insights on email personalization. I especially liked the section about adding elements that spark interest. Have you tested A/B variations of these techniques?",
-      timestamp: "5 hours ago",
-      likes: false,
-    },
-    {
-      id: "3",
-      author: {
-        name: "Emily Rodriguez",
-        avatar: "/placeholder.svg",
-      },
-      content:
-        "Thanks for sharing this comprehensive guide! The practical examples make it easy to understand how to implement these strategies in our own campaigns.",
-      timestamp: "1 day ago",
-      likes: true,
-    },
-  ];
   return (
     <section className="bg-background min-h-screen">
       <div className="mx-auto max-w-4xl px-6 py-12">
@@ -72,8 +40,37 @@ export default async function FeedbackDetails({
           <Content content={[details.feedback?.description!]} />
         </div>
         <div className="mt-16">
-          <CommentSection comments={commentsData} details={details} />
+          <CommentTree feedbackId={details.feedback.id} />
         </div>
+      </div>
+    </section>
+  );
+}
+
+async function CommentTree({ feedbackId }: { feedbackId: string }) {
+  const { comments, roots } = await getCommentsTree(feedbackId);
+  return (
+    <section className="space-y-6">
+      <div className="border-accent border-t pt-12">
+        <h2 className="text-foreground mb-8 flex items-center gap-2 text-2xl font-bold">
+          <MessageCircle className="h-6 w-6" />
+          Comments ({comments.length})
+        </h2>
+        {/* Comment Form */}
+        <CommentForm feedbackId={feedbackId} />
+
+        {/* Comment List */}
+        <ul className="space-y-6">
+          {roots.map((comment, idx) => {
+            return (
+              <CommentItem
+                key={comment.id}
+                comment={comment}
+                feedbackId={feedbackId}
+              />
+            );
+          })}
+        </ul>
       </div>
     </section>
   );

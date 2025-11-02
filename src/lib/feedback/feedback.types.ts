@@ -1,4 +1,11 @@
+import { Comment, User, Like } from "@prisma/client";
 import { z } from "zod";
+
+export interface CommentWithRelations extends Comment {
+  user: User;
+  likes: Like[];
+  replies?: CommentWithRelations[];
+}
 
 /**
  * Alias pour les erreurs de champs Zod (fieldErrors) afin de simplifier le type.

@@ -1,7 +1,7 @@
 import { db } from "@/db";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
-import { ActionState } from "./feedback.types";
+import { ActionState, CommentWithRelations } from "./feedback.types";
 
 export const getOptions = Prisma.validator<Prisma.FeedbackInclude>()({
   votes: true,
@@ -128,6 +128,35 @@ export const allFeedback = async () => {
 };
 
 export type allFeedbackProps = Awaited<ReturnType<typeof allFeedback>>;
+
+export async function getCommentsTree(feedbackId: string) {
+  const comments = await db.comment.findMany({
+    where: { feedbackId },
+    include: {
+      user: true,
+      likes: true,
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  const map = new Map<string, CommentWithRelations>();
+  const roots: CommentWithRelations[] = [];
+
+  // Init
+  comments.forEach((c) => map.set(c.id, { ...c, replies: [] }));
+
+  // Lie les enfants à leurs parents
+  comments.forEach((c) => {
+    if (c.parentId) {
+      const parent = map.get(c.parentId);
+      if (parent) parent?.replies?.push(map.get(c.id)!);
+    } else {
+      roots.push(map.get(c.id)!);
+    }
+  });
+
+  return { roots, comments };
+}
 
 export const toActionState = (
   message: string,
