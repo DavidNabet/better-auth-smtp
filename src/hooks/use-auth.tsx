@@ -68,7 +68,7 @@ export function useAuthState() {
   }, []);
   useEffect(() => {
     // Role
-    if (!s?.sessionId) return;
+    if (!s) return;
     async function run() {
       const { data, error } = await authServer.admin.hasPermission({
         userId: s?.userId,
@@ -84,7 +84,7 @@ export function useAuthState() {
 
       setIsAdmin(data.success);
     }
-    if (s.userRole === "ADMIN") {
+    if (s.userRole === "ADMIN" || s.userRole === "MODERATOR") {
       run();
     }
   }, [s?.sessionId]);

@@ -21,6 +21,8 @@ import { uploadFile } from "@/lib/upload";
 import { User } from "better-auth";
 import { getUserById } from "../auth/auth.utils";
 import type { FormState } from "./user.types";
+import type { ActionState } from "../feedback/feedback.types";
+import { toAction, toActionState } from "../feedback/feedback.utils";
 
 export type ErrorTypes = keyof typeof authServer.$ERROR_CODES;
 
@@ -91,52 +93,41 @@ export async function updateProfile(
   };
 }
 
-const FormSchema = z.object({
+const generateUsersSchema = z.object({
   userId: z.string().min(1, "User ID is required"),
   banReason: z.string().optional(),
 });
 
 export async function createUsers(
-  formState: FormState,
+  formState: ActionState,
   formData: FormData
-): Promise<FormState> {
-  const validateField = FormSchema.safeParse({
+): Promise<ActionState> {
+  const validateField = generateUsersSchema.safeParse({
     userId: formData.get("userId"),
   });
 
   if (!validateField.success) {
-    return {
-      message: {
-        error: "Invalid form data.",
-      },
-      errorMessage: validateField.error.flatten().fieldErrors,
-    };
+    return toAction(validateField.error, "ERROR");
   }
   const { userId } = validateField.data;
 
   const USER_EMAILS = process.env.USER_EMAILS?.split(";") || [];
   const isUsersExisted = await db.user.findMany({
     where: {
-      id: userId,
+      id: { not: userId },
       email: {
         in: USER_EMAILS,
       },
     },
   });
   if (isUsersExisted.length === USER_EMAILS.length) {
-    return {
-      message: {
-        error: "Users already existed.",
-      },
-    };
+    return toActionState("Users already existed.", "ERROR");
   }
   // const { name, email, password, role } = validatedFields.data;
   // TODO : Trouver comment faire un compteur pour chaque user créé à partir de USER_EMAILS
   // TODO : Puis décrémenter à chaque fois qu'on génere un user avec une quantité (Exemple du panier à l'envers)
 
   try {
-    // console.log("response: ", response);
-
     const users = await Promise.allSettled(
       USER_EMAILS.map(async (email, idx) => {
         return await auth.api.createUser({
@@ -158,17 +149,9 @@ export async function createUsers(
       const errorCode = error.body?.code as ErrorTypes;
       switch (errorCode) {
         case errorCode:
-          return {
-            message: {
-              error: error.message,
-            },
-          };
+          return toActionState(error.message, "ERROR");
         default:
-          return {
-            message: {
-              error: "Something went wrong.",
-            },
-          };
+          return toActionState("Something went wrong.", "ERROR");
       }
     }
     throw error;
@@ -176,11 +159,7 @@ export async function createUsers(
 
   revalidatePath("/dashboard", "layout");
 
-  return {
-    message: {
-      success: "Users added successfully!",
-    },
-  };
+  return toActionState("Users added successfully!", "SUCCESS");
 }
 
 export async function updateUser(schema: UpdateUserSchema): Promise<{
@@ -300,7 +279,7 @@ export async function banUser(
   formState: FormState,
   formData: FormData
 ): Promise<FormState> {
-  const validatedFields = FormSchema.safeParse({
+  const validatedFields = generateUsersSchema.safeParse({
     userId: formData.get("userId"),
     banReason: formData.get("banReason"),
   });
@@ -368,7 +347,7 @@ export async function deleteUser(
   formData: FormData
 ): Promise<FormState> {
   const data = Object.fromEntries(formData);
-  const validatedFields = FormSchema.safeParse(data);
+  const validatedFields = generateUsersSchema.safeParse(data);
 
   if (!validatedFields.success) {
     return {
@@ -489,4 +468,27 @@ export async function updateUserPassword(
       success: "Password updated successfully!",
     },
   };
+}
+
+export async function requireModerator() {
+  const session = await auth.api.getSession({
+    headers: await head(),
+  });
+  if (!session?.user) {
+    return {
+      success: false,
+      message: "Unauthorized.",
+    };
+  }
+
+  const user = await db.user.findUnique({
+    where: { id: session.user.id },
+    select: { role: true },
+  });
+
+  if (!user || (user.role !== "ADMIN" && user.role !== "MODERATOR")) {
+    throw new Error("Access denied");
+  }
+
+  return session.user;
 }

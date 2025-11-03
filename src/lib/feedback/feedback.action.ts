@@ -5,7 +5,7 @@ import { db } from "@/db";
 import { revalidatePath } from "next/cache";
 import { headers as head } from "next/headers";
 import { auth } from "../auth";
-import type { ErrorTypes } from "../user/user.actions";
+import { requireModerator, type ErrorTypes } from "../user/user.actions";
 import {
   createCommentSchema,
   createFeedbackSchema,
@@ -253,4 +253,90 @@ export async function toggleLike(formState: ActionState, formData: FormData) {
 
   revalidatePath(`/dashboard/feedback/${slugify(slug)}`);
   return toActionState("Like updated!", "SUCCESS");
+}
+
+const CommentSchema = z.object({
+  commentId: z.string().min(1, "User ID is required"),
+});
+
+// Supprimer complètement un commentaire
+export async function deleteComment(
+  formState: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  const data = Object.fromEntries(formData);
+  const validatedFields = CommentSchema.safeParse(data);
+  if (!validatedFields.success) {
+    return toAction(validatedFields.error, "ERROR");
+  }
+
+  const { commentId } = validatedFields.data;
+
+  const slug = (await getFeedbackTitleByCommentId(commentId)) ?? "";
+
+  try {
+    await requireModerator();
+
+    await db.comment.delete({
+      where: { id: commentId },
+    });
+  } catch (error) {
+    if (error instanceof APIError) {
+      console.log(error.message, error.body?.code);
+      const errorCode = error.body?.code as ErrorTypes;
+      switch (errorCode) {
+        case errorCode:
+          return toActionState(error.message, "ERROR");
+        default:
+          return toActionState("Something went wrong.", "ERROR");
+      }
+    }
+    throw error;
+  }
+
+  revalidatePath(`/dashboard/feedback/${slugify(slug)}`);
+
+  return toActionState("Comment deleted successfully!", "SUCCESS");
+}
+// Masquer un commentaire
+export async function toggleHideComment(
+  formState: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  const data = Object.fromEntries(formData);
+  const validatedFields = CommentSchema.safeParse(data);
+  if (!validatedFields.success) {
+    return toAction(validatedFields.error, "ERROR");
+  }
+
+  const { commentId } = validatedFields.data;
+
+  const slug = (await getFeedbackTitleByCommentId(commentId)) ?? "";
+
+  if (!commentId) return toActionState("Commentaire introuvable", "ERROR");
+
+  try {
+    await requireModerator();
+
+    await db.comment.update({
+      where: { id: commentId },
+      data: { content: "[Commentaire masqué par la modération]" },
+    });
+  } catch (error) {
+    if (error instanceof APIError) {
+      console.log(error.message, error.body?.code);
+      const errorCode = error.body?.code as ErrorTypes;
+      switch (errorCode) {
+        case errorCode:
+          return toActionState(error.message, "ERROR");
+        default:
+          return toActionState("Something went wrong.", "ERROR");
+      }
+    }
+    throw error;
+  }
+
+  revalidatePath(`/dashboard/feedback/${slugify(slug)}`);
+
+  return toActionState("Comment hide successfully!", "SUCCESS");
 }

@@ -10,8 +10,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Loader2, Send } from "lucide-react";
-import { addComment } from "@/lib/feedback/feedback.action";
+import { Loader2, Send, Eye, EyeClosed, Trash2 } from "lucide-react";
+import {
+  addComment,
+  deleteComment,
+  toggleHideComment,
+} from "@/lib/feedback/feedback.action";
 import { cn } from "@/lib/utils";
 import { ErrorMessages } from "@/app/_components/ErrorMessages";
 import {
@@ -21,6 +25,30 @@ import {
 import LikeButton from "./like";
 import { Input } from "@/components/ui/input";
 import { CommentWithRelations } from "@/lib/feedback/feedback.types";
+import { useAuthState } from "@/hooks/use-auth";
+
+const useHideComment = () => {
+  return useActionState(
+    withCallbacks(
+      toggleHideComment,
+      createToastCallbacks({
+        loading: "En cours...",
+      })
+    ),
+    null
+  );
+};
+const useDeleteComment = () => {
+  return useActionState(
+    withCallbacks(
+      deleteComment,
+      createToastCallbacks({
+        loading: "En cours...",
+      })
+    ),
+    null
+  );
+};
 
 export function CommentForm({ feedbackId }: { feedbackId: string }) {
   const [content, setContent] = useState("");
@@ -155,55 +183,98 @@ export function CommentItem({
   comment: CommentWithRelations;
   feedbackId: string;
 }) {
+  const { session } = useAuthState();
+
+  const isModerator =
+    session?.userRole === "ADMIN" || session?.userRole === "MODERATOR";
+
+  const [hideState, hideAction, hidePending] = useHideComment();
+  const [deleteState, deleteAction, deletePending] = useDeleteComment();
   return (
     <li className="my-6">
-      <div className="bg-card border-accent hover:bg-accent rounded-xl border p-6 transition-colors">
-        <div className="flex items-start space-x-4">
-          <>
-            <Avatar className="h-10 w-10">
-              <AvatarImage
-                src={comment?.user?.image!}
-                alt={comment?.user?.name!}
-              />
-              <AvatarFallback>{comment?.user?.name?.charAt(0)}</AvatarFallback>
-            </Avatar>
-            <div className="flex-1 space-y-3">
-              <div className="flex items-center justify-between">
-                <p className="text-foreground font-medium">
-                  {comment?.user?.name ?? "User"}
-                </p>
-                <time
-                  className="text-accent-foreground text-xs"
-                  dateTime={comment?.createdAt.toLocaleDateString()}
+      <div className="flex justify-between">
+        <div className="bg-card border-accent hover:bg-accent rounded-xl border p-6 transition-colors flex-1">
+          <div className="flex items-start space-x-4">
+            <>
+              <Avatar className="h-10 w-10">
+                <AvatarImage
+                  src={comment?.user?.image!}
+                  alt={comment?.user?.name!}
+                />
+                <AvatarFallback>
+                  {comment?.user?.name?.charAt(0)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 space-y-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-foreground font-medium">
+                    {comment?.user?.name ?? "User"}
+                  </p>
+                  <time
+                    className="text-accent-foreground text-xs"
+                    dateTime={comment?.createdAt.toLocaleDateString()}
+                  >
+                    {comment?.createdAt.toLocaleDateString()}
+                  </time>
+                </div>
+                <p
+                  className={cn(
+                    "text-accent-foreground leading-relaxed",
+                    comment.content.includes("masqué")
+                      ? "text-sm italic text-gray-400"
+                      : ""
+                  )}
                 >
-                  {comment?.createdAt.toLocaleDateString()}
-                </time>
-              </div>
-              <p className="text-accent-foreground leading-relaxed">
-                {comment.content}
-              </p>
+                  {comment.content}
+                </p>
 
-              <div className="flex items-center gap-4">
-                <LikeButton
-                  commentId={comment.id}
-                  likes={comment.likes.length}
-                />
-                <ReplyComment
-                  feedbackId={comment.feedbackId}
-                  parentId={comment.id}
-                />
+                <div className="flex items-center gap-4">
+                  <LikeButton
+                    commentId={comment.id}
+                    likes={comment.likes.length}
+                  />
+                  <ReplyComment
+                    feedbackId={comment.feedbackId}
+                    parentId={comment.id}
+                  />
+                </div>
               </div>
-            </div>
-          </>
+            </>
+          </div>
         </div>
+        {/* Boutons de modérations */}
+        {isModerator && (
+          <div className="flex flex-col ml-4 gap-4">
+            <form action={hideAction}>
+              <input type="hidden" name="commentId" value={comment.id} />
+              <Button
+                type="submit"
+                variant="secondary"
+                size="icon"
+                className="rounded-sm border"
+              >
+                <Eye className="w-4 h-4" />
+              </Button>
+            </form>
+            <form action={deleteAction}>
+              <input type="hidden" name="commentId" value={comment.id} />
+              <Button
+                type="submit"
+                variant="secondary"
+                size="icon"
+                className="rounded-sm border"
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </form>
+          </div>
+        )}
       </div>
       {/* Réponses récursives */}
       {comment?.replies && comment.replies.length > 0 && (
         <AccordionComment
           com={`replies-${comment.id}`}
-          answer={`
-          Voir ${comment.replies.length} réponse
-          ${comment.replies.length > 1 ? "s" : ""}
+          answer={`Voir ${comment.replies.length} réponse${comment.replies.length > 1 ? "s" : ""}
         `}
         >
           <ul className="ml-6 my-6">
@@ -233,7 +304,7 @@ function AccordionComment({
   return (
     <Accordion type="single" collapsible className="ml-2">
       <AccordionItem value={com}>
-        <AccordionTrigger className="text-xs text-gray-600">
+        <AccordionTrigger className="text-xs text-gray-600 justify-start">
           {answer}
         </AccordionTrigger>
         <AccordionContent>{children}</AccordionContent>

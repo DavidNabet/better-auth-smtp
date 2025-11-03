@@ -1,22 +1,28 @@
 "use client";
 
 import { useActionState } from "react";
-import { useFormStatus } from "react-dom";
 import { createUsers } from "@/lib/user/user.actions";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
-import Alert from "@/app/_components/Alert";
+import {
+  withCallbacks,
+  createToastCallbacks,
+} from "@/app/_components/ServerActionToast";
 
 export const GenerateUsers = ({ userId }: { userId: string }) => {
-  const [formState, formAction, pending] = useActionState(createUsers, {
-    message: {
-      success: "",
-      error: "",
-    },
+  const toastCallbacks = createToastCallbacks({
+    loading: "En cours...",
   });
 
-  const { error, success } = formState.message;
-
+  const [formState, formAction, pending] = useActionState(
+    withCallbacks(createUsers, {
+      ...toastCallbacks,
+      onSuccess(result) {
+        toastCallbacks.onSuccess?.(result);
+      },
+    }),
+    null
+  );
   // const { pending } = useFormStatus();
 
   return (
@@ -26,10 +32,6 @@ export const GenerateUsers = ({ userId }: { userId: string }) => {
         {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
         Generate Users
       </Button>
-      <div className="col-span-6">
-        {error && <Alert message={error!} status="error" />}
-        {success && <Alert message={success!} status="success" />}
-      </div>
     </form>
   );
 };
