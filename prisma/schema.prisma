@@ -30,10 +30,11 @@ model User {
   banExpires DateTime?
 
   // relations
-  feedbacks Feedback[]
-  votes     Vote[]
-  comments  Comment[]
-  likes     Like[]
+  feedbacks      Feedback[]
+  votes          Vote[]
+  comments       Comment[]
+  likes          Like[]
+  moderationLogs ModerationLog[]
 
   twoFactorEnabled Boolean     @default(false)
   twofactors       TwoFactor[]
@@ -107,6 +108,28 @@ model RateLimit {
   @@map("rateLimit")
 }
 
+enum CommentAction {
+  HIDE_COMMENT
+  DELETE_COMMENT
+  WARN_COMMENT
+}
+
+model ModerationLog {
+  id        String        @id @default(cuid())
+  action    CommentAction @default(WARN_COMMENT)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  moderatorId String
+  commentId   String?
+
+  moderator User @relation(fields: [moderatorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  comment Comment? @relation(fields: [commentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@map("moderationLog")
+}
+
 model Feedback {
   id          String         @id @default(cuid())
   title       String
@@ -141,10 +164,10 @@ model Vote {
   type VoteType
 
   userId String
-  user   User   @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   feedbackId String
-  feedback   Feedback @relation(fields: [feedbackId], references: [id])
+  feedback   Feedback @relation(fields: [feedbackId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   createdAt DateTime @default(now())
 
@@ -152,21 +175,25 @@ model Vote {
 }
 
 model Comment {
-  id        String   @id @default(cuid())
-  content   String
-  createdAt DateTime @default(now())
+  id              String   @id @default(cuid())
+  content         String
+  originalContent String?
+  isHidden        Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   // relations
-  user   User   @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   userId String
 
-  feedback   Feedback @relation(fields: [feedbackId], references: [id])
+  feedback   Feedback @relation(fields: [feedbackId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   feedbackId String
 
   // facultativ : identify the answer to another comment
   parentId String?
 
-  likes Like[]
+  likes         Like[]
+  ModerationLog ModerationLog[]
 }
 
 model Like {
@@ -175,10 +202,10 @@ model Like {
   createdAt DateTime @default(now())
 
   // relations
-  user   User   @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   userId String
 
-  comment   Comment @relation(fields: [commentId], references: [id])
+  comment   Comment @relation(fields: [commentId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   commentId String
 
   @@unique([userId, commentId]) // Un seul like par user/comment

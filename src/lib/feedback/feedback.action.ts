@@ -138,7 +138,7 @@ export async function addComment(
         content,
         userId,
         feedbackId,
-        parentId,
+        parentId: parentId ?? null,
       },
       select: {
         id: true,
@@ -161,7 +161,7 @@ export async function addComment(
     throw error;
   }
 
-  revalidatePath(`/dashboard/feedback/${slugify(slug)}`);
+  revalidatePath(`/dashboard/feedbacks/${slugify(slug)}`);
   // redirect("/dashboard");
 
   return toActionState("Comment created successfully!", "SUCCESS");
@@ -251,7 +251,7 @@ export async function toggleLike(formState: ActionState, formData: FormData) {
     });
   }
 
-  revalidatePath(`/dashboard/feedback/${slugify(slug)}`);
+  revalidatePath(`/dashboard/feedbacks/${slugify(slug)}`);
   return toActionState("Like updated!", "SUCCESS");
 }
 
@@ -294,7 +294,7 @@ export async function deleteComment(
     throw error;
   }
 
-  revalidatePath(`/dashboard/feedback/${slugify(slug)}`);
+  revalidatePath(`/dashboard/feedbacks/${slugify(slug)}`);
 
   return toActionState("Comment deleted successfully!", "SUCCESS");
 }
@@ -313,14 +313,28 @@ export async function toggleHideComment(
 
   const slug = (await getFeedbackTitleByCommentId(commentId)) ?? "";
 
-  if (!commentId) return toActionState("Commentaire introuvable", "ERROR");
+  const comment = await db.comment.findUnique({
+    where: { id: commentId },
+  });
+
+  if (!comment) return toActionState("Commentaire introuvable", "ERROR");
+
+  const isNowHidden = !comment.isHidden;
 
   try {
     await requireModerator();
 
     await db.comment.update({
       where: { id: commentId },
-      data: { content: "[Commentaire masqué par la modération]" },
+      data: {
+        isHidden: isNowHidden,
+        content: isNowHidden
+          ? "[Commentaire masqué par la modération]"
+          : (comment.originalContent ?? "(commentaire restauré)"),
+        originalContent: isNowHidden
+          ? (comment.originalContent ?? comment.content)
+          : null,
+      },
     });
   } catch (error) {
     if (error instanceof APIError) {
@@ -336,7 +350,7 @@ export async function toggleHideComment(
     throw error;
   }
 
-  revalidatePath(`/dashboard/feedback/${slugify(slug)}`);
+  revalidatePath(`/dashboard/feedbacks/${slugify(slug)}`);
 
   return toActionState("Comment hide successfully!", "SUCCESS");
 }

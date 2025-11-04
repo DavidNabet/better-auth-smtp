@@ -7,10 +7,18 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import {
+  Dialog,
+  DialogTrigger,
+  DialogHeader,
+  DialogDescription,
+  DialogTitle,
+  DialogContent,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Loader2, Send, Eye, EyeClosed, Trash2 } from "lucide-react";
+import { Loader2, Send, Eye, Trash2, EyeOff } from "lucide-react";
 import {
   addComment,
   deleteComment,
@@ -107,9 +115,11 @@ export function CommentForm({ feedbackId }: { feedbackId: string }) {
 function ReplyComment({
   feedbackId,
   parentId,
+  disabled,
 }: {
   feedbackId: string;
   parentId: string;
+  disabled: boolean;
 }) {
   const [isReplying, setIsReplying] = useState(false);
   const [content, setContent] = useState("");
@@ -135,7 +145,11 @@ function ReplyComment({
         <Button
           variant="ghost"
           size="sm"
-          className="text-accent-foreground hover:text-primary"
+          className={cn(
+            "text-accent-foreground hover:text-primary bg-teal-500",
+            disabled && "bg-metal cursor-not-allowed"
+          )}
+          disabled={disabled}
           onClick={() => setIsReplying(true)}
         >
           Reply
@@ -193,7 +207,7 @@ export function CommentItem({
   return (
     <li className="my-6">
       <div className="flex justify-between">
-        <div className="bg-card border-accent hover:bg-accent rounded-xl border p-6 transition-colors flex-1">
+        <div className="bg-card border-primary/10 dark:border-accent hover:bg-accent rounded-xl border p-6 transition-colors flex-1">
           <div className="flex items-start space-x-4">
             <>
               <Avatar className="h-10 w-10">
@@ -220,22 +234,24 @@ export function CommentItem({
                 <p
                   className={cn(
                     "text-accent-foreground leading-relaxed",
-                    comment.content.includes("masqué")
-                      ? "text-sm italic text-gray-400"
-                      : ""
+                    comment.isHidden ? "text-sm italic text-gray-400" : ""
                   )}
                 >
-                  {comment.content}
+                  {comment.isHidden
+                    ? "💬 Ce commentaire a été masqué par la modération."
+                    : comment.content}
                 </p>
 
                 <div className="flex items-center gap-4">
                   <LikeButton
                     commentId={comment.id}
                     likes={comment.likes.length}
+                    disabled={comment.isHidden}
                   />
                   <ReplyComment
                     feedbackId={comment.feedbackId}
                     parentId={comment.id}
+                    disabled={comment.isHidden}
                   />
                 </div>
               </div>
@@ -249,24 +265,50 @@ export function CommentItem({
               <input type="hidden" name="commentId" value={comment.id} />
               <Button
                 type="submit"
-                variant="secondary"
+                variant={comment.isHidden ? "outline" : "secondary"}
                 size="icon"
                 className="rounded-sm border"
+                disabled={hidePending}
+                title={comment.isHidden ? "Restaurer" : "Masquer"}
               >
-                <Eye className="w-4 h-4" />
+                {comment.isHidden ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
               </Button>
             </form>
-            <form action={deleteAction}>
-              <input type="hidden" name="commentId" value={comment.id} />
-              <Button
-                type="submit"
-                variant="secondary"
-                size="icon"
-                className="rounded-sm border"
-              >
-                <Trash2 className="w-4 h-4" />
-              </Button>
-            </form>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button
+                  variant="secondary"
+                  size="icon"
+                  className="rounded-sm border"
+                  title="Supprimer"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-lg">
+                <DialogHeader>
+                  <DialogTitle>⛔ Supprimer ce commentaire</DialogTitle>
+                  <DialogDescription>
+                    Voulez-vous vraiment supprimer ce commentaire ?
+                  </DialogDescription>
+                </DialogHeader>
+                <form action={deleteAction}>
+                  <input type="hidden" name="commentId" value={comment.id} />
+                  <Button
+                    type="submit"
+                    variant="destructive"
+                    className="rounded-sm border"
+                    disabled={deletePending}
+                  >
+                    Supprimer
+                  </Button>
+                </form>
+              </DialogContent>
+            </Dialog>
           </div>
         )}
       </div>

@@ -38,10 +38,10 @@ export default async function Dashboard() {
           ? userEmail.replace(/^[^@]+/, "*".repeat(userEmail.indexOf("@")))
           : null}
       </span>
-      <div className="flex items-stretch justify-between gap-2">
+      <div className="grid grid-cols-1 grid-rows-4 gap-4 md:grid-cols-2 md:grid-rows-4 lg:grid-cols-3 lg:grid-rows-2">
         {userRole === "ADMIN" ? (
           <>
-            <div className="col-span-6 sm:col-span-4">
+            <div className="col-start-1 col-span-1 row-start-1 row-span-1 md:col-start-1 md:col-span-1 md:row-start-1 md:row-span-1 lg:col-start-1 lg:col-span-1 lg:row-start-1 lg:row-span-1">
               <Suspense fallback={<LoadingIcon />}>
                 <CardInner
                   title="Créer des utilisateurs ?"
@@ -52,7 +52,14 @@ export default async function Dashboard() {
                 </CardInner>
               </Suspense>
             </div>
-            <div className="col-span-6 sm:col-span-8 flex-1">
+            <div className="col-start-1 col-span-1 row-start-2 row-span-1 md:col-start-2 md:col-span-1 md:row-start-1 md:row-span-1 lg:col-start-1 lg:col-span-1 lg:row-start-2 lg:row-span-1">
+              <Suspense fallback={<LoadingIcon />}>
+                <CardInner title="Log" description="Log de modérations" boxed>
+                  <p>Template</p>
+                </CardInner>
+              </Suspense>
+            </div>
+            <div className="col-start-1 col-span-1 row-start-3 row-span-2 md:col-start-1 md:col-span-2 md:row-start-2 md:row-span-2 lg:col-start-2 lg:col-span-2 lg:row-start-1 lg:row-span-2">
               <Suspense fallback={<LoadingIcon />}>
                 <CardInner
                   title="Nombre de users"
@@ -73,7 +80,7 @@ export default async function Dashboard() {
             </div>
           </>
         ) : userRole !== "USER" ? (
-          <div className="col-span-6 sm:col-span-8 flex-1">
+          <div className="col-span-6 md:col-span-8 flex-1">
             <Suspense fallback={<LoadingIcon />}>
               <CardInner
                 title="Nombre de users"
