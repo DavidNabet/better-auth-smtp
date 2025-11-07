@@ -14,6 +14,8 @@ import { getCurrentClientSession } from "@/lib/session/client";
 // import { Session } from "@/lib/auth";
 import { ADMIN } from "@/lib/user/user.service";
 import { APIError } from "better-auth/api";
+import { hasClientPermission } from "@/lib/permissions/permissions.utils";
+import { Role } from "@prisma/client";
 // import { auth } from "@/lib/auth";
 
 type SessionServer = typeof authServer.$Infer.Session;
@@ -54,7 +56,7 @@ export function useAuthState() {
         userId: data?.user.id!,
         userEmail: data?.user.email!,
         userName: data?.user?.name!,
-        userRole: data?.user.role,
+        userRole: data?.user.role!,
         userImage: data?.user.image,
         sessionToken: data?.session.token!,
         expiresAt: data?.session.expiresAt!,
@@ -70,21 +72,21 @@ export function useAuthState() {
     // Role
     if (!s) return;
     async function run() {
-      const { data, error } = await authServer.admin.hasPermission({
-        userId: s?.userId,
-        role: "ADMIN",
-        permission: { user: ["delete"] },
-      });
-      if (error) {
-        throw new APIError("BAD_REQUEST", {
-          message: error.message,
+      const permission = hasClientPermission(
+        s?.userRole! as keyof typeof Role,
+        "user",
+        "delete"
+      );
+      if (!permission) {
+        throw new APIError("EXPECTATION_FAILED", {
+          message: "You don't have the correct role",
         });
       }
       // const isAdmin = !!data?.users.find((user) => user.id === s?.userId);
 
-      setIsAdmin(data.success);
+      setIsAdmin(permission);
     }
-    if (s.userRole === "ADMIN" || s.userRole === "MODERATOR") {
+    if (s.userRole === "ADMIN") {
       run();
     }
   }, [s?.sessionId]);

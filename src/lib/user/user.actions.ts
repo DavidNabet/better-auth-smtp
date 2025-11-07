@@ -19,10 +19,11 @@ import { Role } from "@prisma/client";
 import { db } from "@/db";
 import { uploadFile } from "@/lib/upload";
 import { User } from "better-auth";
-import { getUserById } from "../auth/auth.utils";
+import { getUserById } from "@/lib/auth/auth.utils";
 import type { FormState } from "./user.types";
-import type { ActionState } from "../feedback/feedback.types";
-import { toAction, toActionState } from "../feedback/feedback.utils";
+import type { ActionState } from "@/lib/feedback/feedback.types";
+import { toAction, toActionState } from "@/lib/feedback/feedback.utils";
+import { hasServerPermission } from "@/lib/permissions/permissions.actions";
 
 export type ErrorTypes = keyof typeof authServer.$ERROR_CODES;
 

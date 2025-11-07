@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import Alert from "@/app/_components/Alert";
+import { toast } from "sonner";
 import { requestOTP } from "@/lib/auth/auth.service";
 import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
@@ -16,7 +16,6 @@ import { Loader2 } from "lucide-react";
 export default function AuthSignIn() {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [success, setSuccess] = useState("");
   const [formData, setFormData] = useState<SignInSchema>({
     email: "",
     password: "",
@@ -28,7 +27,6 @@ export default function AuthSignIn() {
     email: "",
     password: "",
   });
-  const [error, setError] = useState("");
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -56,14 +54,15 @@ export default function AuthSignIn() {
           onError(ctx) {
             console.log(ctx.error.message);
             if (ctx.error.status !== 403) {
-              setError(ctx.error.message);
+              toast.error(ctx.error.message);
             }
-            setError("Please verify your email address");
+            toast.error("Please verify your email address", {
+              id: "signInToast",
+            });
           },
           onRequest() {
             console.log("loading signin");
-            setSuccess("");
-            setError("");
+            toast.loading("Signin...", { id: "signInToast" });
           },
           async onSuccess(ctx) {
             console.log("success", ctx);
@@ -71,13 +70,15 @@ export default function AuthSignIn() {
               console.log("twoFactorRedirect");
               const response = await requestOTP();
               if (response?.data) {
-                setSuccess("OTP has been sent to your email");
+                toast.success("OTP has been sent to your email", {
+                  id: "signInToast",
+                });
                 router.push("/auth/two-factor");
               } else if (response?.error) {
-                setError(response.error.message);
+                toast.error(response.error.message, { id: "signInToast" });
               }
             } else {
-              setSuccess("Successfully sign in");
+              toast.success("Successfully sign in", { id: "signInToast" });
               router.push("/dashboard");
             }
           },
@@ -131,17 +132,12 @@ export default function AuthSignIn() {
         </div>
       </div>
 
-      <div className="col-span-6">
-        {error && <Alert message={error!} status="error" />}
-        {success && <Alert message={success!} status="success" />}
-      </div>
-
       <div className="col-span-6 sm:flex sm:items-center sm:gap-4">
         <Button
           type="submit"
           variant="secondary"
           className={cn(
-            " shrink-0 text-white transition-colors  focus:ring-offset-2 focus:ring-offset-secondary cursor-pointer",
+            " shrink-0 transition-colors  focus:ring-offset-2 focus:ring-offset-secondary cursor-pointer",
             isPending && "opacity-50 cursor-not-allowed"
           )}
           disabled={isPending}

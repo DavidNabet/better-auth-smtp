@@ -79,27 +79,29 @@ export default async function Dashboard() {
               </Suspense>
             </div>
           </>
-        ) : userRole !== "USER" ? (
-          <div className="col-span-6 md:col-span-8 flex-1">
-            <Suspense fallback={<LoadingIcon />}>
-              <CardInner
-                title="Nombre de users"
-                description="Nombre de users inscrits"
-                className="w-full!"
-                actions={
-                  <Link
-                    href={`/dashboard/users/${userRole?.toLowerCase()}`}
-                    className="text-primary text-sm underline"
-                  >
-                    Voir plus
-                  </Link>
-                }
-              >
-                <UsersTable />
-              </CardInner>
-            </Suspense>
-          </div>
-        ) : null}
+        ) : (
+          userRole !== "USER" && (
+            <div className="col-span-6 md:col-span-8 flex-1">
+              <Suspense fallback={<LoadingIcon />}>
+                <CardInner
+                  title="Nombre de users"
+                  description="Nombre de users inscrits"
+                  className="w-full!"
+                  actions={
+                    <Link
+                      href={`/dashboard/users/${userRole?.toLowerCase()}`}
+                      className="text-primary text-sm underline"
+                    >
+                      Voir plus
+                    </Link>
+                  }
+                >
+                  <UsersTable />
+                </CardInner>
+              </Suspense>
+            </div>
+          )
+        )}
       </div>
     </Wrapper>
   );

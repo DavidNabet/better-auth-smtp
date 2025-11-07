@@ -2,15 +2,16 @@
 
 import { APIError } from "better-auth/api";
 import { db } from "@/db";
+import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { headers as head } from "next/headers";
-import { auth } from "../auth";
-import { requireModerator, type ErrorTypes } from "../user/user.actions";
+import { auth } from "@/lib/auth";
+import { requireModerator, type ErrorTypes } from "@/lib/user/user.actions";
 import {
   createCommentSchema,
   createFeedbackSchema,
 } from "@/lib/feedback/feedback.schema";
-import { getUserIdByEmail } from "../auth/auth.utils";
+import { getUserIdByEmail } from "@/lib/auth/auth.utils";
 import {
   getFeedbackTitleByCommentId,
   getFeedbackTitleById,
@@ -18,9 +19,9 @@ import {
   toActionState,
 } from "./feedback.utils";
 import type { ActionState, State } from "./feedback.types";
-import type { FormState } from "../user/user.types";
-import { z } from "zod";
+import type { FormState } from "@/lib/user/user.types";
 import { slugify } from "@/lib/utils";
+import { hasServerPermission } from "@/lib/permissions/permissions.actions";
 
 export async function createFeedback(
   formState: FormState,
@@ -274,9 +275,13 @@ export async function deleteComment(
 
   const slug = (await getFeedbackTitleByCommentId(commentId)) ?? "";
 
+  const permission = await hasServerPermission("comments", "delete");
+  if (!permission)
+    return toActionState(
+      "You don't have the permission to do this action!",
+      "ERROR"
+    );
   try {
-    await requireModerator();
-
     await db.comment.delete({
       where: { id: commentId },
     });
@@ -321,9 +326,13 @@ export async function toggleHideComment(
 
   const isNowHidden = !comment.isHidden;
 
+  const permission = await hasServerPermission("comments", "toggle-hide");
+  if (!permission)
+    return toActionState(
+      "You don't have the permission to do this action!",
+      "ERROR"
+    );
   try {
-    await requireModerator();
-
     await db.comment.update({
       where: { id: commentId },
       data: {

@@ -3,7 +3,6 @@ import Navbar from "@/app/_components/Navbar";
 import Breadcrumbs from "../_components/Breadcrumb";
 import { redirect } from "next/navigation";
 import { getCurrentServerSession } from "@/lib/session/server";
-import { Toaster } from "@/components/ui/sonner";
 export const metadata: Metadata = {
   title: {
     template: "%s | Dashboard",
@@ -24,7 +23,6 @@ export default async function PrivateLayout({
         <Breadcrumbs />
         {/* your content goes here ... */}
         {children}
-        <Toaster position="bottom-right" richColors />
       </div>
     </main>
   );
