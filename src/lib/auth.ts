@@ -8,7 +8,6 @@ import { db } from "@/db";
 import { admin, twoFactor, username } from "better-auth/plugins";
 import { sendMagicLinkforLogin, sendOTPforLogin } from "@/lib/auth/auth.mails";
 import { ac, USER, ADMIN, MODERATOR } from "@/lib/user/user.service";
-import { getUserIdByEmail } from "@/lib/auth/auth.utils";
 import { Role } from "@prisma/client";
 
 export type Session = typeof auth.$Infer.Session;

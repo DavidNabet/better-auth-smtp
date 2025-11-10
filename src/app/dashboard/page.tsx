@@ -4,7 +4,11 @@ import LoadingIcon from "@/app/_components/LoadingIcon";
 import Wrapper from "@/app/_components/Wrapper";
 import { Suspense } from "react";
 import { CardInner } from "@/app/_components/Card";
-import { UsersTable } from "@/components/Table/UsersTable";
+import {
+  UsersTable,
+  LogTable,
+  LogDisplay,
+} from "@/components/Table/UsersTable";
 import { GenerateUsers } from "@/components/GenerateUsers";
 // import { redirect } from "next/navigation";
 // import { useAuthState } from "@/hooks/use-auth";
@@ -38,33 +42,42 @@ export default async function Dashboard() {
           ? userEmail.replace(/^[^@]+/, "*".repeat(userEmail.indexOf("@")))
           : null}
       </span>
-      <div className="grid grid-cols-1 grid-rows-4 gap-4 md:grid-cols-2 md:grid-rows-4 lg:grid-cols-3 lg:grid-rows-2">
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-8 md:place-items-stretch">
         {userRole === "ADMIN" ? (
           <>
-            <div className="col-start-1 col-span-1 row-start-1 row-span-1 md:col-start-1 md:col-span-1 md:row-start-1 md:row-span-1 lg:col-start-1 lg:col-span-1 lg:row-start-1 lg:row-span-1">
+            <section className="col-span-6 md:col-span-3">
               <Suspense fallback={<LoadingIcon />}>
                 <CardInner
                   title="Créer des utilisateurs ?"
                   description="Générer des utlisateurs"
-                  boxed
                 >
                   <GenerateUsers userId={userId.slice(2, 6)} />
                 </CardInner>
               </Suspense>
-            </div>
-            <div className="col-start-1 col-span-1 row-start-2 row-span-1 md:col-start-2 md:col-span-1 md:row-start-1 md:row-span-1 lg:col-start-1 lg:col-span-1 lg:row-start-2 lg:row-span-1">
+
               <Suspense fallback={<LoadingIcon />}>
-                <CardInner title="Log" description="Log de modérations" boxed>
-                  <p>Template</p>
+                <CardInner
+                  title="Log"
+                  description="Log de modérations"
+                  actions={
+                    <Link
+                      href="/dashboard/moderation"
+                      className="text-primary text-sm underline"
+                    >
+                      Voir plus
+                    </Link>
+                  }
+                >
+                  <LogDisplay />
                 </CardInner>
               </Suspense>
-            </div>
-            <div className="col-start-1 col-span-1 row-start-3 row-span-2 md:col-start-1 md:col-span-2 md:row-start-2 md:row-span-2 lg:col-start-2 lg:col-span-2 lg:row-start-1 lg:row-span-2">
+            </section>
+            <section className="col-span-6 md:col-span-5">
               <Suspense fallback={<LoadingIcon />}>
                 <CardInner
                   title="Nombre de users"
                   description="Nombre de users inscrits"
-                  className="w-full!"
+                  className="h-[400px]"
                   actions={
                     <Link
                       href={`/dashboard/users/${userRole?.toLowerCase()}`}
@@ -77,11 +90,11 @@ export default async function Dashboard() {
                   <UsersTable />
                 </CardInner>
               </Suspense>
-            </div>
+            </section>
           </>
         ) : (
           userRole !== "USER" && (
-            <div className="col-span-6 md:col-span-8 flex-1">
+            <div className="col-span-6">
               <Suspense fallback={<LoadingIcon />}>
                 <CardInner
                   title="Nombre de users"

@@ -1,7 +1,16 @@
 import { db } from "@/db";
-import { Prisma } from "@prisma/client";
+import { Prisma, Role } from "@prisma/client";
 import { z } from "zod";
 import { ActionState, CommentWithRelations } from "./feedback.types";
+
+const roleClasses = {
+  ADMIN: "bg-blue-500 text-white",
+  MODERATOR: "bg-yellow-500 text-white",
+  USER: "bg-green-500 text-white",
+};
+export const getRole = (role: Role) => {
+  return roleClasses[role];
+};
 
 export const getOptions = Prisma.validator<Prisma.FeedbackInclude>()({
   votes: true,
@@ -95,6 +104,46 @@ export async function getFeedbackWithComments(title: string) {
   );
 
   return { feedback, topLevel, repliesByParent };
+}
+
+/**
+ * Nettoie les parentId orphelins dans la table comment:
+ * 1. parentId est dit "orphelin" lorsqu'il fait référence à un commentaire qui n'existe plus
+ * 2. Cette fonction met parentId = null pour ces commentaires.
+ *
+ * @returns corrected: nombre de commentaires corrigés (parentId mis à null)
+ * @returns orphanIds: liste des parentId qui ne correspondent à aucun commentaire existant
+ */
+export async function cleanupOrphanCommentParents(): Promise<{
+  corrected: number;
+  orphanIds: string[];
+}> {
+  const existing = await db.comment.findMany({
+    select: { id: true, parentId: true },
+  });
+
+  const existingIds = new Set(existing.map((c) => c.id));
+  const parentIds = existing
+    .map((c) => c.parentId!)
+    .filter((id) => !!id && id?.length > 0);
+
+  const orphanIds = Array.from(
+    new Set(parentIds.filter((pid) => !existingIds.has(pid)))
+  );
+
+  if (orphanIds.length === 0) {
+    return { corrected: 0, orphanIds: [] };
+  }
+
+  const updateResult = await db.comment.updateMany({
+    where: { parentId: { in: orphanIds } },
+    data: { parentId: null },
+  });
+
+  return {
+    corrected: updateResult.count,
+    orphanIds: orphanIds,
+  };
 }
 
 export const allFeedback = async () => {

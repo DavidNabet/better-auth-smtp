@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useActionState, useState } from "react";
+import { ReactNode, useActionState, useId, useState } from "react";
 import {
   Accordion,
   AccordionContent,
@@ -14,16 +14,26 @@ import {
   DialogDescription,
   DialogTitle,
   DialogContent,
+  DialogFooter,
+  DialogClose,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Loader2, Send, Eye, Trash2, EyeOff } from "lucide-react";
+import {
+  Loader2,
+  Send,
+  Eye,
+  Trash2,
+  EyeOff,
+  AlertTriangle,
+} from "lucide-react";
 import {
   addComment,
   deleteComment,
   toggleHideComment,
 } from "@/lib/feedback/feedback.action";
+import { getRole } from "@/lib/feedback/feedback.utils";
 import { cn } from "@/lib/utils";
 import { ErrorMessages } from "@/app/_components/ErrorMessages";
 import {
@@ -34,6 +44,7 @@ import LikeButton from "./like";
 import { Input } from "@/components/ui/input";
 import { CommentWithRelations } from "@/lib/feedback/feedback.types";
 import { useAuthState } from "@/hooks/use-auth";
+import { Badge } from "@/components/ui/badge";
 
 const useHideComment = () => {
   return useActionState(
@@ -143,10 +154,10 @@ function ReplyComment({
     <div>
       {!isReplying ? (
         <Button
-          variant="ghost"
+          variant="outline"
           size="sm"
           className={cn(
-            "text-accent-foreground hover:text-primary bg-teal-500",
+            "text-accent-foreground hover:text-primary",
             disabled && "bg-metal cursor-not-allowed"
           )}
           disabled={disabled}
@@ -198,12 +209,13 @@ export function CommentItem({
   feedbackId: string;
 }) {
   const { session } = useAuthState();
+  const id = useId();
 
   const isModerator =
     session?.userRole === "ADMIN" || session?.userRole === "MODERATOR";
 
-  const [hideState, hideAction, hidePending] = useHideComment();
-  const [deleteState, deleteAction, deletePending] = useDeleteComment();
+  const [, hideAction, hidePending] = useHideComment();
+  const [, deleteAction, deletePending] = useDeleteComment();
   return (
     <li className="my-6">
       <div className="flex justify-between">
@@ -221,9 +233,15 @@ export function CommentItem({
               </Avatar>
               <div className="flex-1 space-y-3">
                 <div className="flex items-center justify-between">
-                  <p className="text-foreground font-medium">
+                  <Badge
+                    className={cn(
+                      "font-semibold px-2 text-sm",
+                      getRole(comment?.user?.role)
+                    )}
+                    variant="outline"
+                  >
                     {comment?.user?.name ?? "User"}
-                  </p>
+                  </Badge>
                   <time
                     className="text-accent-foreground text-xs"
                     dateTime={comment?.createdAt.toLocaleDateString()}
@@ -261,10 +279,11 @@ export function CommentItem({
         {/* Boutons de modérations */}
         {isModerator && (
           <div className="flex flex-col ml-4 gap-4">
-            <form action={hideAction}>
+            <form action={hideAction} id={`hideAction-${id}`}>
               <input type="hidden" name="commentId" value={comment.id} />
               <Button
                 type="submit"
+                form={`hideAction-${id}`}
                 variant={comment.isHidden ? "outline" : "secondary"}
                 size="icon"
                 className="rounded-sm border"
@@ -279,35 +298,47 @@ export function CommentItem({
               </Button>
             </form>
             <Dialog>
-              <DialogTrigger asChild>
-                <Button
-                  variant="secondary"
-                  size="icon"
-                  className="rounded-sm border"
-                  title="Supprimer"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-lg">
-                <DialogHeader>
-                  <DialogTitle>⛔ Supprimer ce commentaire</DialogTitle>
-                  <DialogDescription>
-                    Voulez-vous vraiment supprimer ce commentaire ?
-                  </DialogDescription>
-                </DialogHeader>
-                <form action={deleteAction}>
-                  <input type="hidden" name="commentId" value={comment.id} />
+              <form action={deleteAction} id={`deleteAction-${id}`}>
+                <input type="hidden" name="commentId" value={comment.id} />
+
+                <DialogTrigger asChild>
                   <Button
-                    type="submit"
-                    variant="destructive"
+                    variant="secondary"
+                    size="icon"
                     className="rounded-sm border"
-                    disabled={deletePending}
+                    title="Supprimer"
                   >
-                    Supprimer
+                    <Trash2 className="w-4 h-4" />
                   </Button>
-                </form>
-              </DialogContent>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-lg">
+                  <div className="flex items-center space-x-4">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-100">
+                      <AlertTriangle className="h-6 w-6 text-red-600" />
+                    </div>
+                    <DialogHeader>
+                      <DialogTitle>Supprimer ce commentaire</DialogTitle>
+                      <DialogDescription>
+                        Voulez-vous vraiment supprimer ce commentaire ?
+                      </DialogDescription>
+                    </DialogHeader>
+                  </div>
+                  <DialogFooter>
+                    <DialogClose asChild>
+                      <Button variant="outline">Annuler</Button>
+                    </DialogClose>
+                    <Button
+                      type="submit"
+                      form={`deleteAction-${id}`}
+                      variant="destructive"
+                      className="rounded-sm border"
+                      disabled={deletePending}
+                    >
+                      Supprimer
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </form>
             </Dialog>
           </div>
         )}

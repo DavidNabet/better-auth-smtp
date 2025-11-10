@@ -476,10 +476,7 @@ export async function requireModerator() {
     headers: await head(),
   });
   if (!session?.user) {
-    return {
-      success: false,
-      message: "Unauthorized.",
-    };
+    throw new Error("Unauthorized");
   }
 
   const user = await db.user.findUnique({

@@ -13,6 +13,7 @@ import {
 } from "@/lib/feedback/feedback.schema";
 import { getUserIdByEmail } from "@/lib/auth/auth.utils";
 import {
+  cleanupOrphanCommentParents,
   getFeedbackTitleByCommentId,
   getFeedbackTitleById,
   toAction,
@@ -275,16 +276,19 @@ export async function deleteComment(
 
   const slug = (await getFeedbackTitleByCommentId(commentId)) ?? "";
 
-  const permission = await hasServerPermission("comments", "delete");
-  if (!permission)
-    return toActionState(
-      "You don't have the permission to do this action!",
-      "ERROR"
-    );
+  const moderator = await requireModerator();
+  if (!moderator) return toActionState("Modérateur introuvable", "ERROR");
   try {
+    await db.moderationLog.create({
+      data: {
+        action: "DELETE_COMMENT",
+        moderatorId: moderator.id,
+      },
+    });
     await db.comment.delete({
       where: { id: commentId },
     });
+    await cleanupOrphanCommentParents();
   } catch (error) {
     if (error instanceof APIError) {
       console.log(error.message, error.body?.code);
@@ -326,7 +330,7 @@ export async function toggleHideComment(
 
   const isNowHidden = !comment.isHidden;
 
-  const permission = await hasServerPermission("comments", "toggle-hide");
+  const permission = await requireModerator();
   if (!permission)
     return toActionState(
       "You don't have the permission to do this action!",
@@ -343,6 +347,14 @@ export async function toggleHideComment(
         originalContent: isNowHidden
           ? (comment.originalContent ?? comment.content)
           : null,
+      },
+    });
+
+    await db.moderationLog.create({
+      data: {
+        action: "HIDE_COMMENT",
+        commentId,
+        moderatorId: permission.id,
       },
     });
   } catch (error) {
