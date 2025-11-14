@@ -3,7 +3,6 @@ import UserProfileForm from "@/components/UserProfileForm";
 import Wrapper from "@/app/_components/Wrapper";
 import { CardInner } from "@/app/_components/Card";
 import { Suspense } from "react";
-import DeleteUser from "@/components/DeleteUser";
 import { auth, Session } from "@/lib/auth";
 import { headers } from "next/headers";
 

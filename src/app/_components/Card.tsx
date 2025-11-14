@@ -40,7 +40,7 @@ export function CardInner({
   ...props
 }: ICard & CardProps) {
   return (
-    <Card className={cn("mt-8", className, boxed && "w-[380px]")} {...props}>
+    <Card className={cn("mt-8", className, boxed && "md:w-[380px]")} {...props}>
       <CardHeader>
         <CardTitle>{title}</CardTitle>
         {description && (

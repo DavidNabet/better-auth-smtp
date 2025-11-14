@@ -13,6 +13,8 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { z } from "zod";
+import { toast } from "sonner";
 import { ChangeEvent, FormEvent, useState, useTransition } from "react";
 import type { User } from "better-auth";
 import { cn } from "@/lib/utils";
@@ -31,10 +33,11 @@ export default function DeleteUser() {
   const [formData, setFormData] = useState<PasswordSchema>({
     password: "",
   });
-  const [errorMessage, setErrorMessage] = useState<{ password: string }>({
-    password: "",
+  const [errorMessage, setErrorMessage] = useState<
+    z.inferFlattenedErrors<z.ZodTypeAny>["fieldErrors"]
+  >({
+    password: [""],
   });
-  const [error, setError] = useState("");
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -48,7 +51,7 @@ export default function DeleteUser() {
     if (!validatedFields.success) {
       const { fieldErrors } = validatedFields.error.flatten();
       setErrorMessage({
-        password: fieldErrors.password?.[0] ?? "",
+        password: fieldErrors.password ?? [""],
       });
       return;
     }
@@ -59,14 +62,16 @@ export default function DeleteUser() {
         fetchOptions: {
           onError(ctx) {
             if (ctx.error.status === 403) {
-              setError("Invalid password");
+              toast.error("Invalid password", { id: "deleteUser" });
             }
-            setError(ctx.error.message);
+            toast.error(ctx.error.message, { id: "deleteUser" });
           },
           onResponse() {
             console.log("loading deleteuser");
+            toast.loading("En cours...", { id: "deleteUser" });
           },
           onSuccess() {
+            toast.success("Compte supprimé", { id: "deleteUser" });
             router.push("/auth/sign-in");
           },
         },
@@ -76,7 +81,7 @@ export default function DeleteUser() {
 
   return (
     <Dialog>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} id="deleteUser">
         <DialogTrigger asChild>
           <Button variant="destructive" className="focus-within:ring-2">
             Delete Account
@@ -114,6 +119,7 @@ export default function DeleteUser() {
             <Button
               type="submit"
               variant="secondary"
+              form="deleteUser"
               className={cn(
                 " shrink-0 transition-colors focus:ring-offset-2 focus:ring-offset-secondary cursor-pointer w-full text-white bg-destructive/90 hover:bg-destructive",
                 isPending && "opacity-50 cursor-not-allowed"

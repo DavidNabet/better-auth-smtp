@@ -8,7 +8,15 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { db } from "@/db";
-import { Badge } from "../ui/badge";
+import { ChevronDown, ChevronRight } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import {
+  GetModerationActions,
+  getModerationActionsTree,
+} from "@/lib/permissions/permissions.utils";
+import AccordionRow from "./LogRow";
 
 export async function UsersTable() {
   const users = await db.user.findMany({
@@ -47,64 +55,6 @@ export async function UsersTable() {
   );
 }
 
-export async function LogTable() {
-  const logs = await db.moderationLog.findMany({
-    orderBy: { updatedAt: "desc" },
-    include: {
-      moderator: true,
-    },
-  });
-  return (
-    <Table>
-      <TableCaption>Nombre de logs: {logs.length}</TableCaption>
-      <TableHeader>
-        <TableRow>
-          <TableHead className="w-[100px]">Action</TableHead>
-          <TableHead>Créé</TableHead>
-          <TableHead>Mise à jour</TableHead>
-          <TableHead className="font-semibold text-right">Name</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {logs?.length > 0 ? (
-          logs.map((log) => {
-            return (
-              <TableRow key={log.id}>
-                <TableCell className="font-medium">{log.action}</TableCell>
-                <TableCell>
-                  {new Intl.DateTimeFormat("fr-FR", {
-                    day: "2-digit",
-                    month: "numeric",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  }).format(log.createdAt)}
-                </TableCell>
-                <TableCell>
-                  {new Intl.DateTimeFormat("fr-FR", {
-                    day: "2-digit",
-                    month: "numeric",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  }).format(log.updatedAt)}
-                </TableCell>
-                <TableCell className="font-semibold text-right">
-                  {log.moderator.name}
-                </TableCell>
-              </TableRow>
-            );
-          })
-        ) : (
-          <TableRow>
-            <TableCell>No logs</TableCell>
-          </TableRow>
-        )}
-      </TableBody>
-    </Table>
-  );
-}
-
 export async function LogDisplay() {
   const logs = await db.moderationLog.groupBy({
     by: ["action"],
@@ -133,5 +83,39 @@ export async function LogDisplay() {
         <li>No logs</li>
       )}
     </ul>
+  );
+}
+
+export async function LogTable() {
+  const logs = await getModerationActionsTree();
+  return (
+    <div className="max-w-fit overflow-hidden rounded-lg border border-border bg-card shadow-sm">
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow className="grid grid-cols-[40px_100px_180px_120px_100px_110px] border-b-0 bg-muted/50">
+              <TableHead className="p-3" />
+              <TableHead className="p-3 font-semibold text-foreground text-sm">
+                ID
+              </TableHead>
+              <TableHead className="p-3 font-semibold text-foreground text-sm">
+                Action
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {logs.map((log, index) => {
+              return (
+                <AccordionRow
+                  defaultOpen={index === 0}
+                  key={log.id}
+                  row={log}
+                />
+              );
+            })}
+          </TableBody>
+        </Table>
+      </div>
+    </div>
   );
 }

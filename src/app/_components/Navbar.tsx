@@ -9,6 +9,12 @@ import LoadingIcon from "./LoadingIcon";
 import ModeToggle from "@/components/theme-toggle";
 import { getCurrentServerSession } from "@/lib/session/server";
 import { capitalize } from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default async function Navbar() {
   const { userRole } = await getCurrentServerSession();
@@ -27,7 +33,7 @@ export default async function Navbar() {
             </Link>
           </div>
           <div className="md:flex md:items-center md:gap-12">
-            <nav className="flex items-center space-x-4 lg:space-x-6">
+            <nav className="hidden md:flex items-center space-x-4 lg:space-x-6">
               {menu.map((item) => (
                 <NavLink key={item.name} {...item}>
                   {item.name}
@@ -48,12 +54,29 @@ export default async function Navbar() {
               </Suspense>
               <ModeToggle />
             </div>
-            <Button variant="ghost" size="sm" className="md:hidden">
-              <Icon name="menu" size={20} />
-            </Button>
+            <MenuHamburger />
           </div>
         </div>
       </div>
     </header>
+  );
+}
+
+function MenuHamburger() {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="sm" className="md:hidden">
+          <Icon name="menu" size={20} />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        {menu.map((item) => (
+          <DropdownMenuItem key={item.name}>
+            <NavLink {...item}>{item.name}</NavLink>
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

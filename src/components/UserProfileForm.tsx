@@ -75,7 +75,10 @@ export default function UserProfileForm({ session }: Props) {
   };
 
   return (
-    <form className="mt-8 grid grid-cols-6 gap-6" onSubmit={handleSubmit}>
+    <form
+      className="mt-8 grid grid-cols-1 md:grid-cols-6 gap-6"
+      onSubmit={handleSubmit}
+    >
       <div className="col-span-6">
         <Tabs defaultValue="image" className="w-full">
           <TabsList className="grid w-full grid-cols-2 bg-secondary">

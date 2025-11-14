@@ -4,11 +4,7 @@ import LoadingIcon from "@/app/_components/LoadingIcon";
 import Wrapper from "@/app/_components/Wrapper";
 import { Suspense } from "react";
 import { CardInner } from "@/app/_components/Card";
-import {
-  UsersTable,
-  LogTable,
-  LogDisplay,
-} from "@/components/Table/UsersTable";
+import { UsersTable, LogDisplay } from "@/components/Table/Tables";
 import { GenerateUsers } from "@/components/GenerateUsers";
 // import { redirect } from "next/navigation";
 // import { useAuthState } from "@/hooks/use-auth";
@@ -61,7 +57,7 @@ export default async function Dashboard() {
                   description="Log de modérations"
                   actions={
                     <Link
-                      href="/dashboard/moderation"
+                      href={`/dashboard/users/${userRole?.toLowerCase()}/#moderation_logs`}
                       className="text-primary text-sm underline"
                     >
                       Voir plus
