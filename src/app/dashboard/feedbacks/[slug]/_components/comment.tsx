@@ -33,7 +33,6 @@ import {
   deleteComment,
   toggleHideComment,
 } from "@/lib/feedback/feedback.action";
-import { getRole } from "@/lib/feedback/feedback.utils";
 import { cn } from "@/lib/utils";
 import { ErrorMessages } from "@/app/_components/ErrorMessages";
 import {
@@ -45,6 +44,7 @@ import { Input } from "@/components/ui/input";
 import { CommentWithRelations } from "@/lib/feedback/feedback.types";
 import { useAuthState } from "@/hooks/use-auth";
 import { Badge } from "@/components/ui/badge";
+import BadgeUserComment from "@/app/_components/BadgeUserComment";
 
 const useHideComment = () => {
   return useActionState(
@@ -227,21 +227,23 @@ export function CommentItem({
                   src={comment?.user?.image!}
                   alt={comment?.user?.name!}
                 />
-                <AvatarFallback>
-                  {comment?.user?.name?.charAt(0)}
+                <AvatarFallback className="text-white">
+                  {comment?.user?.name?.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 space-y-3">
                 <div className="flex items-center justify-between">
-                  <Badge
-                    className={cn(
-                      "font-semibold px-2 text-sm",
-                      getRole(comment?.user?.role)
+                  <div className="flex items-center space-x-2 gap-2">
+                    {session?.userName === comment.user.name && (
+                      <Badge variant="default" className="rounded-full">
+                        You
+                      </Badge>
                     )}
-                    variant="outline"
-                  >
-                    {comment?.user?.name ?? "User"}
-                  </Badge>
+                    <BadgeUserComment
+                      name={comment.user.name!}
+                      role={comment?.user?.role}
+                    />
+                  </div>
                   <time
                     className="text-accent-foreground text-xs"
                     dateTime={comment?.createdAt.toLocaleDateString()}

@@ -19,6 +19,9 @@ Les utilisateurs postent des idées ou suggestions.
 Les autres votent pour mettre en avant les meilleures.
 
 Les admins/modérateurs gèrent les abus, suppriment le contenu inapproprié.
+Chaque post peut-être liké/upvoté
+Tu peux ajouter des features comme des badges ou niveaux selon l’activité.
+ 
 ➡️ Exemple : Canny.io, utilisé par des startups pour gérer le feedback produit.*/
 
 // ⚠ Créer un upvote avec des commentaires pour les utilisateurs, les moderateurs pourront ban les users qui ont été odieux ou insultant. Les commentaires peuvent être likés par les users.

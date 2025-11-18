@@ -1,16 +1,7 @@
 import { db } from "@/db";
-import { Prisma, Role } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { ActionState, CommentWithRelations } from "./feedback.types";
-
-const roleClasses = {
-  ADMIN: "bg-blue-500 text-white",
-  MODERATOR: "bg-yellow-500 text-white",
-  USER: "bg-green-500 text-white",
-};
-export const getRole = (role: Role) => {
-  return roleClasses[role];
-};
 
 export const getOptions = Prisma.validator<Prisma.FeedbackInclude>()({
   votes: true,
