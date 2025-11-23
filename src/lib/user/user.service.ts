@@ -25,9 +25,14 @@ const MODERATOR = ac.newRole({
 });
 
 const ADMIN = ac.newRole({
+  users: ["create", "list", "update", "delete"],
+  comments: ["create", "toggle-hide", "delete"],
+  user: ["ban"],
+});
+
+const SUPER_ADMIN = ac.newRole({
   ...adminAc.statements,
   users: ["create", "list", "update", "delete"],
   comments: ["create", "toggle-hide", "delete"],
 });
-
-export { ac, statements, USER, MODERATOR, ADMIN };
+export { ac, statements, USER, MODERATOR, ADMIN, SUPER_ADMIN };

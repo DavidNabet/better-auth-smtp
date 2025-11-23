@@ -7,7 +7,13 @@ import { createMiddleware } from "better-auth";
 import { db } from "@/db";
 import { admin, twoFactor, username } from "better-auth/plugins";
 import { sendMagicLinkforLogin, sendOTPforLogin } from "@/lib/auth/auth.mails";
-import { ac, USER, ADMIN, MODERATOR } from "@/lib/user/user.service";
+import {
+  ac,
+  USER,
+  ADMIN,
+  MODERATOR,
+  SUPER_ADMIN,
+} from "@/lib/user/user.service";
 import { Role } from "@prisma/client";
 
 export type Session = typeof auth.$Infer.Session;
@@ -142,9 +148,9 @@ export const auth = betterAuth({
       adminRoles: [Role.ADMIN, Role.MODERATOR],
       ac,
       roles: {
-        USER,
         ADMIN,
         MODERATOR,
+        USER,
       },
       adminUserIds: ["97xYFyzQ9JXQdDgNilbEwg77Nl4tXGLN"],
       impersonationSessionDuration: 60 * 60 * 24,
