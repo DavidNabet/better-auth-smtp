@@ -56,7 +56,7 @@ export default function SetRole({ users }: Props) {
               <SelectValue placeholder="Select a Role" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="USER">USER</SelectItem>
+              <SelectItem value="MEMBER">USER</SelectItem>
               <SelectItem value="MODERATE">MODERATE</SelectItem>
             </SelectContent>
           </Select>

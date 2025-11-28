@@ -40,9 +40,6 @@ model User {
   twoFactorEnabled Boolean     @default(false)
   twofactors       TwoFactor[]
 
-  companies        Company[]
-  userCompanyRoles UserCompanyRole[]
-
   @@map("user")
 }
 
@@ -112,43 +109,6 @@ model RateLimit {
   @@map("rateLimit")
 }
 
-model Company {
-  id        String   @id @default(cuid())
-  name      String
-  createdAt DateTime @default(now())
-
-  apps        App[]
-  memberships UserCompanyRole[]
-  userId      String?
-  user        User?             @relation(fields: [userId], references: [id])
-}
-
-model App {
-  id          String   @id @default(cuid())
-  name        String
-  slug        String   @unique
-  description String?
-  createdAt   DateTime @default(now())
-
-  companyId String
-  company   Company @relation(fields: [companyId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-
-  feedbacks Feedback[]
-}
-
-model UserCompanyRole {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
-
-  companyId String
-  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-
-  role Role @default(MEMBER)
-}
-
 enum CommentAction {
   HIDE_COMMENT
   DELETE_COMMENT
@@ -177,9 +137,6 @@ model Feedback {
   description String
   status      FeedbackStatus @default(PENDING)
   subject     String?
-
-  appId String
-  app   App    @relation(fields: [appId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   authorId String
   author   User   @relation(fields: [authorId], references: [id])

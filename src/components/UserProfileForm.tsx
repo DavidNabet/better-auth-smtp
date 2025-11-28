@@ -150,7 +150,7 @@ export default function UserProfileForm({ session }: Props) {
           <SelectContent
             className={`${session?.user.role !== "ADMIN" && "disabled:cursor-pointer"}`}
           >
-            <SelectItem value="USER">USER</SelectItem>
+            <SelectItem value="MEMBER">MEMBER</SelectItem>
             <SelectItem value="ADMIN">ADMIN</SelectItem>
             <SelectItem value="MODERATOR">MODERATOR</SelectItem>
           </SelectContent>

@@ -76,7 +76,7 @@ export const createUsersSchema = z.object({
     .min(5, "Le mot de passe doit contenir plus de 5 caractères")
     .max(32, "Le mot de passe doit contenir moins de 32 caractères"),
 
-  role: z.enum(["ADMIN", "USER"]).default("USER"),
+  role: z.enum(["ADMIN", "MEMBER"]).default("MEMBER"),
 });
 
 export const updateUserSchema = z.object({
@@ -87,7 +87,7 @@ export const updateUserSchema = z.object({
     .max(30, "Name must be at most 30 characters")
     .nullable(),
 
-  role: z.enum(["ADMIN", "MODERATOR", "USER"]),
+  role: z.enum(["ADMIN", "MODERATOR", "MEMBER"]),
   // banned: z.boolean().optional(),
   // twoFactorEnabled: z.boolean().optional(),
 });

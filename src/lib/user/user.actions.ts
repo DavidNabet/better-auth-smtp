@@ -136,7 +136,7 @@ export async function createUsers(
             name: email.split("@")[0],
             email,
             password: "superpassword",
-            role: Role.USER,
+            role: Role.MEMBER,
           },
           headers: await head(),
         });
@@ -205,7 +205,7 @@ export async function updateUser(schema: UpdateUserSchema): Promise<{
     }
 
     // Only admins and moderators can update other users, or users can update themselves
-    const isNotUser = session.user.role !== "USER";
+    const isNotUser = session.user.role !== "MEMBER";
     const isSelfUpdate = session.user.id === userId;
 
     if (!isNotUser && !isSelfUpdate) {

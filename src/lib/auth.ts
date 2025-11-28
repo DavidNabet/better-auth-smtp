@@ -5,11 +5,11 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
 import { createMiddleware } from "better-auth";
 import { db } from "@/db";
-import { admin, twoFactor, username } from "better-auth/plugins";
+import { admin, twoFactor, username, organization } from "better-auth/plugins";
 import { sendMagicLinkforLogin, sendOTPforLogin } from "@/lib/auth/auth.mails";
 import {
   ac,
-  USER,
+  MEMBER,
   ADMIN,
   MODERATOR,
   SUPER_ADMIN,
@@ -73,7 +73,7 @@ export const auth = betterAuth({
       role: {
         type: "string",
         required: true,
-        defaultValue: Role.USER,
+        defaultValue: Role.MEMBER,
         input: false,
       },
     },
@@ -144,13 +144,13 @@ export const auth = betterAuth({
   plugins: [
     nextCookies(),
     admin({
-      defaultRole: Role.USER,
+      defaultRole: Role.MEMBER,
       adminRoles: [Role.ADMIN, Role.MODERATOR],
       ac,
       roles: {
         ADMIN,
         MODERATOR,
-        USER,
+        MEMBER,
       },
       adminUserIds: ["97xYFyzQ9JXQdDgNilbEwg77Nl4tXGLN"],
       impersonationSessionDuration: 60 * 60 * 24,

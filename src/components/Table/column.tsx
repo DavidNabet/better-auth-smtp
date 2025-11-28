@@ -121,7 +121,7 @@ export const usersColumns = [
       type: "select",
       options: [
         { value: "MODERATOR", label: "MODERATOR" },
-        { value: "USER", label: "USER" },
+        { value: "MEMBER", label: "MEMBER" },
       ],
     },
     cell: TableCell,

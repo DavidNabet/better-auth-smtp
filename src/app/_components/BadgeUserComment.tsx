@@ -17,7 +17,7 @@ const roleClasses = {
       "border-amber-600 text-amber-600 dark:border-amber-400 dark:text-amber-400 [a&]:hover:bg-amber-600/10 [a&]:hover:text-amber-600/90 dark:[a&]:hover:bg-amber-400/10 dark:[a&]:hover:text-amber-400/90",
     icon: <Shield className="size-3" />,
   },
-  USER: {
+  MEMBER: {
     className:
       "border-primary text-primary-600 dark:border-primary-400 dark:text-primary-400 [a&]:hover:bg-primary-600/10 [a&]:hover:text-primary-600/90 dark:[a&]:hover:bg-primary-400/10 dark:[a&]:hover:text-primary-400/90",
     icon: <UserRound className="size-3" />,

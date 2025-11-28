@@ -92,7 +92,7 @@ export default async function Dashboard() {
             </section>
           </>
         ) : (
-          userRole !== "USER" && (
+          userRole !== "MEMBER" && (
             <div className="col-span-6">
               <Suspense fallback={<LoadingIcon />}>
                 <CardInner

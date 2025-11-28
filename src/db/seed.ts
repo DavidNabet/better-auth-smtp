@@ -14,7 +14,7 @@ async function seedDatabase() {
       name: faker.person.lastName(),
       email: faker.internet.email(),
       emailVerified: true,
-      role: Role.USER,
+      role: Role.MEMBER,
       image: faker.image.avatar(),
       createdAt: new Date(),
       updatedAt: new Date(),

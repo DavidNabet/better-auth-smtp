@@ -39,7 +39,7 @@ export default async function Navbar() {
                   {item.name}
                 </NavLink>
               ))}
-              {userRole !== "USER" &&
+              {userRole !== "MEMBER" &&
                 adminRoute
                   .filter((route) => route.name === userRole)
                   .map((item) => (

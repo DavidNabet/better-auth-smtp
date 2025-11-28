@@ -13,7 +13,7 @@ const statements = {
 
 const ac = createAccessControl(statements);
 
-const USER = ac.newRole({
+const MEMBER = ac.newRole({
   users: ["update"],
   comments: ["create"],
 });
@@ -35,4 +35,4 @@ const SUPER_ADMIN = ac.newRole({
   users: ["create", "list", "update", "delete"],
   comments: ["create", "toggle-hide", "delete"],
 });
-export { ac, statements, USER, MODERATOR, ADMIN, SUPER_ADMIN };
+export { ac, statements, MEMBER, MODERATOR, ADMIN, SUPER_ADMIN };

@@ -5,7 +5,7 @@ import {
   adminClient,
   inferAdditionalFields,
 } from "better-auth/client/plugins";
-import { ac, USER, ADMIN, MODERATOR } from "../user/user.service";
+import { ac, MEMBER, ADMIN, MODERATOR } from "../user/user.service";
 import { Role } from "@prisma/client";
 import { auth } from "@/lib/auth";
 
@@ -18,11 +18,11 @@ export const authClient = createAuthClient({
     twoFactorClient(),
     inferAdditionalFields<typeof auth>(),
     adminClient({
-      defaultRole: Role.USER,
+      defaultRole: Role.MEMBER,
       adminRoles: [Role.ADMIN, Role.MODERATOR],
       ac,
       roles: {
-        USER,
+        MEMBER,
         ADMIN,
         MODERATOR,
       },
@@ -44,11 +44,11 @@ export const authServer = createAuthServer({
   plugins: [
     twoFactorClient(),
     adminClient({
-      defaultRole: Role.USER,
+      defaultRole: Role.MEMBER,
       adminRoles: [Role.ADMIN, Role.MODERATOR],
       ac,
       roles: {
-        USER,
+        MEMBER,
         ADMIN,
         MODERATOR,
       },
