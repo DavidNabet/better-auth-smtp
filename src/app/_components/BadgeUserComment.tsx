@@ -12,7 +12,7 @@ const roleClasses = {
       "border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400 [a&]:hover:bg-blue-600/10 [a&]:hover:text-blue-600/90 dark:[a&]:hover:bg-blue-400/10 dark:[a&]:hover:text-blue-400/90",
     icon: <Crown className="size-3" />,
   },
-  MODERATOR: {
+  MEMBER: {
     className:
       "border-amber-600 text-amber-600 dark:border-amber-400 dark:text-amber-400 [a&]:hover:bg-amber-600/10 [a&]:hover:text-amber-600/90 dark:[a&]:hover:bg-amber-400/10 dark:[a&]:hover:text-amber-400/90",
     icon: <Shield className="size-3" />,

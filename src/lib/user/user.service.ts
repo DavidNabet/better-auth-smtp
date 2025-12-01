@@ -1,9 +1,5 @@
 import { createAccessControl } from "better-auth/plugins/access";
-import {
-  defaultStatements,
-  adminAc,
-  userAc,
-} from "better-auth/plugins/admin/access";
+import { defaultStatements, adminAc } from "better-auth/plugins/admin/access";
 
 const statements = {
   ...defaultStatements,
@@ -14,14 +10,13 @@ const statements = {
 const ac = createAccessControl(statements);
 
 const USER = ac.newRole({
-  users: ["update"],
+  user: ["update", "set-password"],
   comments: ["create"],
-});
+})
 
-const MODERATOR = ac.newRole({
+const MEMBER = ac.newRole({
   users: ["create", "list", "update"],
-  comments: ["create", "toggle-hide", "delete"],
-  user: ["ban"],
+  comments: ["create", "toggle-hide"],
 });
 
 const ADMIN = ac.newRole({
@@ -35,4 +30,4 @@ const SUPER_ADMIN = ac.newRole({
   users: ["create", "list", "update", "delete"],
   comments: ["create", "toggle-hide", "delete"],
 });
-export { ac, statements, USER, MODERATOR, ADMIN, SUPER_ADMIN };
+export { ac, statements, USER, MEMBER, ADMIN, SUPER_ADMIN };

@@ -3,12 +3,14 @@ import { Entities, PermissionFor } from "./permissions.types";
 import { Role, CommentAction } from "@prisma/client";
 import { db } from "@/db";
 
+type RoleType = (typeof Role)["SUPER_ADMIN" | "ADMIN" | "MEMBER" | "USER"];
+
 // client
 export const hasClientPermission = <
   E extends Entities,
   P extends PermissionFor<E>,
 >(
-  role: keyof typeof Role,
+  role: RoleType,
   entity: E,
   permission: P
 ) => {

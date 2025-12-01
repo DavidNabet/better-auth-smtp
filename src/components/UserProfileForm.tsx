@@ -152,7 +152,7 @@ export default function UserProfileForm({ session }: Props) {
           >
             <SelectItem value="USER">USER</SelectItem>
             <SelectItem value="ADMIN">ADMIN</SelectItem>
-            <SelectItem value="MODERATOR">MODERATOR</SelectItem>
+            <SelectItem value="MEMBER">MEMBER</SelectItem>
           </SelectContent>
         </Select>
       </div>

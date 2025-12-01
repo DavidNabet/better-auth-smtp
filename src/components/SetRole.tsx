@@ -57,7 +57,7 @@ export default function SetRole({ users }: Props) {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="USER">USER</SelectItem>
-              <SelectItem value="MODERATE">MODERATE</SelectItem>
+              <SelectItem value="MEMBER">MODERATOR</SelectItem>
             </SelectContent>
           </Select>
         </div>

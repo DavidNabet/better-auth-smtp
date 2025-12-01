@@ -484,7 +484,7 @@ export async function requireModerator() {
     select: { role: true },
   });
 
-  if (!user || (user.role !== "ADMIN" && user.role !== "MODERATOR")) {
+  if (!user || (user.role !== "ADMIN" && user.role !== "MEMBER")) {
     throw new Error("Access denied");
   }
 

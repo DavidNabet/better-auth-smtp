@@ -120,7 +120,7 @@ export const usersColumns = [
     meta: {
       type: "select",
       options: [
-        { value: "MODERATOR", label: "MODERATOR" },
+        { value: "MEMBER", label: "MEMBER" },
         { value: "USER", label: "USER" },
       ],
     },

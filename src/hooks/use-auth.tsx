@@ -86,7 +86,7 @@ export function useAuthState() {
 
       setIsAdmin(permission);
     }
-    if (s.userRole === "ADMIN") {
+    if (s.userRole === Role.SUPER_ADMIN) {
       run();
     }
   }, [s?.sessionId]);
