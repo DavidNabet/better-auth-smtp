@@ -35,8 +35,8 @@ export const adminRoute = [
     isAdmin: true,
   },
   {
-    name: "MODERATOR",
-    href: "/dashboard/users/moderator",
+    name: "MEMBER",
+    href: "/dashboard/users/member",
     isAdmin: true,
   },
 ];

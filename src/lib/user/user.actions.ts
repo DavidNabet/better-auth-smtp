@@ -2,10 +2,7 @@
 
 import { authServer } from "@/lib/auth/auth.client";
 import { auth } from "@/lib/auth";
-import { ZodError, ZodErrorMap, ZodFormattedError, ZodIssue } from "zod";
 import {
-  CreateUsersSchema,
-  createUsersSchema,
   updatePasswordSchema,
   updateProfileSchema,
   updateUserSchema,
@@ -19,11 +16,10 @@ import { Role } from "@prisma/client";
 import { db } from "@/db";
 import { uploadFile } from "@/lib/upload";
 import { User } from "better-auth";
-import { getUserById } from "@/lib/auth/auth.utils";
 import type { FormState } from "./user.types";
+import { getCurrentUser, getUserById } from "@/lib/user/user.utils";
 import type { ActionState } from "@/lib/feedback/feedback.types";
 import { toAction, toActionState } from "@/lib/feedback/feedback.utils";
-import { hasServerPermission } from "@/lib/permissions/permissions.actions";
 
 export type ErrorTypes = keyof typeof authServer.$ERROR_CODES;
 
@@ -44,12 +40,23 @@ export async function updateProfile(
   }
   let upload;
 
-  const { name, image, avatar } = validatedFields.data;
+  const { name, image, avatar, role } = validatedFields.data;
   if (image && image.size !== 0) {
     upload = await uploadFile(image);
     console.log("url: ", upload);
   }
 
+  const { currentUser } = await getCurrentUser();
+
+  if (role) {
+    await auth.api.setRole({
+      body: {
+        userId: currentUser.id,
+        role,
+      },
+      headers: await head(),
+    });
+  }
   try {
     // const authContext = await auth.$context;
     // console.log("authContext: ", authContext);
@@ -181,9 +188,7 @@ export async function updateUser(schema: UpdateUserSchema): Promise<{
     const { userId, ...updateData } = validatedFields.data;
 
     // Check if user exists
-    const existingUser = await db.user.findUnique({
-      where: { id: userId },
-    });
+    const existingUser = await getUserById(userId);
 
     if (!existingUser) {
       return {
@@ -193,11 +198,8 @@ export async function updateUser(schema: UpdateUserSchema): Promise<{
     }
 
     // Check if current user has permission to update this user
-    const session = await auth.api.getSession({
-      headers: await head(),
-    });
-
-    if (!session?.user) {
+    const { user: currentUser } = await getCurrentUser();
+    if (!currentUser) {
       return {
         success: false,
         message: "Unauthorized.",
@@ -205,8 +207,8 @@ export async function updateUser(schema: UpdateUserSchema): Promise<{
     }
 
     // Only admins and moderators can update other users, or users can update themselves
-    const isNotUser = session.user.role !== "USER";
-    const isSelfUpdate = session.user.id === userId;
+    const isNotUser = currentUser.role !== "USER";
+    const isSelfUpdate = currentUser.id === userId;
 
     if (!isNotUser && !isSelfUpdate) {
       return {
@@ -306,7 +308,7 @@ export async function banUser(
   }
 
   try {
-    const { user } = await auth.api.banUser({
+    await auth.api.banUser({
       body: {
         userId,
         banReason,
@@ -472,15 +474,10 @@ export async function updateUserPassword(
 }
 
 export async function requireModerator() {
-  const session = await auth.api.getSession({
-    headers: await head(),
-  });
-  if (!session?.user) {
-    throw new Error("Unauthorized");
-  }
+  const { user: userSession } = await getCurrentUser();
 
   const user = await db.user.findUnique({
-    where: { id: session.user.id },
+    where: { id: userSession.id },
     select: { role: true },
   });
 
@@ -488,5 +485,5 @@ export async function requireModerator() {
     throw new Error("Access denied");
   }
 
-  return session.user;
+  return userSession;
 }

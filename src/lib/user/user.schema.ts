@@ -1,5 +1,7 @@
 import z, { TypeOf } from "zod";
 
+const userRole = z.enum(["ADMIN", "MEMBER", "USER", "SUPER_ADMIN"]);
+
 export const updateProfileSchema = z.object({
   name: z
     .string()
@@ -13,6 +15,7 @@ export const updateProfileSchema = z.object({
     .refine((file) => file && file.size <= 3000000, "Max file size is 3MB.")
     .optional(),
   avatar: z.string().url("Must be an url").optional().or(z.literal("")),
+  role: userRole.optional(),
 });
 
 export const updateEmailSchema = z.object({
@@ -76,7 +79,7 @@ export const createUsersSchema = z.object({
     .min(5, "Le mot de passe doit contenir plus de 5 caractères")
     .max(32, "Le mot de passe doit contenir moins de 32 caractères"),
 
-  role: z.enum(["ADMIN", "MEMBER", "USER"]).default("USER"),
+  role: userRole.default("USER"),
 });
 
 export const updateUserSchema = z.object({
@@ -87,7 +90,7 @@ export const updateUserSchema = z.object({
     .max(30, "Name must be at most 30 characters")
     .nullable(),
 
-  role: z.enum(["ADMIN", "MEMBER", "USER"]),
+  role: userRole.default("USER"),
   // banned: z.boolean().optional(),
   // twoFactorEnabled: z.boolean().optional(),
 });

@@ -43,6 +43,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { DialogCloseProps, DialogTriggerProps } from "@radix-ui/react-dialog";
+import { RoleType } from "@/lib/permissions/permissions.utils";
 
 export type Option = {
   label: string;
@@ -159,7 +160,7 @@ export const EditCell = ({ row, table }: CellContext<User, any>) => {
 
         const updateData = {
           userId: currentRowData.id,
-          role: currentRowData.role,
+          role: currentRowData.role as RoleType,
           name: currentRowData.name,
         };
 

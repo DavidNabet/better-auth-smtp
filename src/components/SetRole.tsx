@@ -61,15 +61,10 @@ export default function SetRole({ users }: Props) {
             </SelectContent>
           </Select>
         </div>
-        <div className="col-span-6">
-          {/* {error && <Alert message={error!} status="error" />}
-        {success && <Alert message={success!} status="success" />} */}
-        </div>
         <div className="mt-6 col-span-6 sm:flex sm:items-center sm:justify-end gap-x-6">
           <Button
             type="submit"
             className="bg-teal-600 hover:bg-teal-500 cursor-pointer"
-            // className="rounded-md bg-emerald-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-emerald-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600"
           >
             {/* {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} */}
             Update profile

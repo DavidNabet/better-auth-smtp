@@ -3,7 +3,7 @@
 import { authServer } from "@/lib/auth/auth.client";
 import { auth } from "@/lib/auth";
 import { typeToFlattenedError, ZodError, ZodIssue } from "zod";
-import { getUserByEmail, wait } from "./auth.utils";
+import { getUserByEmail } from "@/lib/user/user.utils";
 import { createUserSchema, signInSchema } from "./auth.schema";
 import { APIError } from "better-auth/api";
 import { revalidatePath } from "next/cache";

@@ -4,6 +4,7 @@ import {
   twoFactorClient,
   adminClient,
   inferAdditionalFields,
+  organizationClient,
 } from "better-auth/client/plugins";
 import { ac, MEMBER, ADMIN, USER, SUPER_ADMIN } from "../user/user.service";
 import { Role } from "@prisma/client";
@@ -28,6 +29,7 @@ export const authClient = createAuthClient({
         SUPER_ADMIN,
       },
     }),
+    organizationClient(),
   ],
   fetchOptions: {
     onError: async (context) => {
@@ -55,5 +57,6 @@ export const authServer = createAuthServer({
         SUPER_ADMIN,
       },
     }),
+    organizationClient(),
   ],
 });

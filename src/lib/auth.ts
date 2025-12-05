@@ -9,9 +9,15 @@ import { admin, twoFactor, username, organization } from "better-auth/plugins";
 import { sendMagicLinkforLogin, sendOTPforLogin } from "@/lib/auth/auth.mails";
 import { ac, USER, MEMBER, ADMIN, SUPER_ADMIN } from "@/lib/user/user.service";
 import { Role } from "@prisma/client";
+import {
+  member,
+  owner,
+  admin as adm,
+} from "./organization/organization.service";
+import { getUserByEmail } from "./user/user.utils";
 
 export type Session = typeof auth.$Infer.Session;
-export type User = (typeof auth.$Infer.Session)["user"];
+export type User = typeof auth.$Infer.Session.user;
 
 export const auth = betterAuth({
   database: prismaAdapter(db, {
@@ -109,16 +115,26 @@ export const auth = betterAuth({
   databaseHooks: {
     user: {
       update: {
+        before: async (user) => {
+          const u = user as User;
+          const currentUser = await getUserByEmail(u.email);
+          if (currentUser?.role !== "SUPER_ADMIN") {
+            throw new APIError("BAD_REQUEST", {
+              message: "Super admin accound cannot be deleted",
+            });
+          }
+        },
         after: async (user, ctx) => {
           const ADMIN_EMAIL = process.env.ADMIN_EMAIL!;
 
           if (ADMIN_EMAIL.includes(user.email!)) {
-            logger.info("db.user.update.after");
+            logger.info("auth db user updated: ", user.name);
+
             // return { data: { ...user, role: Role.ADMIN } };
             await db.user.update({
               where: { id: user.id },
               data: {
-                role: Role.ADMIN,
+                role: Role.SUPER_ADMIN,
               },
             });
           }
@@ -139,7 +155,7 @@ export const auth = betterAuth({
     nextCookies(),
     admin({
       defaultRole: Role.USER,
-      adminRoles: [Role.ADMIN, Role.MEMBER],
+      adminRoles: [Role.ADMIN, Role.MEMBER, Role.SUPER_ADMIN],
       ac,
       roles: {
         USER,
@@ -158,6 +174,13 @@ export const auth = betterAuth({
         },
       },
       skipVerificationOnEnable: true,
+    }),
+    organization({
+      roles: {
+        owner,
+        admin: adm,
+        member,
+      },
     }),
     // multiSession(),
     // magicLink({

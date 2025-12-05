@@ -1,15 +1,10 @@
-// import { auth } from "@/lib/auth";
 import LoadingIcon from "@/app/_components/LoadingIcon";
-// import { unstable_noStore as noStore } from "next/cache";
 import Wrapper from "@/app/_components/Wrapper";
 import { Suspense } from "react";
 import { CardInner } from "@/app/_components/Card";
 import { UsersTable, LogDisplay } from "@/components/Table/Tables";
 import { GenerateUsers } from "@/components/GenerateUsers";
-// import { redirect } from "next/navigation";
-// import { useAuthState } from "@/hooks/use-auth";
 import { getCurrentServerSession } from "@/lib/session/server";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 /** TODO : Plateforme de feedback / idées collaboratives
@@ -42,7 +37,7 @@ export default async function Dashboard() {
           : null}
       </span>
       <div className="grid grid-cols-1 gap-8 md:grid-cols-8 md:place-items-stretch">
-        {userRole === "ADMIN" ? (
+        {userRole === "ADMIN" || userRole === "SUPER_ADMIN" ? (
           <>
             <section className="col-span-6 md:col-span-3">
               <Suspense fallback={<LoadingIcon />}>
@@ -76,7 +71,6 @@ export default async function Dashboard() {
                 <CardInner
                   title="Nombre de users"
                   description="Nombre de users inscrits"
-                  className="h-[400px]"
                   actions={
                     <Link
                       href={`/dashboard/users/${userRole?.toLowerCase()}`}
@@ -98,7 +92,6 @@ export default async function Dashboard() {
                 <CardInner
                   title="Nombre de users"
                   description="Nombre de users inscrits"
-                  className="w-full!"
                   actions={
                     <Link
                       href={`/dashboard/users/${userRole?.toLowerCase()}`}

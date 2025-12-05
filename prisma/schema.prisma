@@ -16,15 +16,18 @@ enum Role {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  name          String?   @unique
+  id            String       @id @default(cuid())
+  email         String       @unique
+  name          String?      @unique
   emailVerified Boolean
   image         String?
   createdAt     DateTime
   updatedAt     DateTime
   sessions      Session[]
   accounts      Account[]
+  members       Member[]
+  invitations   Invitation[]
+  teamMembers   TeamMember[]
 
   role       Role      @default(USER)
   banned     Boolean?
@@ -60,6 +63,7 @@ model Account {
   createdAt             DateTime
   updatedAt             DateTime
 
+  @@index([userId])
   @@map("account")
 }
 
@@ -76,7 +80,11 @@ model Session {
 
   impersonatedBy String?
 
+  activeOrganizationId String?
+  activeTeamId         String?
+
   @@unique([token])
+  @@index([userId])
   @@map("session")
 }
 
@@ -88,6 +96,7 @@ model Verification {
   createdAt  DateTime?
   updatedAt  DateTime?
 
+  @@index([identifier])
   @@map("verification")
 }
 
@@ -99,6 +108,68 @@ model TwoFactor {
   user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("twoFactor")
+}
+
+model Organization {
+  id          String       @id
+  name        String
+  slug        String?
+  logo        String?
+  createdAt   DateTime
+  metadata    String?
+  members     Member[]
+  invitations Invitation[]
+  teams       Team[]
+  apps        App[]
+
+  @@unique([slug])
+  @@map("organization")
+}
+
+model Member {
+  id             String       @id
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role           String       @default("member")
+  createdAt      DateTime
+
+  @@map("member")
+}
+
+model Invitation {
+  id             String       @id
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  email          String
+  role           String?
+  status         String       @default("pending")
+  expiresAt      DateTime
+  inviterId      String
+  user           User         @relation(fields: [inviterId], references: [id], onDelete: Cascade)
+  teamId         String?
+
+  @@map("invitation")
+}
+
+model Team {
+  id             String       @id
+  name           String
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  teamMembers    TeamMember[]
+}
+
+model TeamMember {
+  id        String   @id
+  teamId    String
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  createdAt DateTime @default(now())
 }
 
 model RateLimit {
@@ -132,12 +203,33 @@ model ModerationLog {
   @@map("moderationLog")
 }
 
+model App {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String
+  description String?
+  logo        String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onUpdate: Cascade)
+
+  feedbacks Feedback[]
+
+  @@unique([slug])
+  @@map("app")
+}
+
 model Feedback {
   id          String         @id @default(cuid())
   title       String
   description String
   status      FeedbackStatus @default(PENDING)
   subject     String?
+
+  appId String
+  app   App    @relation(fields: [appId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   authorId String
   author   User   @relation(fields: [authorId], references: [id])

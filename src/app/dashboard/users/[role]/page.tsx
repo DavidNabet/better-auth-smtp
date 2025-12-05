@@ -1,24 +1,17 @@
 import { Suspense } from "react";
 import Wrapper from "@/app/_components/Wrapper";
 import LoadingIcon from "@/app/_components/LoadingIcon";
-import { CardInner } from "@/app/_components/Card";
-import SetRole from "@/components/SetRole";
-// import { getCurrentServerSession } from "@/lib/session/server";
-// import { getCurrentClientSession } from "@/lib/session/client";
-import { auth } from "@/lib/auth";
-import { cookies, headers } from "next/headers";
 import { getNotAdminUsers } from "@/lib/user/user.utils";
 import { DataTable } from "@/components/Table/DataTable";
 import { usersColumns } from "@/components/Table/column";
 import { capitalize } from "@/lib/utils";
 import { LogTable } from "@/components/Table/Tables";
-import { allModerationsLogs } from "@/lib/permissions/permissions.utils";
 
 export const dynamicParams = false;
 export const dynamic = "auto";
 // export const revalidate = 0;
 export async function generateStaticParams() {
-  return [{ role: "admin" }, { role: "moderator" }];
+  return [{ role: "admin" }, { role: "member" }];
 }
 
 export default async function UserRolePage({
@@ -46,7 +39,7 @@ export default async function UserRolePage({
                   Manage all users
                 </p>
               </div>
-              {role === "admin" ? (
+              {role !== "member" ? (
                 <DataTable
                   columns={usersColumns}
                   data={users!}

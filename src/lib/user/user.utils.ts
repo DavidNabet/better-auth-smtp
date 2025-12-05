@@ -1,4 +1,8 @@
+"use server";
 import { db } from "@/db";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
 export const getNotAdminUsers = async () => {
   try {
@@ -12,6 +16,77 @@ export const getNotAdminUsers = async () => {
       },
     });
     return users;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const getCurrentUser = async () => {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session) {
+    redirect("/auth/signin");
+  }
+
+  const currentUser = await db.user.findFirst({
+    where: { id: session.user.id },
+  });
+
+  if (!currentUser) {
+    redirect("/auth/signin");
+  }
+
+  return {
+    ...session,
+    currentUser,
+  };
+};
+
+// User
+export const getUserByEmail = async (email: string) => {
+  try {
+    const user = await db.user.findUnique({
+      where: { email },
+    });
+    if (!user) {
+      throw new Error("Email required");
+    }
+    return user;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const getUserByUsername = async (name: string) => {
+  try {
+    const user = await db.user.findUnique({
+      where: { name },
+    });
+    return user;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const getUserById = async (id: string) => {
+  try {
+    const user = await db.user.findUnique({
+      where: { id },
+    });
+    return user;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const getUserIdByEmail = async (email: string) => {
+  try {
+    const user = await db.user.findUnique({
+      where: { email },
+    });
+    return user?.id;
   } catch (error) {
     console.log(error);
   }

@@ -22,6 +22,8 @@ import { ErrorMessages } from "@/app/_components/ErrorMessages";
 import GenerateAvatar from "./GenerateAvatar";
 import { useRouter } from "next/navigation";
 import { wait } from "@/lib/auth/auth.utils";
+import { Role } from "@prisma/client";
+import { RoleType } from "@/lib/permissions/permissions.utils";
 
 interface Props {
   session: Session | null;
@@ -35,6 +37,7 @@ export default function UserProfileForm({ session }: Props) {
     name: undefined,
     image: undefined,
     avatar: undefined,
+    role: undefined,
   });
   const [
     {
@@ -62,6 +65,7 @@ export default function UserProfileForm({ session }: Props) {
         name: undefined,
         image: undefined,
         avatar: undefined,
+        role: undefined,
       });
       // Refresh data
       wait(2000);
@@ -129,7 +133,7 @@ export default function UserProfileForm({ session }: Props) {
           id="Name"
           name="name"
           placeholder={session?.user?.name}
-          value={session?.user.name || formData.name}
+          defaultValue={session?.user.name || formData.name}
           onChange={handleChange}
           className="mt-1 w-full"
         />
@@ -141,17 +145,26 @@ export default function UserProfileForm({ session }: Props) {
         </Label>
 
         <Select
-          defaultValue={session?.user.role!}
+          name="role"
+          defaultValue={session?.user.role || formData.role}
+          // defaultValue={session?.user.role}
+          onValueChange={(value: RoleType) =>
+            setFormData((prev) => ({
+              ...prev,
+              role: value,
+            }))
+          }
           disabled={session?.user.role !== "ADMIN"}
         >
-          <SelectTrigger className="mt-1 w-full">
+          <SelectTrigger id="Role" className="mt-1 w-full">
             <SelectValue aria-label={session?.user.role!} />
           </SelectTrigger>
           <SelectContent
             className={`${session?.user.role !== "ADMIN" && "disabled:cursor-pointer"}`}
           >
-            <SelectItem value="USER">USER</SelectItem>
+            <SelectItem value="SUPER_ADMIN">SUPER_ADMIN</SelectItem>
             <SelectItem value="ADMIN">ADMIN</SelectItem>
+            <SelectItem value="USER">USER</SelectItem>
             <SelectItem value="MEMBER">MEMBER</SelectItem>
           </SelectContent>
         </Select>

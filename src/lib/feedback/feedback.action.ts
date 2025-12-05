@@ -11,7 +11,6 @@ import {
   createCommentSchema,
   createFeedbackSchema,
 } from "@/lib/feedback/feedback.schema";
-import { getUserIdByEmail } from "@/lib/auth/auth.utils";
 import {
   cleanupOrphanCommentParents,
   getFeedbackTitleByCommentId,
@@ -23,6 +22,7 @@ import type { ActionState, State } from "./feedback.types";
 import type { FormState } from "@/lib/user/user.types";
 import { slugify } from "@/lib/utils";
 import { hasServerPermission } from "@/lib/permissions/permissions.actions";
+import { getUserIdByEmail } from "@/lib/user/user.utils";
 
 export async function createFeedback(
   formState: FormState,
