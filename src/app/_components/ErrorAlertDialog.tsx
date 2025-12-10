@@ -1,4 +1,4 @@
-import { TriangleAlertIcon } from "lucide-react";
+import { XCircle } from "lucide-react";
 
 import {
   AlertDialog,
@@ -12,41 +12,38 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 
-const AlertDialogDestructiveDemo = () => {
+export function AlertDialog02() {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="outline">Alert Dialog Destructive</Button>
+        <Button>Error Dialog</Button>
       </AlertDialogTrigger>
-      <AlertDialogContent>
-        <AlertDialogHeader className="items-center">
-          <div className="bg-destructive/10 mx-auto mb-2 flex size-12 items-center justify-center rounded-full">
-            <TriangleAlertIcon className="text-destructive size-6" />
+      <AlertDialogContent className="bg-gray-900 text-white border-0">
+        <AlertDialogHeader>
+          <div className="flex items-center gap-2">
+            <XCircle className="h-5 w-5 text-rose-400" />
+            <AlertDialogTitle className="text-white">
+              Error Detected
+            </AlertDialogTitle>
           </div>
-          <AlertDialogTitle>
-            Are you absolutely sure you want to delete?
-          </AlertDialogTitle>
-          <AlertDialogDescription className="text-center">
-            This action cannot be undone. This will permanently delete your
-            account and remove your data from our servers.
-            <span className="mt-4 flex items-center justify-center gap-3">
-              <Checkbox id="terms" />
-              <Label htmlFor="terms">Don&apos;t ask next again</Label>
-            </span>
+          <AlertDialogDescription className="text-gray-300">
+            We&apos;ve encountered an error processing your request. Please try
+            again or contact support if the issue persists.
           </AlertDialogDescription>
         </AlertDialogHeader>
+        <div className="bg-gray-800 p-3 rounded-md my-2 text-sm text-gray-300 font-mono">
+          Error Code: 500 - Internal Server Error
+        </div>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction className="bg-destructive dark:bg-destructive/60 hover:bg-destructive focus-visible:ring-destructive text-white">
-            Delete
+          <AlertDialogCancel className="bg-gray-700 border-gray-700 hover:bg-gray-800 text-white hover:text-white">
+            Dismiss
+          </AlertDialogCancel>
+          <AlertDialogAction className="bg-rose-500 hover:bg-rose-600 text-white hover:text-white">
+            Contact Support
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
   );
-};
-
-export default AlertDialogDestructiveDemo;
+}

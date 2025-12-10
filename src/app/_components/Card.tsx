@@ -8,6 +8,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Accordion,
+  AccordionTrigger,
+  AccordionContent,
+  AccordionItem,
+} from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -16,7 +22,7 @@ type CardProps = ComponentProps<typeof Card>;
 
 interface ICard {
   title: string;
-  description: string;
+  description?: string;
   children?: ReactNode;
   icon?: ReactNode;
   boxed?: boolean;
@@ -62,36 +68,52 @@ export function CardButton({
   href,
   label,
   className,
+  children,
+  boxed,
   ...props
-}: ICard & ICardLink & CardProps) {
+}: ICard & Partial<ICardLink> & CardProps) {
+  const classNames = {
+    icon: {
+      default:
+        "[&_svg]:!size-6 h-12 w-12 rounded-lg bg-teal-500 text-white shadow-lg md:h-14 md:w-14 md:rounded-xl",
+      secondary: "flex size-8 items-center justify-center rounded-lg bg-muted",
+    },
+  };
   return (
     <Card className={cn("p-6 border-4 border-teal-500", className)} {...props}>
-      <div className="flex gap-4 md:gap-6 ">
+      <div className={cn("flex gap-4", boxed && "items-center")}>
         {icon && (
           <Button
-            variant="default"
+            variant="secondary"
             size="icon"
-            className="[&_svg]:!size-6 h-12 w-12 rounded-lg bg-teal-500 text-white shadow-lg md:h-14 md:w-14 md:rounded-xl"
+            className={
+              boxed ? classNames.icon.secondary : classNames.icon.default
+            }
           >
             {icon}
           </Button>
         )}
-        <div>
-          <CardTitle className="mb-2 text-lg">{title}</CardTitle>
-          <CardDescription className="mb-2 text-base">
-            {description}
-          </CardDescription>
-          <CardContent className="px-0">
-            <Link
-              href={href}
-              title={label}
-              className="font-bold text-teal-500 transition duration-100 hover:text-teal-600 active:text-teal-700"
-            >
-              {label}
-            </Link>
-          </CardContent>
-        </div>
+        {boxed ? (
+          <CardTitle className="mb-0">{title}</CardTitle>
+        ) : (
+          <div>
+            <CardTitle className="mb-2 text-lg">{title}</CardTitle>
+            <CardDescription className="mb-2 text-base">
+              {description}
+            </CardDescription>
+            <CardContent className="px-0">
+              <Link
+                href={href!}
+                title={label}
+                className="font-bold text-teal-500 transition duration-100 hover:text-teal-600 active:text-teal-700"
+              >
+                {label}
+              </Link>
+            </CardContent>
+          </div>
+        )}
       </div>
+      {boxed && <>{children}</>}
     </Card>
   );
 }

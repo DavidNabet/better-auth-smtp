@@ -44,7 +44,7 @@ export default async function Navbar() {
                   .filter((route) => route.name === userRole)
                   .map((item) => (
                     <NavLink key={item.name} {...item}>
-                      {capitalize(item.name)}
+                      Me
                     </NavLink>
                   ))}
             </nav>

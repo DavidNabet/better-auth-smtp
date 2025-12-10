@@ -11,7 +11,7 @@ export const dynamicParams = false;
 export const dynamic = "auto";
 // export const revalidate = 0;
 export async function generateStaticParams() {
-  return [{ role: "admin" }, { role: "member" }];
+  return [{ role: "super_admin" }, { role: "member" }];
 }
 
 export default async function UserRolePage({

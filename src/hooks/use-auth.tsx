@@ -7,14 +7,17 @@ import {
   useContext,
   ReactNode,
   useLayoutEffect,
+  use,
 } from "react";
 import { authClient, authServer } from "@/lib/auth/auth.client";
 import { useRouter } from "next/navigation";
 import { getCurrentClientSession } from "@/lib/session/client";
 // import { Session } from "@/lib/auth";
-import { ADMIN } from "@/lib/user/user.service";
 import { APIError } from "better-auth/api";
-import { hasClientPermission } from "@/lib/permissions/permissions.utils";
+import {
+  hasClientPermission,
+  RoleType,
+} from "@/lib/permissions/permissions.utils";
 import { Role } from "@prisma/client";
 // import { auth } from "@/lib/auth";
 
@@ -73,7 +76,7 @@ export function useAuthState() {
     if (!s) return;
     async function run() {
       const permission = hasClientPermission(
-        s?.userRole! as keyof typeof Role,
+        s?.userRole! as RoleType,
         "user",
         "delete"
       );
@@ -108,7 +111,7 @@ export function useAuthState() {
         userId: data?.user.id!,
         userEmail: data?.user.email!,
         userName: data?.user?.name!,
-        userRole: data?.user.role,
+        userRole: data?.user.role!,
         userImage: data?.user.image,
         sessionToken: data?.session.token!,
         expiresAt: data?.session.expiresAt!,
@@ -133,7 +136,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 }
 
 export function useAuth() {
-  const auth = useContext(AuthContext);
+  const auth = use(AuthContext);
   if (!auth) {
     throw new Error("useAuth must be used within an AuthProvider");
   }

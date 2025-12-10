@@ -29,8 +29,8 @@ export const menu = [
 
 export const adminRoute = [
   {
-    name: "ADMIN",
-    href: "/dashboard/users/admin",
+    name: "SUPER_ADMIN",
+    href: "/dashboard/users/super_admin",
     icon: <Icon name="user-cog" className="mr-3" />,
     isAdmin: true,
   },

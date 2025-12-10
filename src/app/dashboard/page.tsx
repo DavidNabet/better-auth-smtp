@@ -48,23 +48,6 @@ export default async function Dashboard() {
                   <GenerateUsers userId={userId.slice(2, 6)} />
                 </CardInner>
               </Suspense>
-
-              <Suspense fallback={<LoadingIcon />}>
-                <CardInner
-                  title="Log"
-                  description="Log de modérations"
-                  actions={
-                    <Link
-                      href={`/dashboard/users/${userRole?.toLowerCase()}/#moderation_logs`}
-                      className="text-primary text-sm underline"
-                    >
-                      Voir plus
-                    </Link>
-                  }
-                >
-                  <LogDisplay />
-                </CardInner>
-              </Suspense>
             </section>
             <section className="col-span-6 md:col-span-5">
               <Suspense fallback={<LoadingIcon />}>

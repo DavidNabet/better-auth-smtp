@@ -3,10 +3,16 @@ import { cn } from "@/lib/utils";
 interface WrapperProps {
   children: React.ReactNode;
   title: string;
+  description?: string;
   className?: string;
 }
 
-export default function Wrapper({ children, title, className }: WrapperProps) {
+export default function Wrapper({
+  children,
+  title,
+  description,
+  className,
+}: WrapperProps) {
   return (
     <div className="w-full">
       <h3
@@ -17,6 +23,10 @@ export default function Wrapper({ children, title, className }: WrapperProps) {
       >
         {title}
       </h3>
+      {description && (
+        <p className="text-sm text-muted-foreground">{description}</p>
+      )}
+
       {children}
     </div>
   );
