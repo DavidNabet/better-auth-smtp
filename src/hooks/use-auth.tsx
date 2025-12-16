@@ -23,23 +23,27 @@ import { Role } from "@prisma/client";
 
 type SessionServer = typeof authServer.$Infer.Session;
 
+function sessionDto(data: SessionServer) {
+  return {
+    sessionId: data.session.id!,
+    userId: data.user.id!,
+    email: data.user.email!,
+    name: data.user.name!,
+    role: data.user.role!,
+    image: data.user.image,
+    token: data.session.token!,
+    expiresAt: data.session.expiresAt!,
+  };
+}
+
+type SessionUser = ReturnType<typeof sessionDto>;
+
 interface AuthContextType {
   session?: SessionUser;
   isAdmin: boolean;
   logOut: () => void;
   verifySession: () => void;
 }
-
-type SessionUser = {
-  sessionId: SessionServer["session"]["id"];
-  userId: SessionServer["session"]["userId"];
-  userEmail: SessionServer["user"]["email"];
-  userName: SessionServer["user"]["name"];
-  userRole: SessionServer["user"]["role"];
-  userImage: SessionServer["user"]["image"];
-  sessionToken: SessionServer["session"]["token"];
-  expiresAt: SessionServer["session"]["expiresAt"];
-};
 
 export const AuthContext = createContext<AuthContextType | undefined>(
   undefined
@@ -54,16 +58,8 @@ export function useAuthState() {
   useEffect(() => {
     (async function run() {
       const { data } = await authClient.getSession();
-      setSession({
-        sessionId: data?.session.id!,
-        userId: data?.user.id!,
-        userEmail: data?.user.email!,
-        userName: data?.user?.name!,
-        userRole: data?.user.role!,
-        userImage: data?.user.image,
-        sessionToken: data?.session.token!,
-        expiresAt: data?.session.expiresAt!,
-      });
+      const filteredData = sessionDto(data as SessionServer);
+      setSession(filteredData);
       console.log("session provider: ", data);
 
       return () => {
@@ -76,7 +72,7 @@ export function useAuthState() {
     if (!s) return;
     async function run() {
       const permission = hasClientPermission(
-        s?.userRole! as RoleType,
+        s?.role as RoleType,
         "user",
         "delete"
       );
@@ -89,14 +85,14 @@ export function useAuthState() {
 
       setIsAdmin(permission);
     }
-    if (s.userRole === Role.SUPER_ADMIN) {
+    if (s.role === Role.SUPER_ADMIN) {
       run();
     }
   }, [s?.sessionId]);
 
   async function logOut() {
     const { data, error } = await authClient.revokeSession({
-      token: s?.sessionToken!,
+      token: s?.token!,
     });
     console.log("logout: ", data, error);
     setSession(undefined);
@@ -106,16 +102,8 @@ export function useAuthState() {
     const { data, isPending, error } = authClient.useSession();
     if (!error && !isPending) {
       // userRole: data?.user?.role,
-      setSession({
-        sessionId: data?.session.id!,
-        userId: data?.user.id!,
-        userEmail: data?.user.email!,
-        userName: data?.user?.name!,
-        userRole: data?.user.role!,
-        userImage: data?.user.image,
-        sessionToken: data?.session.token!,
-        expiresAt: data?.session.expiresAt!,
-      });
+      const filteredData = sessionDto(data as SessionServer);
+      setSession(filteredData);
     } else {
       router.refresh();
       router.push("/auth/signin");

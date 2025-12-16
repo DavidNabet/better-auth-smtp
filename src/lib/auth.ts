@@ -115,15 +115,15 @@ export const auth = betterAuth({
   databaseHooks: {
     user: {
       update: {
-        before: async (user) => {
-          const u = user as User;
-          const currentUser = await getUserByEmail(u.email);
-          if (currentUser?.role !== "SUPER_ADMIN") {
-            throw new APIError("BAD_REQUEST", {
-              message: "Super admin accound cannot be deleted",
-            });
-          }
-        },
+        // before: async (user) => {
+        //   const u = user as User;
+        //   const currentUser = await getUserByEmail(u.email);
+        //   if (currentUser?.role === "SUPER_ADMIN") {
+        //     throw new APIError("BAD_REQUEST", {
+        //       message: "Super admin accound cannot be deleted",
+        //     });
+        //   }
+        // },
         after: async (user, ctx) => {
           const ADMIN_EMAIL = process.env.ADMIN_EMAIL!;
 
@@ -152,7 +152,6 @@ export const auth = betterAuth({
     },
   },
   plugins: [
-    nextCookies(),
     admin({
       defaultRole: Role.USER,
       adminRoles: [Role.ADMIN, Role.MEMBER, Role.SUPER_ADMIN],
@@ -181,7 +180,24 @@ export const auth = betterAuth({
         admin: adm,
         member,
       },
+      teams: {
+        enabled: true,
+        allowRemovingAllTeams: false,
+      },
+      schema: {
+        team: {
+          additionalFields: {
+            slug: {
+              type: "string",
+              required: true,
+              input: true,
+              returned: true,
+            },
+          },
+        },
+      },
     }),
+    nextCookies(),
     // multiSession(),
     // magicLink({
     //   sendMagicLink: async ({ email, url, token }) => {

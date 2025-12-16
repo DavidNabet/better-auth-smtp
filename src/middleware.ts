@@ -3,6 +3,8 @@ import type { NextRequest } from "next/server";
 import { getSessionCookie } from "better-auth/cookies";
 import { betterFetch } from "@better-fetch/fetch";
 import { Session } from "./lib/auth";
+import { RoleType } from "./lib/permissions/permissions.utils";
+import { doesRoleHaveAccessToURL } from "./lib/role";
 /**
  * L'admin a accès à certaines routes, le user non !
  * Pour comparer un admin d'un user, soit on met un userId param, soit on crée un accessToken** encoded qui est stocké dans le cookie et dont le role est soit user soit admin.
@@ -14,10 +16,16 @@ import { Session } from "./lib/auth";
 
 export async function middleware(req: NextRequest) {
   const routes = ["/auth/signin", "/auth/signup", "/auth/two-factor"];
-  const adminRoute = ["/dashboard/users/admin", "/dashboard/users/moderator"];
-  const role = ["ADMIN", "MODERATOR"];
-
+  const adminRoute = ["/dashboard/users/admin", "/dashboard/users/member"];
   const root = ["/"];
+
+  // const roleRoutes: Record<RoleType, string[]> = {
+  //   SUPER_ADMIN: ["/dashboard", "/admin", "/settings"],
+  //   ADMIN: ["/dashboard", "/admin", "/settings"],
+  //   MEMBER: ["/dashboard", "/mod-tools"],
+  //   USER: ["/dashboard"],
+  // };
+
   const { nextUrl } = req;
   const isAuthRoute = routes.includes(nextUrl.pathname);
   const isAdminRoute = adminRoute.includes(nextUrl.pathname);
@@ -34,19 +42,24 @@ export async function middleware(req: NextRequest) {
     }
   );
 
+  const role = session?.user.role!;
+
+  let haveAccess = doesRoleHaveAccessToURL(role, nextUrl.pathname);
+
   console.log("sessionCookie: ", sessionCookie);
+
+  if (!haveAccess) {
+    return NextResponse.rewrite(new URL("/403", req.url));
+  }
 
   if (isRoot) {
     console.log("root");
     return NextResponse.redirect(new URL("/auth/signin", nextUrl.origin));
   }
 
-  if (isAuthRoute) {
-    if (sessionCookie) {
-      console.log("logged in");
-      return NextResponse.redirect(new URL("/dashboard", req.url));
-    }
-    return NextResponse.next();
+  if (isAuthRoute && !(role === "ADMIN" || role === "MEMBER")) {
+    console.log("logged in");
+    return NextResponse.redirect(new URL("/dashboard", req.url));
   }
 
   if (!sessionCookie && nextUrl.pathname.startsWith("/dashboard")) {
@@ -92,5 +105,10 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   // exclude routes
-  matcher: ["/", "/((?!api|dashboard|_next/static|_next/image|favicon.ico).*)"],
+  matcher: [
+    "/dashboard/:path*",
+    "/auth/:path*",
+    "/",
+    // "/((?!api|_next/static|_next/image|favicon.ico).*)",
+  ],
 };

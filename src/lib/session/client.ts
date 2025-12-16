@@ -1,6 +1,8 @@
+"use client";
+
 import { authClient } from "@/lib/auth/auth.client";
 
-export async function getCurrentClientSession() {
-  const session = await authClient.getSession();
+export function getCurrentClientSession() {
+  const session = authClient.useSession();
   return session;
 }
