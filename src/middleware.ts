@@ -18,6 +18,14 @@ export async function middleware(req: NextRequest) {
   const routes = ["/auth/signin", "/auth/signup", "/auth/two-factor"];
   const adminRoute = ["/dashboard/users/admin", "/dashboard/users/member"];
   const root = ["/"];
+
+  // const roleRoutes: Record<RoleType, string[]> = {
+  //   SUPER_ADMIN: ["/dashboard", "/admin", "/settings"],
+  //   ADMIN: ["/dashboard", "/admin", "/settings"],
+  //   MEMBER: ["/dashboard", "/mod-tools"],
+  //   USER: ["/dashboard"],
+  // };
+
   const { nextUrl } = req;
   const isAuthRoute = routes.includes(nextUrl.pathname);
   const isAdminRoute = adminRoute.includes(nextUrl.pathname);
