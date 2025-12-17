@@ -5,6 +5,7 @@ import {
   adminClient,
   inferAdditionalFields,
   organizationClient,
+  inferOrgAdditionalFields,
 } from "better-auth/client/plugins";
 import { ac, MEMBER, ADMIN, USER, SUPER_ADMIN } from "../user/user.service";
 import { Role } from "@prisma/client";
@@ -29,7 +30,12 @@ export const authClient = createAuthClient({
         SUPER_ADMIN,
       },
     }),
-    organizationClient(),
+    organizationClient({
+      teams: {
+        enabled: true,
+      },
+      schema: inferOrgAdditionalFields<typeof auth>(),
+    }),
   ],
   fetchOptions: {
     onError: async (context) => {

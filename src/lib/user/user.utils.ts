@@ -3,6 +3,7 @@ import { db } from "@/db";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { unstable_cache as cache } from "next/cache";
 
 export const getNotAdminUsers = async () => {
   try {
@@ -21,7 +22,7 @@ export const getNotAdminUsers = async () => {
   }
 };
 
-export const getCurrentUser = async () => {
+export const getCurrentUser = cache(async () => {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -32,6 +33,12 @@ export const getCurrentUser = async () => {
 
   const currentUser = await db.user.findFirst({
     where: { id: session.user.id },
+    select: {
+      role: true,
+      email: true,
+      name: true,
+      id: true,
+    },
   });
 
   if (!currentUser) {
@@ -42,7 +49,7 @@ export const getCurrentUser = async () => {
     ...session,
     currentUser,
   };
-};
+});
 
 // User
 export const getUserByEmail = async (email: string) => {
