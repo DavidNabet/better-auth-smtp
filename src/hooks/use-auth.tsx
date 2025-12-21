@@ -23,20 +23,20 @@ import { Role } from "@prisma/client";
 
 type SessionServer = typeof authServer.$Infer.Session;
 
-function sessionDto(data: SessionServer) {
+function sessionDto(data: SessionServer | null) {
   return {
-    sessionId: data.session.id!,
-    userId: data.user.id!,
-    email: data.user.email!,
-    name: data.user.name!,
-    role: data.user.role!,
-    image: data.user.image,
-    token: data.session.token!,
-    expiresAt: data.session.expiresAt!,
+    sessionId: data?.session.id,
+    userId: data?.user.id!,
+    email: data?.user.email!,
+    name: data?.user.name!,
+    role: data?.user.role!,
+    image: data?.user.image,
+    token: data?.session.token!,
+    expiresAt: data?.session.expiresAt!,
   };
 }
 
-type SessionUser = ReturnType<typeof sessionDto>;
+type SessionUser = Awaited<ReturnType<typeof sessionDto>>;
 
 interface AuthContextType {
   session?: SessionUser;

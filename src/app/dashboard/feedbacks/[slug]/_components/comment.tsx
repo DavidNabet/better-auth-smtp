@@ -212,7 +212,7 @@ export function CommentItem({
   const id = useId();
 
   const isModerator =
-    session?.userRole === "ADMIN" || session?.userRole === "MODERATOR";
+    session?.role === "ADMIN" || session?.role === "MODERATOR";
 
   const [, hideAction, hidePending] = useHideComment();
   const [, deleteAction, deletePending] = useDeleteComment();
@@ -234,7 +234,7 @@ export function CommentItem({
               <div className="flex-1 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2 gap-2">
-                    {session?.userName === comment.user.name && (
+                    {session?.name === comment.user.name && (
                       <Badge variant="default" className="rounded-full">
                         You
                       </Badge>

@@ -38,7 +38,7 @@ export async function getOrganizations() {
   const { currentUser } = await getCurrentUser();
 
   const members = await db.member.findMany({
-    where: { id: currentUser.id },
+    where: { userId: currentUser.id },
   });
 
   const organizations = await db.organization.findMany({
@@ -54,7 +54,7 @@ export async function getOrganizations() {
 
 export async function getActiveOrganization(userId: string) {
   const memberUser = await db.member.findFirst({
-    where: { id: userId },
+    where: { userId },
   });
 
   if (!memberUser) {

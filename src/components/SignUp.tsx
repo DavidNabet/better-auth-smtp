@@ -26,7 +26,7 @@ export default function AuthSignUp() {
     passwordConfirm: "",
   });
   const [errorMessage, setErrorMessage] = useState<
-    z.inferFlattenedErrors<z.ZodTypeAny>["fieldErrors"]
+    z.inferFlattenedErrors<typeof createUserSchema>["fieldErrors"]
   >({
     name: [""],
     email: [""],

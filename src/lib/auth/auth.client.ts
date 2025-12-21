@@ -10,6 +10,12 @@ import {
 import { ac, MEMBER, ADMIN, USER, SUPER_ADMIN } from "../user/user.service";
 import { Role } from "@prisma/client";
 import { auth } from "@/lib/auth";
+import {
+  dc,
+  owner,
+  admin as adm,
+  member,
+} from "../organization/organization.service";
 
 export type User = (typeof authServer.$Infer.Session)["user"];
 
@@ -31,6 +37,12 @@ export const authClient = createAuthClient({
       },
     }),
     organizationClient({
+      ac: dc,
+      roles: {
+        owner,
+        admin: adm,
+        member,
+      },
       teams: {
         enabled: true,
       },

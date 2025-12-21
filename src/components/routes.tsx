@@ -7,6 +7,10 @@ export const menu = [
     icon: <Icon name="layout-dashboard" className="mr-3" />,
   },
   {
+    name: "Organizations",
+    href: "/dashboard/organizations",
+  },
+  {
     name: "Share your thought",
     href: "/dashboard/feedbacks",
   },

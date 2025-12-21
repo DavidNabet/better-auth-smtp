@@ -1,29 +1,39 @@
 import "server-only";
 
 export const roleAccessMap: Record<string, string[]> = {
-  admin: [
-    "/",
+  SUPER_ADMIN: [
     "/dashboard",
-    "/profile",
-    "/organizations",
-    "/organizations/[id]",
-    "/apps",
-    "/apps/[id]",
-    "/team",
-    "/manage-users",
+    "/dashboard/profile",
+    "/dashboard/organizations",
+    "/dashboard/apps",
+    "/dashboard/apps/[id]",
+    "/dashboard/team",
+    "/dashboard/manage-users",
   ],
-  owner: [
-    "/",
+  OWNER: [
     "/dashboard",
-    "/profile",
-    "/organizations",
-    "/organizations/[id]",
-    "/apps",
-    "/apps/[id]",
-    "/team",
+    "/dashboard/profile",
+    "/dashboard/organizations",
+    "/dashboard/organizations/[id]",
+    "/dashboard/apps",
+    "/dashboard/apps/[id]",
+    "/dashboard/team",
   ],
-  member: ["/", "/dashboard", "/profile", "/organization", "/app", "/team"],
-  user: ["/", "/dashboard", "/profile", "/organization"],
+  ADMIN: [
+    "/dashboard",
+    "/dashboard/profile",
+    "/dashboard/organizations/[id]",
+    "/dashboard/apps",
+    "/dashboard/apps/[id]",
+    "/dashboard/team",
+  ],
+  MEMBER: [
+    "/dashboard",
+    "/dashboard/profile",
+    "/dashboard/organizations/[id]",
+    "/dashboard/apps/[id]",
+  ],
+  USER: ["/dashboard", "/dashboard/profile", "/dashboard/apps"],
 };
 
 export function doesRoleHaveAccessToURL(role: string, url: string) {

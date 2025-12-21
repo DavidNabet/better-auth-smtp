@@ -10,6 +10,7 @@ import { sendMagicLinkforLogin, sendOTPforLogin } from "@/lib/auth/auth.mails";
 import { ac, USER, MEMBER, ADMIN, SUPER_ADMIN } from "@/lib/user/user.service";
 import { Role } from "@prisma/client";
 import {
+  dc,
   member,
   owner,
   admin as adm,
@@ -175,6 +176,7 @@ export const auth = betterAuth({
       skipVerificationOnEnable: true,
     }),
     organization({
+      ac: dc,
       roles: {
         owner,
         admin: adm,

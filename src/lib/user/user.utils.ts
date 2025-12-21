@@ -3,7 +3,6 @@ import { db } from "@/db";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { unstable_cache as cache } from "next/cache";
 
 export const getNotAdminUsers = async () => {
   try {
@@ -22,7 +21,7 @@ export const getNotAdminUsers = async () => {
   }
 };
 
-export const getCurrentUser = cache(async () => {
+export const getCurrentUser = async () => {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -49,7 +48,30 @@ export const getCurrentUser = cache(async () => {
     ...session,
     currentUser,
   };
-});
+};
+
+export const getUsersByOrganizationId = async (organizationId: string) => {
+  try {
+    const members = await db.member.findMany({
+      where: { organizationId },
+    });
+
+    const users = await db.user.findMany({
+      where: {
+        id: {
+          not: {
+            in: members.map((member) => member.userId),
+          },
+        },
+      },
+    });
+
+    return users;
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+};
 
 // User
 export const getUserByEmail = async (email: string) => {

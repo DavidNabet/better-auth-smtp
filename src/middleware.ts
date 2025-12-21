@@ -16,7 +16,7 @@ import { doesRoleHaveAccessToURL } from "./lib/role";
 
 export async function middleware(req: NextRequest) {
   const routes = ["/auth/signin", "/auth/signup", "/auth/two-factor"];
-  const adminRoute = ["/dashboard/users/admin", "/dashboard/users/member"];
+  const adminRoute = ["/dashboard/users/admin", "/dashboard/users/super_admin"];
   const root = ["/"];
 
   // const roleRoutes: Record<RoleType, string[]> = {
@@ -42,29 +42,34 @@ export async function middleware(req: NextRequest) {
     }
   );
 
-  const role = session?.user.role!;
+  // const role = session?.user.role!;
 
-  let haveAccess = doesRoleHaveAccessToURL(role, nextUrl.pathname);
+  // let haveAccess = doesRoleHaveAccessToURL(role, nextUrl.pathname);
 
   console.log("sessionCookie: ", sessionCookie);
-
-  if (!haveAccess) {
-    return NextResponse.rewrite(new URL("/403", req.url));
-  }
 
   if (isRoot) {
     console.log("root");
     return NextResponse.redirect(new URL("/auth/signin", nextUrl.origin));
   }
-
-  if (isAuthRoute && !(role === "ADMIN" || role === "MEMBER")) {
-    console.log("logged in");
-    return NextResponse.redirect(new URL("/dashboard", req.url));
+  if (isAuthRoute) {
+    if (sessionCookie) {
+      console.log("logged in");
+      return NextResponse.redirect(new URL("/dashboard", req.url));
+    }
+    return NextResponse.next();
   }
 
   if (!sessionCookie && nextUrl.pathname.startsWith("/dashboard")) {
     console.log("not logged in");
-    return Response.redirect(new URL("/auth/signin", nextUrl));
+    return NextResponse.redirect(new URL("/auth/signin", nextUrl));
+  }
+
+  if (sessionCookie) {
+    // if (!haveAccess) {
+    //   return NextResponse.redirect(new URL("/dashboard", req.url));
+    // }
+    return NextResponse.next();
   }
 
   // empeche l'infinite loop
