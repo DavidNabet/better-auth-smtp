@@ -32,7 +32,6 @@ import {
 } from "@/components/ui/select";
 import {
   Dialog,
-  DialogClose,
   DialogDescription,
   DialogContent,
   DialogFooter,
@@ -140,7 +139,8 @@ const SelectCell = ({
 };
 
 export const EditCell = ({ row, table }: CellContext<User, any>) => {
-  const { data: session } = authClient.useSession();
+  // const { data: session } = authClient.useSession();
+  const { session } = useAuthState();
   const meta = table.options.meta;
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -350,7 +350,7 @@ export const EditCell = ({ row, table }: CellContext<User, any>) => {
         variant="secondary"
         className="rounded-full border dark:bg-accent bg-metal hover:bg-amber-700 dark:hover:bg-amber-700"
         name="edit"
-        disabled={session?.session.userId === row.original.id}
+        disabled={session?.userId === row.original.id}
       >
         <EditIcon className="w-4 h-4 text-white" />
       </Button>

@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import LoadingIcon from "./LoadingIcon";
 import ModeToggle from "@/components/theme-toggle";
 import { getCurrentServerSession } from "@/lib/session/server";
-import { capitalize } from "@/lib/utils";
 import {
   DropdownMenu,
   DropdownMenuContent,

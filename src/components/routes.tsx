@@ -11,6 +11,10 @@ export const menu = [
     href: "/dashboard/organizations",
   },
   {
+    name: "Apps",
+    href: "/dashboard/apps",
+  },
+  {
     name: "Share your thought",
     href: "/dashboard/feedbacks",
   },

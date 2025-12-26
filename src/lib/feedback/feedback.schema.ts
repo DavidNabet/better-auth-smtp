@@ -17,6 +17,8 @@ export const createFeedbackSchema = z.object({
   status: z
     .enum(["PENDING", "ACCEPTED", "REJECTED", "COMPLETED"])
     .default("PENDING"),
+
+  appId: z.string().min(1, "App Id is required"),
 });
 
 export const createCommentSchema = z.object({

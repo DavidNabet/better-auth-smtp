@@ -4,11 +4,13 @@ import { authClient } from "@/lib/auth/auth.client";
 import { z } from "zod";
 import { Loader2 } from "lucide-react";
 import { useState, useTransition, ChangeEvent, FormEvent } from "react";
+import { DialogFooter } from "../ui/dialog";
 import { ErrorMessages } from "@/app/_components/ErrorMessages";
 import { toast } from "sonner";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Button } from "../ui/button";
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
   name: z.string().min(2).max(50),
@@ -17,6 +19,7 @@ const formSchema = z.object({
 
 export function CreateOrganizationForm() {
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
   const [formData, setFormData] = useState<z.infer<typeof formSchema>>({
     name: "",
@@ -60,6 +63,7 @@ export function CreateOrganizationForm() {
           },
           onSuccess() {
             toast.success("Organization created successfully!!");
+            router.refresh();
           },
         },
       });
@@ -96,12 +100,12 @@ export function CreateOrganizationForm() {
         />
         <ErrorMessages errors={errorMessage?.slug} />
       </div>
-      <div className="mt-6 col-span-6 gap-x-6">
+      <DialogFooter className="mt-6 col-span-6 gap-x-6">
         <Button type="submit" variant="default" disabled={isPending}>
           {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Create Organization
         </Button>
-      </div>
+      </DialogFooter>
     </form>
   );
 }

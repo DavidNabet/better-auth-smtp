@@ -5,6 +5,7 @@ const statements = {
   ...defaultStatements,
   users: ["create", "list", "update", "delete"],
   comments: ["create", "toggle-hide", "delete"],
+  apps: ["create", "list", "update", "delete"],
 } as const;
 
 const ac = createAccessControl(statements);
@@ -12,7 +13,7 @@ const ac = createAccessControl(statements);
 const USER = ac.newRole({
   user: ["update", "set-password"],
   comments: ["create"],
-})
+});
 
 const MEMBER = ac.newRole({
   users: ["create", "list", "update"],
@@ -22,6 +23,7 @@ const MEMBER = ac.newRole({
 const ADMIN = ac.newRole({
   users: ["create", "list", "update", "delete"],
   comments: ["create", "toggle-hide", "delete"],
+  apps: ["list"],
   user: ["ban"],
 });
 
@@ -29,5 +31,6 @@ const SUPER_ADMIN = ac.newRole({
   ...adminAc.statements,
   users: ["create", "list", "update", "delete"],
   comments: ["create", "toggle-hide", "delete"],
+  apps: ["create", "list", "update", "delete"],
 });
 export { ac, statements, USER, MEMBER, ADMIN, SUPER_ADMIN };

@@ -40,7 +40,7 @@ export async function createFeedback(
     };
   }
 
-  const { title, description, subject } = validatedFields.data;
+  const { title, description, subject, appId } = validatedFields.data;
 
   try {
     const session = await auth.api.getSession({
@@ -63,6 +63,12 @@ export async function createFeedback(
       };
     }
 
+    if (!hasServerPermission("comments", "create")) {
+      throw new APIError("NOT_ACCEPTABLE", {
+        message: "You don't have permission to perform this action",
+      });
+    }
+
     const feedback = await db.feedback.create({
       data: {
         title,
@@ -70,6 +76,7 @@ export async function createFeedback(
         status: "PENDING",
         subject,
         authorId: userId,
+        appId,
       },
       select: {
         id: true,
