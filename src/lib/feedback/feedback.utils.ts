@@ -159,6 +159,13 @@ export const allFeedback = async () => {
           },
           orderBy: { createdAt: "desc" },
         },
+        app: {
+          select: {
+            name: true,
+            slug: true,
+            logo: true,
+          },
+        },
       },
     });
     return feedbacks;

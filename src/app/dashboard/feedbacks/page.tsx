@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import LoadingIcon from "@/app/_components/LoadingIcon";
 import { Metadata } from "next";
 import { allFeedback } from "@/lib/feedback/feedback.utils";
+import { getApps } from "@/lib/app/app.utils";
 
 export const metadata: Metadata = {
   title: "Feedbacks",
@@ -13,8 +14,9 @@ export const metadata: Metadata = {
 
 export default async function FeedbacksPage() {
   // MVP idea-style
-  const feedbacks = await allFeedback();
-  if (!feedbacks) return null;
+  const promises = await Promise.all([allFeedback(), getApps()]);
+
+  if (!promises[0]) return null;
 
   const feedbackData: Feedback[] = [
     {
@@ -123,7 +125,7 @@ export default async function FeedbacksPage() {
     },
   ];
 
-  const initialVotes = feedbacks.map((f) => ({
+  const initialVotes = promises[0].map((f) => ({
     feedbackId: f.id,
     upvote: f.votes.filter((v) => v.type === "UP").length,
     downvote: f.votes.filter((v) => v.type === "DOWN").length,
@@ -132,10 +134,12 @@ export default async function FeedbacksPage() {
   return (
     <Wrapper title="Welcome to the users ideas">
       <div className="flex justify-end items-center my-4">
-        <FeedbackForm />
+        <Suspense fallback={<LoadingIcon />}>
+          <FeedbackForm apps={promises[1]} />
+        </Suspense>
       </div>
       <Suspense fallback={<LoadingIcon />}>
-        <FeedbackList feedbacks={feedbacks} initialVotes={initialVotes} />
+        <FeedbackList feedbacks={promises[0]} initialVotes={initialVotes} />
       </Suspense>
     </Wrapper>
   );

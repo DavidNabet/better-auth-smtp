@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { updateProfile } from "@/lib/user/user.actions";
-import AvatarUpload from "@/components/AvatarUpload";
+import AvatarUpload, { AvatarContext } from "@/components/AvatarUpload";
 import Alert from "@/app/_components/Alert";
 import { useActionState, useState, startTransition } from "react";
 import { UpdateProfileSchema } from "@/lib/user/user.schema";
@@ -26,7 +26,7 @@ import { Role } from "@prisma/client";
 import { RoleType } from "@/lib/permissions/permissions.utils";
 
 interface Props {
-  session: Session | null;
+  session: Session;
 }
 
 // TODO: Tabs between Generate avatar or pick avatar file
@@ -96,7 +96,7 @@ export default function UserProfileForm({ session }: Props) {
                   Photo
                 </Label>
                 <AvatarUpload
-                  session={session}
+                  ctx={{ session }}
                   value={formData.image}
                   onChange={(value) =>
                     setFormData((prev) => ({
@@ -105,6 +105,7 @@ export default function UserProfileForm({ session }: Props) {
                     }))
                   }
                 />
+
                 <ErrorMessages errors={errorMessage?.image} />
               </div>
             </TabsContent>

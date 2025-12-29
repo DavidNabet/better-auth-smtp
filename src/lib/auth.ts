@@ -16,9 +16,12 @@ import {
   admin as adm,
 } from "./organization/organization.service";
 import { getUserByEmail } from "./user/user.utils";
+import { getActiveOrganization } from "./organization/organization.utils";
 
 export type Session = typeof auth.$Infer.Session;
 export type User = typeof auth.$Infer.Session.user;
+export type Organizations = typeof auth.$Infer.Organization;
+export type Invitation = typeof auth.$Infer.Invitation;
 
 export const auth = betterAuth({
   database: prismaAdapter(db, {
@@ -114,6 +117,21 @@ export const auth = betterAuth({
     disableCleanup: false,
   },
   databaseHooks: {
+    session: {
+      create: {
+        before: async (session) => {
+          const activeOrganization = await getActiveOrganization(
+            session.userId
+          );
+          return {
+            data: {
+              ...session,
+              activeOrganizationId: activeOrganization?.id,
+            },
+          };
+        },
+      },
+    },
     user: {
       update: {
         // before: async (user) => {

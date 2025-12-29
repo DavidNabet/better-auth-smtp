@@ -20,9 +20,10 @@ import {
 } from "./feedback.utils";
 import type { ActionState, State } from "./feedback.types";
 import type { FormState } from "@/lib/user/user.types";
-import { slugify } from "@/lib/utils";
+import { decodeSlug, slugify } from "@/lib/utils";
 import { hasServerPermission } from "@/lib/permissions/permissions.actions";
 import { getUserIdByEmail } from "@/lib/user/user.utils";
+import { getAppBySlug } from "../app/app.utils";
 
 export async function createFeedback(
   formState: FormState,
@@ -63,6 +64,15 @@ export async function createFeedback(
       };
     }
 
+    const app = await getAppBySlug(appId.toLowerCase());
+    if (!app) {
+      return {
+        message: {
+          error: "App must be valid",
+        },
+      };
+    }
+
     if (!hasServerPermission("comments", "create")) {
       throw new APIError("NOT_ACCEPTABLE", {
         message: "You don't have permission to perform this action",
@@ -76,7 +86,7 @@ export async function createFeedback(
         status: "PENDING",
         subject,
         authorId: userId,
-        appId,
+        appId: app.id,
       },
       select: {
         id: true,

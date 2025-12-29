@@ -9,15 +9,19 @@ import {
   SelectValue,
 } from "../ui/select";
 import { authClient } from "@/lib/auth/auth.client";
+import { getOrganizations } from "@/lib/organization/organization.utils";
 import type { Organization } from "@prisma/client";
+import { use } from "react";
 
 type OrganizationSwitcherProps = {
-  organizations: Organization[];
+  // organizations: Organization[];
+  organizations: ReturnType<typeof getOrganizations>;
 };
 
 export function OrganizationSwitcher({
   organizations,
 }: OrganizationSwitcherProps) {
+  const orgs = use(organizations);
   const { data: activeOrganization } = authClient.useActiveOrganization();
 
   const handleChangeOrganization = async (orgId: string) => {
@@ -47,7 +51,7 @@ export function OrganizationSwitcher({
         <SelectValue placeholder="Theme" />
       </SelectTrigger>
       <SelectContent>
-        {organizations.map((org) => (
+        {orgs.map((org) => (
           <SelectItem key={org.id} value={org.id}>
             {org.name}
           </SelectItem>

@@ -3,7 +3,7 @@
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
-import { getCurrentUser } from "@/lib/user/user.utils";
+import { getCurrentUser, getUserById } from "@/lib/user/user.utils";
 import { RoleType } from "../permissions/permissions.utils";
 
 export const isAdminInOrg = async () => {
@@ -61,7 +61,7 @@ export async function getActiveOrganization(userId: string) {
     return null;
   }
 
-  const activeOrganization = await db.organization.findFirst({
+  const activeOrganization = await db.organization.findUnique({
     where: { id: memberUser.organizationId },
   });
 
@@ -85,4 +85,38 @@ export async function getOrganizationBySlug(slug: string) {
     console.error(error);
     return null;
   }
+}
+export async function getOrganizationById(id: string) {
+  try {
+    const organizationById = await db.organization.findUnique({
+      where: { id },
+      include: {
+        members: {
+          include: {
+            user: true,
+          },
+        },
+      },
+    });
+    return organizationById;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
+export async function getCurrentMember() {
+  const { currentUser } = await getCurrentUser();
+
+  const member = await db.member.findFirst({
+    where: { userId: currentUser.id },
+  });
+
+  if (!member) {
+    return null;
+  }
+
+  const user = await getUserById(member.userId);
+
+  return user;
 }

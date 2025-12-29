@@ -26,30 +26,32 @@ export default async function Organizations() {
   return (
     <>
       <div className="flex h-[calc(100vh-220px)] flex-col items-center justify-center gap-2">
-        {organizations.length < 3 ? (
-          <Dialog>
-            <DialogTrigger asChild>
-              <CreateFromButton title="Create an organization !">
-                {3 - organizations.length + " Organizations MAX"}
-              </CreateFromButton>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Create Organization</DialogTitle>
-              </DialogHeader>
-              <DialogDescription>
-                Create a new organization to get started.
-              </DialogDescription>
-              <CreateOrganizationForm />
-            </DialogContent>
-          </Dialog>
-        ) : (
-          <CardButton
-            title="Vous avez plus de 3 organisations !"
-            boxed
-            className="border p-4 rounded-lg gap-4 mb-4 border-accent-foreground/20"
-          />
-        )}
+        <Suspense fallback={<LoadingIcon />}>
+          {organizations.length < 3 ? (
+            <Dialog>
+              <DialogTrigger asChild>
+                <CreateFromButton title="Create an organization !">
+                  {3 - organizations.length + " Organizations MAX"}
+                </CreateFromButton>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Create Organization</DialogTitle>
+                </DialogHeader>
+                <DialogDescription>
+                  Create a new organization to get started.
+                </DialogDescription>
+                <CreateOrganizationForm />
+              </DialogContent>
+            </Dialog>
+          ) : (
+            <CardButton
+              title="Vous avez plus de 3 organisations !"
+              boxed
+              className="border p-4 rounded-lg gap-4 mb-4 border-accent-foreground/20"
+            />
+          )}
+        </Suspense>
 
         <div className="flex flex-col gap-2">
           <h2 className="font-bold text-2xl">Organizations</h2>

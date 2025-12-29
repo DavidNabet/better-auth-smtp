@@ -211,8 +211,7 @@ export function CommentItem({
   const { session } = useAuthState();
   const id = useId();
 
-  const isModerator =
-    session?.role === "ADMIN" || session?.role === "MODERATOR";
+  const isModerator = session?.role === "ADMIN" || session?.role === "MEMBER";
 
   const [, hideAction, hidePending] = useHideComment();
   const [, deleteAction, deletePending] = useDeleteComment();

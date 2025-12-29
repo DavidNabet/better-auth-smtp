@@ -9,27 +9,36 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { createFeedback } from "@/lib/feedback/feedback.action";
-import { cn } from "@/lib/utils";
+import { cn, decodeSlug } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
-import { startTransition, useActionState, useState } from "react";
+import { ReactNode, startTransition, useActionState, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CreateFeedback } from "@/lib/feedback/feedback.schema";
 import { wait } from "@/lib/auth/auth.utils";
 import { ErrorMessages } from "@/app/_components/ErrorMessages";
 import { toast } from "sonner";
+import { App } from "@prisma/client";
 
-export default function FeedbackForm() {
+export default function FeedbackForm({ apps }: { apps: App[] }) {
   const router = useRouter();
   const [formData, setFormData] = useState<CreateFeedback>({
     title: "",
     subject: "",
     description: "",
     status: "PENDING",
+    appId: "",
   });
   const [
     {
@@ -64,6 +73,7 @@ export default function FeedbackForm() {
           description: "",
           status: "ACCEPTED",
           subject: "",
+          appId: "",
         });
         // Refresh data
         wait(2000);
@@ -94,6 +104,7 @@ export default function FeedbackForm() {
           id="feedbackForm"
           onSubmit={handleSubmit}
         >
+          <input type="hidden" name="appId" value={formData.appId} />
           <div className="col-span-6 sm:col-span-3">
             <Label htmlFor="title" className="block text-sm font-medium">
               Idea name
@@ -134,6 +145,31 @@ export default function FeedbackForm() {
             />
             <ErrorMessages errors={errorMessage?.description} />
           </div>
+          <div className="col-span-6">
+            <Label htmlFor="app" className="block text-sm font-medium">
+              Associate an app
+            </Label>
+            <Select name="appId">
+              <SelectTrigger
+                id="app"
+                className="mt-1 w-full ps-2 [&>span]:flex [&>span]:items-center [&>span]:gap-2 [&>span_[data-square]]:shrink-0"
+              >
+                <SelectValue placeholder="Associate an app" />
+              </SelectTrigger>
+              <SelectContent>
+                {apps &&
+                  apps.map((a) => (
+                    <SelectItem key={a.name} value={a.slug}>
+                      <Square className="bg-rose-400/20 text-rose-500">
+                        {a.name.charAt(0).toUpperCase()}
+                      </Square>
+                      <span className="truncate">{a.name}</span>
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+            <ErrorMessages errors={errorMessage?.appId} />
+          </div>
           <div className="mt-6 col-span-6 gap-x-6">
             <Button
               type="submit"
@@ -151,5 +187,26 @@ export default function FeedbackForm() {
         </form>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function Square({
+  className,
+  children,
+}: {
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <span
+      aria-hidden="true"
+      className={cn(
+        "flex size-5 items-center justify-center rounded bg-muted font-medium text-muted-foreground text-xs",
+        className
+      )}
+      data-square
+    >
+      {children}
+    </span>
   );
 }

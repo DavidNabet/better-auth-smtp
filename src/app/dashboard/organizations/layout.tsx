@@ -18,6 +18,6 @@ export default function OrganizationLayout({
 }
 
 async function Switcher() {
-  const organizations = await getOrganizations();
+  const organizations = getOrganizations();
   return <OrganizationSwitcher organizations={organizations} />;
 }
