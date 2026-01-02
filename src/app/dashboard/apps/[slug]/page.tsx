@@ -4,7 +4,6 @@ import LoadingIcon from "@/app/_components/LoadingIcon";
 import Wrapper from "@/app/_components/Wrapper";
 import { Metadata } from "next";
 import { getAppBySlug } from "@/lib/app/app.utils";
-import { decodeSlug } from "@/lib/utils";
 import { getCurrentUser } from "@/lib/user/user.utils";
 
 export const metadata: Metadata = {

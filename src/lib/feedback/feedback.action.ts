@@ -73,7 +73,7 @@ export async function createFeedback(
       };
     }
 
-    if (!hasServerPermission("comments", "create")) {
+    if (!hasServerPermission("comments", "create-comment")) {
       throw new APIError("NOT_ACCEPTABLE", {
         message: "You don't have permission to perform this action",
       });

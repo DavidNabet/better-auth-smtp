@@ -4,7 +4,6 @@ import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import { getCurrentUser, getUserById } from "@/lib/user/user.utils";
-import { RoleType } from "../permissions/permissions.utils";
 
 export const isAdminInOrg = async () => {
   try {
@@ -12,7 +11,7 @@ export const isAdminInOrg = async () => {
       headers: await headers(),
       body: {
         permissions: {
-          organization: ["update", "delete"],
+          organization: ["org-update", "org-delete"],
         },
       },
     });

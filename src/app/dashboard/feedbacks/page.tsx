@@ -14,9 +14,9 @@ export const metadata: Metadata = {
 
 export default async function FeedbacksPage() {
   // MVP idea-style
-  const promises = await Promise.all([allFeedback(), getApps()]);
+  const [feedbacks, apps] = await Promise.all([allFeedback(), getApps()]);
 
-  if (!promises[0]) return null;
+  if (!feedbacks) return null;
 
   const feedbackData: Feedback[] = [
     {
@@ -125,7 +125,7 @@ export default async function FeedbacksPage() {
     },
   ];
 
-  const initialVotes = promises[0].map((f) => ({
+  const initialVotes = feedbacks.map((f) => ({
     feedbackId: f.id,
     upvote: f.votes.filter((v) => v.type === "UP").length,
     downvote: f.votes.filter((v) => v.type === "DOWN").length,
@@ -135,11 +135,11 @@ export default async function FeedbacksPage() {
     <Wrapper title="Welcome to the users ideas">
       <div className="flex justify-end items-center my-4">
         <Suspense fallback={<LoadingIcon />}>
-          <FeedbackForm apps={promises[1]} />
+          <FeedbackForm apps={apps} />
         </Suspense>
       </div>
       <Suspense fallback={<LoadingIcon />}>
-        <FeedbackList feedbacks={promises[0]} initialVotes={initialVotes} />
+        <FeedbackList feedbacks={feedbacks} initialVotes={initialVotes} />
       </Suspense>
     </Wrapper>
   );

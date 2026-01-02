@@ -221,6 +221,7 @@ model App {
   @@map("app")
 }
 
+// Topics
 model Feedback {
   id          String         @id @default(cuid())
   title       String

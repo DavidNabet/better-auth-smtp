@@ -10,7 +10,7 @@ export const getNotAdminUsers = async () => {
       where: {
         role: {
           not: {
-            equals: "ADMIN",
+            equals: "SUPER_ADMIN",
           },
         },
       },

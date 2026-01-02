@@ -14,9 +14,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  filterNavigationByRole,
+  NAVIGATION_CONFIG,
+} from "@/lib/rbac/navigation";
+import { RoleType } from "@/lib/permissions/permissions.utils";
 
 export default async function Navbar() {
   const { userRole } = await getCurrentServerSession();
+  const nav = filterNavigationByRole(NAVIGATION_CONFIG, userRole as RoleType);
   return (
     <header className="border border-b border-primary/10">
       <div className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">
@@ -33,9 +39,9 @@ export default async function Navbar() {
           </div>
           <div className="md:flex md:items-center md:gap-12">
             <nav className="hidden md:flex items-center space-x-4 lg:space-x-6">
-              {menu.map((item) => (
-                <NavLink key={item.name} {...item}>
-                  {item.name}
+              {nav.map((item) => (
+                <NavLink key={item.label} {...item}>
+                  {item.label}
                 </NavLink>
               ))}
               {userRole !== "USER" &&

@@ -29,8 +29,10 @@ export const metadata: Metadata = {
 };
 
 export default async function Apps() {
-  const organizations = await getOrganizations();
-  const apps = await getApps();
+  const [organizations, apps] = await Promise.all([
+    getOrganizations(),
+    getApps(),
+  ]);
   return (
     <Wrapper title="Apps">
       <Dialog>
