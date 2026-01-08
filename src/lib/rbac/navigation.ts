@@ -33,9 +33,9 @@ export const NAVIGATION_CONFIG: NavigationItem[] = [
     href: "/dashboard",
   },
   {
-    id: "profile",
-    label: "Profile",
-    href: "/dashboard/profile",
+    id: "settings",
+    label: "Settings",
+    href: "/dashboard/settings",
   },
   {
     id: "organizations",

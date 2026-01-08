@@ -24,12 +24,8 @@ export const menu = [
     icon: <Icon name="user-round-cog" className="mr-3" />,
     subMenu: [
       {
-        name: "Profile",
-        href: "/dashboard/settings/details",
-      },
-      {
-        name: "Password & Security",
-        href: "/dashboard/settings/security",
+        name: "Account Settings",
+        href: "/dashboard/settings",
       },
     ],
   },

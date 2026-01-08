@@ -7,10 +7,15 @@ import { ReactNode } from "react";
 import { Shield, Crown, UserRound } from "lucide-react";
 
 const roleClasses = {
-  ADMIN: {
+  SUPER_ADMIN: {
     className:
       "border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400 [a&]:hover:bg-blue-600/10 [a&]:hover:text-blue-600/90 dark:[a&]:hover:bg-blue-400/10 dark:[a&]:hover:text-blue-400/90",
     icon: <Crown className="size-3" />,
+  },
+  ADMIN: {
+    className:
+      "border-purple-600 text-purple-600 dark:border-purple-400 dark:text-purple-400 [a&]:hover:bg-purple-600/10 [a&]:hover:text-purple-600/90 dark:[a&]:hover:bg-purple-400/10 dark:[a&]:hover:text-purple-400/90",
+    icon: <Shield className="size-3" />,
   },
   MEMBER: {
     className:

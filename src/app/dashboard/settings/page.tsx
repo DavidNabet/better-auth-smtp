@@ -3,29 +3,23 @@ import LoadingIcon from "@/app/_components/LoadingIcon";
 import Wrapper from "@/app/_components/Wrapper";
 import { User, Lock } from "lucide-react";
 import { Suspense } from "react";
+import Header from "./_components/header";
+import TabbedUserProfile from "./_components/tabs";
+import { auth, Session } from "@/lib/auth";
+import { headers } from "next/headers";
 
-export default function SettingsPage() {
+export default async function SettingsPage() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
   return (
-    <Wrapper title="Settings">
-      <Suspense fallback={<LoadingIcon />}>
-        <div className="mt-8 grid md:grid-cols-2 gap-6">
-          <CardButton
-            title="Profile"
-            description="Tu peux modifier ton profil, ta photo et ton nom de compte!"
-            href="/dashboard/settings/details"
-            label="Voir"
-            icon={<User />}
-          />
-
-          <CardButton
-            title="Security"
-            description="Tu peux changer ton mot de passe et passer en mode 2FA!"
-            href="/dashboard/settings/security"
-            label="Voir"
-            icon={<Lock />}
-          />
-        </div>
-      </Suspense>
-    </Wrapper>
+    <div className="container mx-auto px-4 py-6 md:px-6 2xl:max-w-[1400px]">
+      <div className="mx-auto max-w-4xl">
+        <Suspense fallback={<LoadingIcon />}>
+          <Header {...(session as Session)} />
+          <TabbedUserProfile />
+        </Suspense>
+      </div>
+    </div>
   );
 }

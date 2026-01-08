@@ -20,7 +20,7 @@ import type { User } from "better-auth";
 import { cn } from "@/lib/utils";
 import { authClient } from "@/lib/auth/auth.client";
 import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import { Loader2, Trash2 } from "lucide-react";
 import { passwordSchema, PasswordSchema } from "@/lib/auth/auth.schema";
 
 interface DeleteUserProps {
@@ -80,58 +80,68 @@ export default function DeleteUser() {
   }
 
   return (
-    <Dialog>
-      <form onSubmit={handleSubmit} id="deleteUser">
-        <DialogTrigger asChild>
-          <Button variant="destructive" className="focus-within:ring-2">
-            Delete Account
-          </Button>
-        </DialogTrigger>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Confirm Account Deletion</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete your account? This action is
-              irreversible, and all your data will be permanently deleted.
-              Please confirm if you wish to proceed.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="border-b border-gray-900/10" />
-          <div className="grid gap-4">
-            <span className="space-y-2 text-sm">
-              Please type your password to confirm
-            </span>
-            <div className="grid gap-3">
-              <Label htmlFor="passwordConfirm">Password</Label>
-              <Input
-                type="password"
-                name="passwordConfirm"
-                placeholder="mypassword"
-                value={formData.password}
-                onChange={handleChange}
-                className={`mt-1 w-full  shadow-sm ${
-                  errorMessage?.password ? "border-destructive" : ""
-                }`}
-              />
-            </div>
-          </div>
-          <DialogFooter>
+    <div className="flex flex-col gap-2">
+      <Dialog>
+        <form onSubmit={handleSubmit} id="deleteUser">
+          <DialogTrigger asChild>
             <Button
-              type="submit"
-              variant="secondary"
-              form="deleteUser"
-              className={cn(
-                " shrink-0 transition-colors focus:ring-offset-2 focus:ring-offset-secondary cursor-pointer w-full text-white bg-destructive/90 hover:bg-destructive",
-                isPending && "opacity-50 cursor-not-allowed"
-              )}
-              disabled={isPending}
+              type="button"
+              variant="destructive"
+              className="w-full! sm:w-auto focus-within:ring-1 focus-within:ring-destructive"
             >
-              {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}I
-              understand the consequences. Delete my account.
+              <Trash2 className="size-4" />
+              Delete Account
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </form>
-    </Dialog>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Confirm Account Deletion</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete your account? This action is
+                irreversible, and all your data will be permanently deleted.
+                Please confirm if you wish to proceed.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="border-b border-gray-900/10" />
+            <div className="grid gap-4">
+              <span className="space-y-2 text-sm">
+                Please type your password to confirm
+              </span>
+              <div className="grid gap-3">
+                <Label htmlFor="passwordConfirm">Password</Label>
+                <Input
+                  type="password"
+                  name="passwordConfirm"
+                  placeholder="mypassword"
+                  value={formData.password}
+                  onChange={handleChange}
+                  className={`mt-1 w-full  shadow-sm ${
+                    errorMessage?.password ? "border-destructive" : ""
+                  }`}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                type="submit"
+                variant="secondary"
+                form="deleteUser"
+                className={cn(
+                  " shrink-0 transition-colors focus:ring-offset-2 focus:ring-offset-secondary cursor-pointer w-full text-white bg-destructive/90 hover:bg-destructive",
+                  isPending && "opacity-50 cursor-not-allowed"
+                )}
+                disabled={isPending}
+              >
+                {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                I understand the consequences. Delete my account.
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </form>
+      </Dialog>
+      <p className="text-muted-foreground text-xs">
+        Permanently delete your account and all associated data
+      </p>
+    </div>
   );
 }

@@ -371,7 +371,7 @@ export async function toggleHideComment(
       data: {
         action: "HIDE_COMMENT",
         commentId,
-        moderatorId: permission.id,
+        moderatorId: permission?.id,
       },
     });
   } catch (error) {

@@ -25,9 +25,9 @@ import { wait } from "@/lib/auth/auth.utils";
 import { Role } from "@prisma/client";
 import { RoleType } from "@/lib/permissions/permissions.utils";
 
-interface Props {
+type Props = {
   session: Session;
-}
+};
 
 // TODO: Tabs between Generate avatar or pick avatar file
 
@@ -80,7 +80,7 @@ export default function UserProfileForm({ session }: Props) {
 
   return (
     <form
-      className="mt-8 grid grid-cols-1 md:grid-cols-6 gap-6"
+      className="grid grid-cols-1 md:grid-cols-6 gap-6"
       onSubmit={handleSubmit}
     >
       <div className="col-span-6">
@@ -126,7 +126,7 @@ export default function UserProfileForm({ session }: Props) {
       </div>
       <div className="col-span-6 sm:col-span-3">
         <Label htmlFor="Name" className="block text-sm font-medium ">
-          Name
+          Pseudo
         </Label>
 
         <Input
@@ -170,7 +170,7 @@ export default function UserProfileForm({ session }: Props) {
           </SelectContent>
         </Select>
       </div>
-      <div className="col-span-6 border-b border-gray-900/10 pb-6">
+      <div className="col-span-6 border-b border-gray-900/10">
         <Label htmlFor="Email" className="block text-sm font-medium ">
           Email
         </Label>
@@ -188,7 +188,7 @@ export default function UserProfileForm({ session }: Props) {
         {error && <Alert message={error!} status="error" />}
         {success && <Alert message={success!} status="success" />}
       </div>
-      <div className="mt-6 col-span-6 sm:flex sm:items-center sm:justify-end gap-x-6">
+      <div className="col-span-6 sm:flex sm:items-center sm:justify-end gap-x-6">
         <Button
           type="submit"
           className="bg-teal-600 hover:bg-teal-500 cursor-pointer"

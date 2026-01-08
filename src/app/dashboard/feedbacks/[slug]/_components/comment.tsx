@@ -47,13 +47,19 @@ import { Badge } from "@/components/ui/badge";
 import BadgeUserComment from "@/app/_components/BadgeUserComment";
 
 const useHideComment = () => {
+  const toastCallbacks = createToastCallbacks({
+    loading: "Envoi du commentaire...",
+  });
   return useActionState(
-    withCallbacks(
-      toggleHideComment,
-      createToastCallbacks({
-        loading: "En cours...",
-      })
-    ),
+    withCallbacks(toggleHideComment, {
+      ...toastCallbacks,
+      onSuccess(result) {
+        toastCallbacks.onSuccess?.(result);
+      },
+      onEnd(result) {
+        toastCallbacks.onEnd?.(result);
+      },
+    }),
     null
   );
 };
