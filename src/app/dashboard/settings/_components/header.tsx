@@ -1,12 +1,12 @@
+import { AvatarSession } from "@/components/AvatarUpload";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Session } from "@/lib/auth";
 
-export default function SettingHeader({ user }: Session) {
+export default function SettingHeader({ session }: { session: Session }) {
   return (
     <div className="mb-8 flex items-center gap-6">
       <Avatar className="size-20">
-        <AvatarImage src={user.image!} alt="profile" />
-        <AvatarFallback>{user.name.slice(0, 2)}</AvatarFallback>
+        <AvatarSession session={session} avatarSize="20" />
       </Avatar>
       <div>
         <h1 className="text-2xl font-semibold">Account Settings</h1>

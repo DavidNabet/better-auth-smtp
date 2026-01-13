@@ -18,16 +18,13 @@ import EnableTwoFactor from "@/components/EnableTwoFactor";
 import { ActiveSessions } from "./activeSessions";
 import DeleteUser from "@/components/DeleteUser";
 
-export default async function TabbedUserProfile() {
-  const [session, activeSessions] = await Promise.all([
-    auth.api.getSession({
-      headers: await headers(),
-    }),
-
-    auth.api.listSessions({
-      headers: await headers(),
-    }),
-  ]);
+export default async function TabbedUserProfile({
+  session,
+  activeSessions,
+}: {
+  session: Session;
+  activeSessions: Session["session"][];
+}) {
   return (
     <Tabs defaultValue="profile" className="space-y-6">
       <TabsList className="h-auto w-full justify-start gap-6 bg-transparent p-0">
@@ -58,7 +55,7 @@ export default async function TabbedUserProfile() {
             </CardDescription>
           </CardHeader>
           <CardContent className="px-6">
-            <UserProfileForm session={session as Session} />
+            <UserProfileForm session={session} />
           </CardContent>
         </Card>
         <Card className="px-3">

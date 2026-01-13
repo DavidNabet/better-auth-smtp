@@ -57,7 +57,7 @@ export default function AvatarUpload({
               />
             </>
           ) : !!ctx.session ? (
-            <AvatarSession {...ctx} />
+            <AvatarSession {...ctx} avatarSize="12" />
           ) : (
             <AvatarFallback>LOGO</AvatarFallback>
           )}
@@ -104,17 +104,22 @@ export default function AvatarUpload({
   );
 }
 
-function AvatarSession({ session }: AvatarContext) {
-  return session?.user ? (
+export function AvatarSession({ session, avatarSize }: AvatarContext) {
+  return session?.user.image ? (
     <>
       <AvatarImage
-        src={session?.user?.image!}
+        src={session.user.image}
         alt="avatar"
         className="object-cover"
       />
     </>
   ) : (
-    <span className="rounded-full text-md size-12 bg-teal-600 text-white grid place-items-center">
+    <span
+      className={cn(
+        "rounded-full text-md bg-teal-600 text-white grid place-items-center",
+        !!avatarSize && `size-${avatarSize}`
+      )}
+    >
       {session?.user.name?.slice(0, 2).toUpperCase()}
     </span>
   );
