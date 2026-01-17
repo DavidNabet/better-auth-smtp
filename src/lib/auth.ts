@@ -6,7 +6,11 @@ import { nextCookies } from "better-auth/next-js";
 import { createMiddleware } from "better-auth";
 import { db } from "@/db";
 import { admin, twoFactor, username, organization } from "better-auth/plugins";
-import { sendMagicLinkforLogin, sendOTPforLogin } from "@/lib/auth/auth.mails";
+import {
+  sendMagicLinkforLogin,
+  sendOTPforLogin,
+  sendInviteEmail,
+} from "@/lib/auth/auth.mails";
 import { ac, USER, MEMBER, ADMIN, SUPER_ADMIN } from "@/lib/user/user.service";
 import { Role } from "@prisma/client";
 import {
@@ -119,7 +123,7 @@ export const auth = betterAuth({
       create: {
         before: async (session) => {
           const activeOrganization = await getActiveOrganization(
-            session.userId
+            session.userId,
           );
           return {
             data: {
@@ -197,6 +201,18 @@ export const auth = betterAuth({
         owner,
         admin: adm,
         member,
+      },
+      async sendInvitationEmail(data) {
+        const inviteLink = `${process.env.NEXT_PUBLIC_APP_URL}/api/accept-invitation/${data.id}`;
+        logger.info("Invitation Email: ", data.email);
+
+        await sendInviteEmail(
+          data.email,
+          data.inviter.user.name,
+          data.inviter.user.email,
+          data.organization.name,
+          inviteLink,
+        );
       },
       teams: {
         enabled: true,

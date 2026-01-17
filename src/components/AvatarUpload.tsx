@@ -59,7 +59,7 @@ export default function AvatarUpload({
           ) : !!ctx.session ? (
             <AvatarSession {...ctx} avatarSize="12" />
           ) : (
-            <AvatarFallback>LOGO</AvatarFallback>
+            <AvatarFallback className="text-white">LOGO</AvatarFallback>
           )}
         </Avatar>
       </div>
@@ -117,7 +117,7 @@ export function AvatarSession({ session, avatarSize }: AvatarContext) {
     <span
       className={cn(
         "rounded-full text-md bg-teal-600 text-white grid place-items-center",
-        !!avatarSize && `size-${avatarSize}`
+        !!avatarSize && `size-${avatarSize}`,
       )}
     >
       {session?.user.name?.slice(0, 2).toUpperCase()}

@@ -59,6 +59,7 @@ function buildRoleStatementsMap(): Readonly<
 > {
   return {
     [Role.SUPER_ADMIN]: Object.freeze([
+      ...orgStatements.organization,
       ...roleStatements.user,
       ...roleStatements.comments,
       ...roleStatements.session,

@@ -56,6 +56,20 @@ export async function getAppBySlug(slug: string) {
     const getSlug = await db.app.findUnique({
       where: { slug },
       include: {
+        organization: {
+          include: {
+            teams: {
+              select: {
+                _count: true,
+              },
+            },
+            members: {
+              orderBy: {
+                role: "desc",
+              },
+            },
+          },
+        },
         feedbacks: {
           include: {
             comments: {

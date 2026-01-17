@@ -22,15 +22,17 @@ export const authMiddleware: Middleware = async (req, _event, next) => {
   const isRoot = root.includes(nextUrl.pathname);
   const sessionCookie = getSessionCookie(req);
 
-  // const { data: session, error } = await betterFetch<Session>(
-  //   "/api/auth/get-session",
-  //   {
-  //     baseURL: process.env.NEXT_PUBLIC_APP_URL,
-  //     headers: {
-  //       cookie: req.headers.get("cookie") || "",
-  //     },
-  //   }
-  // );
+  const { data: session, error } = await betterFetch<Session>(
+    "/api/auth/get-session",
+    {
+      baseURL: process.env.NEXT_PUBLIC_APP_URL,
+      headers: {
+        cookie: req.headers.get("cookie") || "",
+      },
+    },
+  );
+
+  const haveAccess = session || sessionCookie;
 
   console.log("sessionCookie: ", sessionCookie?.split(".")[0]);
 
@@ -39,19 +41,19 @@ export const authMiddleware: Middleware = async (req, _event, next) => {
     return NextResponse.redirect(new URL("/auth/signin", nextUrl.origin));
   }
   if (isAuthRoute) {
-    if (sessionCookie) {
+    if (haveAccess) {
       console.log("logged in");
       return NextResponse.redirect(new URL("/dashboard", req.url));
     }
     return NextResponse.next();
   }
 
-  if (!sessionCookie && nextUrl.pathname.startsWith("/dashboard")) {
+  if (!haveAccess && nextUrl.pathname.startsWith("/dashboard")) {
     console.log("not logged in");
     return NextResponse.redirect(new URL("/auth/signin", nextUrl));
   }
 
-  if (sessionCookie) {
+  if (haveAccess) {
     // if (!haveAccess) {
     //   return NextResponse.redirect(new URL("/dashboard", req.url));
     // }
@@ -59,7 +61,7 @@ export const authMiddleware: Middleware = async (req, _event, next) => {
   }
 
   // empeche l'infinite loop
-  if (sessionCookie && isAdminRoute) {
+  if (haveAccess && isAdminRoute) {
     return NextResponse.next();
   }
 
@@ -80,15 +82,6 @@ export const authMiddleware: Middleware = async (req, _event, next) => {
   //   console.log("not logged in");
 
   //   return NextResponse.redirect(new URL("/auth/signin", req.url));
-  // }
-
-  // if (
-  //   sessionCookie &&
-  //   nextUrl.pathname.endsWith("/users/user") &&
-  //   session?.user.role === "USER"
-  // ) {
-  //   console.log("is user");
-  //   return NextResponse.redirect(new URL("/dashboard", req.url));
   // }
 
   return next();
