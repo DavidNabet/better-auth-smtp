@@ -5,7 +5,17 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatRelativeTime(date: Date): string {
+export const getInitials = (name: string): string => {
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+};
+
+export function formatRelativeTime(date?: Date): string {
+  if (!date) return "Never";
   const now = Date.now();
   const diff = now - date.getTime();
   const minutes = Math.floor(diff / 60_000);
@@ -16,12 +26,14 @@ export function formatRelativeTime(date: Date): string {
   if (minutes < 60) return `${minutes}m ago`;
   if (hours < 24) return `${hours}h ago`;
   if (days < 7) return `${days}d ago`;
+  return formatDate(date);
+}
+
+export function formatDate(date: Date): string {
   return new Intl.DateTimeFormat("fr-FR", {
-    month: "short",
     day: "numeric",
+    month: "short",
     year: "numeric",
-    hour: "numeric",
-    minute: "numeric",
   }).format(date);
 }
 
