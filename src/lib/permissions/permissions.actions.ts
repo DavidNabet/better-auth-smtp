@@ -2,15 +2,16 @@
 "use server";
 
 import { auth } from "@/lib/auth";
-import { Entities, PermissionFor } from "./permissions.types";
+import { Entities, PermissionFor, OrgEntites } from "./permissions.types";
 import { headers } from "next/headers";
 
 export const hasServerPermission = async <
   E extends Entities,
-  P extends PermissionFor<E>,
+  O extends OrgEntites,
+  P extends PermissionFor<E, O>,
 >(
-  entity: E,
-  permission: P
+  entity: E | O,
+  permission: P,
 ) => {
   try {
     const { error, success } = await auth.api.userHasPermission({

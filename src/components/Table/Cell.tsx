@@ -259,7 +259,7 @@ export const EditCell = ({ row, table }: CellContext<User, any>) => {
         {
           message: { success: "", error: "" },
         },
-        formData
+        formData,
       );
       if (result.message.success) {
         console.log("✅ remove row success: ", result.message.success);
@@ -283,7 +283,7 @@ export const EditCell = ({ row, table }: CellContext<User, any>) => {
         <DialogTrigger asChild ref={dialogRef}>
           <Button
             size="icon"
-            className="rounded-full border bg-metal dark:bg-accent hover:bg-destructive dark:hover:bg-destructive"
+            className="rounded-full bg-metal dark:bg-accent hover:bg-destructive dark:hover:bg-destructive"
             variant="secondary"
           >
             <X className="w-4 h-4 text-white" />
@@ -304,7 +304,7 @@ export const EditCell = ({ row, table }: CellContext<User, any>) => {
               variant="destructive"
               form="rowUser"
               className={cn(
-                "shrink-0 transition-colors focus:ring-offset-2 focus:ring-offset-secondary cursor-pointer w-full text-white bg-destructive/90 hover:bg-destructive"
+                "shrink-0 transition-colors focus:ring-offset-2 focus:ring-offset-secondary cursor-pointer w-full text-white bg-destructive/90 hover:bg-destructive",
               )}
               disabled={isDeleting}
             >
@@ -320,7 +320,7 @@ export const EditCell = ({ row, table }: CellContext<User, any>) => {
       <Button
         onClick={setEditedRows}
         size="icon"
-        className="rounded-full border bg-metal dark:bg-accent hover:bg-slate-500 dark:hover:bg-slate-500"
+        className="rounded-full bg-metal dark:bg-accent hover:bg-slate-500 dark:hover:bg-slate-500"
         variant="secondary"
         name="cancel"
         disabled={isUpdating}
@@ -329,7 +329,7 @@ export const EditCell = ({ row, table }: CellContext<User, any>) => {
       </Button>
       <Button
         onClick={setEditedRows}
-        className="rounded-full border bg-metal dark:bg-accent hover:bg-emerald-500 dark:hover:bg-emerald-500"
+        className="rounded-full bg-metal dark:bg-accent hover:bg-emerald-500 dark:hover:bg-emerald-500"
         size="icon"
         variant="secondary"
         name="done"
@@ -348,7 +348,7 @@ export const EditCell = ({ row, table }: CellContext<User, any>) => {
         onClick={setEditedRows}
         size="icon"
         variant="secondary"
-        className="rounded-full border dark:bg-accent bg-metal hover:bg-amber-700 dark:hover:bg-amber-700"
+        className="rounded-full dark:bg-accent bg-metal hover:bg-amber-700 dark:hover:bg-amber-700"
         name="edit"
         disabled={session?.userId === row.original.id}
       >

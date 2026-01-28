@@ -9,7 +9,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Empty,
+  EmptyHeader,
+  EmptyContent,
+  EmptyDescription,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import { CardButton } from "@/app/_components/Card";
+import { ArrowUpRightIcon, FolderCode, PlusIcon } from "lucide-react";
 import { Metadata } from "next";
 import { getOrganizations } from "@/lib/organization/organization.utils";
 import { CreateOrganizationForm } from "@/components/organizations/CreateOrganizationForm";
@@ -25,35 +34,32 @@ export default async function Organizations() {
   const organizations = await getOrganizations();
   return (
     <>
-      <div className="flex h-[calc(100vh-220px)] flex-col items-center justify-center gap-2">
+      <div className="flex flex-col items-center justify-center gap-6">
         <Suspense fallback={<LoadingIcon />}>
           {organizations.length < 3 ? (
-            <Dialog>
-              <DialogTrigger asChild>
-                <CreateFromButton title="Create an organization !">
-                  {3 - organizations.length + " Organizations MAX"}
-                </CreateFromButton>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Create Organization</DialogTitle>
-                </DialogHeader>
-                <DialogDescription>
-                  Create a new organization to get started.
-                </DialogDescription>
-                <CreateOrganizationForm />
-              </DialogContent>
-            </Dialog>
+            <Empty>
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <FolderCode />
+                </EmptyMedia>
+                <EmptyTitle>
+                  {organizations.length} Organization
+                  {organizations.length > 1 ? "s" : ""} created !
+                </EmptyTitle>
+                <EmptyDescription>
+                  You can create 3 organizations max.
+                </EmptyDescription>
+              </EmptyHeader>
+              <EmptyContent className="flex-row justify-center gap-2">
+                <DialogButton />
+              </EmptyContent>
+            </Empty>
           ) : (
-            <CardButton
-              title="Vous avez plus de 3 organisations !"
-              boxed
-              className="border p-4 rounded-lg gap-4 mb-4 border-accent-foreground/20"
-            />
+            <DialogButton />
           )}
         </Suspense>
 
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-4">
           <h2 className="font-bold text-2xl">Organizations</h2>
           <Suspense fallback={<LoadingIcon />}>
             {organizations?.map((org) => (
@@ -67,5 +73,26 @@ export default async function Organizations() {
         </div>
       </div>
     </>
+  );
+}
+
+function DialogButton() {
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="default">
+          <PlusIcon /> Add Organization
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Create Organization</DialogTitle>
+        </DialogHeader>
+        <DialogDescription>
+          Create a new organization to get started.
+        </DialogDescription>
+        <CreateOrganizationForm />
+      </DialogContent>
+    </Dialog>
   );
 }

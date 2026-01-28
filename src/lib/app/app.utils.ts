@@ -15,18 +15,19 @@ import { APIError } from "better-auth/api";
 import { slugify } from "../utils";
 
 export async function getApps() {
-  const { currentUser } = await getCurrentUser();
+  // const { currentUser } = await getCurrentUser();
 
-  // Implemented in db by default
-  const activeOrganization = await getActiveOrganization(currentUser.id);
+  try {
+    // Implemented in db by default
+    // const activeOrganization = await getActiveOrganization(currentUser.id);
 
-  const apps = await db.app.findMany({
-    where: {
-      organizationId: activeOrganization?.id,
-    },
-  });
+    const apps = await db.app.findMany();
 
-  return apps;
+    return apps;
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
 }
 
 export async function createAppData(data: CreateAppSchema) {

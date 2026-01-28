@@ -8,7 +8,6 @@ import { getCurrentServerSession } from "@/lib/session/server";
 import Link from "next/link";
 
 /** TODO : Plateforme de feedback / idées collaboratives
-Nom de l'app: MVPBetter
 Les utilisateurs postent des idées ou suggestions.
 
 Les autres votent pour mettre en avant les meilleures.

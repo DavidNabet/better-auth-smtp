@@ -1,5 +1,6 @@
 import { createAccessControl } from "better-auth/plugins/access";
-// import { defaultStatements } from "better-auth/plugins/organization/access";
+
+// Si une de ces actions est absente, les rôles qui ne la possèdent pas ne pourront pas exécuter les méthodes correspondantes (auth.organization.update, auth.organization.inviteMember, etc.) : elles seront considérées comme non autorisées.
 
 const statement = {
   organization: ["org-update", "org-delete"],
@@ -9,7 +10,7 @@ const statement = {
     "member-delete",
     "member-update-name",
   ],
-  invitation: ["create-invitation", "cancel-invitation"],
+  invitation: ["create", "cancel"],
 } as const;
 const dc = createAccessControl(statement);
 
@@ -19,13 +20,13 @@ const member = dc.newRole({
 
 const admin = dc.newRole({
   member: ["member-update", "member-delete", "member-update-name"],
-  invitation: ["create-invitation", "cancel-invitation"],
+  invitation: ["create", "cancel"],
 });
 
 const owner = dc.newRole({
   organization: ["org-update", "org-delete"],
   member: ["member-update", "member-delete", "member-update-name"],
-  invitation: ["create-invitation", "cancel-invitation"],
+  invitation: ["create", "cancel"],
 });
 
 export { statement, dc, owner, admin, member };

@@ -36,19 +36,24 @@ export const isAdminInOrg = async () => {
 export async function getOrganizations() {
   const { currentUser } = await getCurrentUser();
 
-  const members = await db.member.findMany({
-    where: { userId: currentUser.id },
-  });
+  try {
+    const members = await db.member.findMany({
+      where: { userId: currentUser.id },
+    });
 
-  const organizations = await db.organization.findMany({
-    where: {
-      id: {
-        in: members.map((m) => m.organizationId),
+    const organizations = await db.organization.findMany({
+      where: {
+        id: {
+          in: members.map((m) => m.organizationId),
+        },
       },
-    },
-  });
+    });
 
-  return organizations;
+    return organizations;
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
 }
 
 export async function getActiveOrganization(userId: string) {
@@ -110,26 +115,19 @@ export async function getMembersInvitationStatus(organizationId: string) {
   const confirmedMembers = await db.member.findMany({
     where: { organizationId },
     include: {
-      user: {
-        select: {
-          id: true,
-          email: true,
-          name: true,
-          image: true,
-          updatedAt: true,
-          createdAt: true,
-        },
-      },
+      user: true,
     },
   });
 
+  // return confirmedMembers;
+
   // Récupère toutes les invitations en attente pour cette organization
-  const pendingInvitations = await db.invitation.findMany({
+  /*const pendingInvitations = await db.invitation.findMany({
     where: { organizationId },
     include: {
       user: true,
     },
-  });
+  });*/
 
   // Transforme les membres confirmés au formate unifié
   const formattedMembers = confirmedMembers.map((member) => ({
@@ -138,31 +136,37 @@ export async function getMembersInvitationStatus(organizationId: string) {
     name: member.user.name,
     image: member.user.image,
     userId: member.userId,
-    status: "accepted" as const,
+    // status: "accepted" as const,
     role: member.role,
     createdAt: member.createdAt,
-    invitationId: null,
-    expiresAt: null,
+    // invitationId: member.,
     updatedAt: member.user.updatedAt,
   }));
 
   // Transforme les invitations en attente au format unifié
-  const formattedInvitations = pendingInvitations.map((invitation) => ({
-    id: null,
-    email: invitation.email,
-    name: invitation.user.name,
-    image: invitation.user.image,
+  /*const formattedInvitations = pendingInvitations.map((invitation) => ({
     status: invitation.status as string,
-    role: invitation.role || "member",
-    createdAt: invitation.expiresAt,
+    role: invitation.role || "",
     invitationId: invitation.id,
     expiresAt: invitation.expiresAt,
     userId: invitation.user.id,
     updatedAt: invitation.user.updatedAt,
-  }));
+  }));*/
 
-  // Combine les deux listes
-  return [...formattedMembers, ...formattedInvitations];
+  return [...formattedMembers];
+}
+
+// Recupérer l'id d'Organization sans passer par Member
+export async function getInvitationsByOrgId(organizationId: string) {
+  try {
+    const invitations = await db.invitation.findMany({
+      where: { organizationId },
+    });
+    return invitations;
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
 }
 
 export async function getCurrentMember() {

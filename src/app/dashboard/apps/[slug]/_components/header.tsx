@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getAppBySlug } from "@/lib/app/app.utils";
 import { App } from "@prisma/client";
 import { Session, User } from "@/lib/auth";
+import Link from "next/link";
 
 interface Props {
   app: Awaited<ReturnType<typeof getAppBySlug>>;
@@ -40,6 +41,17 @@ export default function AppHeader({ app }: Props) {
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Feedbacks</span>
               <span>{app?.feedbacks.length}</span>
+            </div>
+          )}
+          {app?.organization && (
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Organization</span>
+              <Link
+                href={`/dashboard/organizations/${app.organization.slug}`}
+                title={app.organization.name}
+              >
+                <Badge variant="outline">{app.organization.name}</Badge>
+              </Link>
             </div>
           )}
         </div>

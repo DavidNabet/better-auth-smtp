@@ -4,46 +4,47 @@ import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import { revalidatePath } from "next/cache";
 import { headers as head } from "next/headers";
-import { createAppSchema } from "./app.schema";
+import {
+  InviteSchema,
+  inviteSchema,
+} from "@/lib/organization/organization.schema";
 import { ActionState } from "../feedback/feedback.types";
 import { toAction, toActionState } from "../feedback/feedback.utils";
 import { getCurrentUser } from "../user/user.utils";
 import { hasServerPermission } from "../permissions/permissions.actions";
 import { APIError } from "better-auth/api";
-import { createAppData } from "./app.utils";
 import { ErrorTypes } from "../user/user.actions";
 
-export async function createApp(
+export async function inviteMember(
   formState: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
   const data = Object.fromEntries(formData);
-  const validatedFields = createAppSchema.safeParse(data);
+  const validatedFields = inviteSchema.safeParse(data);
   if (!validatedFields.success) {
     return toAction(validatedFields.error, "ERROR");
   }
 
-  const { name, organizationId, slug, description, logo } =
-    validatedFields.data;
+  const { email, organizationId, role } = validatedFields.data;
 
-  const { session } = await getCurrentUser();
+  // const { session } = await getCurrentUser();
 
   try {
-    if (!hasServerPermission("apps", "apps-create")) {
+    if (!hasServerPermission("invitation", "create")) {
       return toActionState(
         "You don't have permission to perform this action",
         "ERROR",
       );
     }
-
-    const validation = await createAppData({
-      name,
-      slug,
-      description,
-      logo,
-      organizationId: session.activeOrganizationId || organizationId,
+    const invitation = await auth.api.createInvitation({
+      body: {
+        email,
+        role,
+        organizationId,
+      },
+      headers: await head(),
     });
-    console.log("validation App: ", validation);
+    console.log("invitation: ", invitation);
   } catch (error) {
     if (error instanceof APIError) {
       console.log(error.message, error.body?.code);
@@ -58,7 +59,7 @@ export async function createApp(
     throw error;
   }
 
-  revalidatePath("/dashboard/apps");
+  //   revalidatePath("/dashboard/apps");
 
-  return toActionState("App created successfully!", "SUCCESS");
+  return toActionState("Invitation sent to member", "SUCCESS");
 }

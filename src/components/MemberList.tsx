@@ -32,7 +32,10 @@ import { Member } from "@prisma/client";
 import { cn, formatRelativeTime, getInitials, formatDate } from "@/lib/utils";
 import { getMembersInvitationStatus } from "@/lib/organization/organization.utils";
 import { Button } from "./ui/button";
+import { authClient } from "@/lib/auth/auth.client";
 import { Separator } from "@/components/ui/separator";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 interface MemberListProps {
   members: Awaited<ReturnType<typeof getMembersInvitationStatus>>;
@@ -68,6 +71,8 @@ export default function MemberList({
   members,
   currentUserId,
 }: MemberListProps) {
+  console.log("members: ", members);
+  const router = useRouter();
   return (
     <Card className="w-full shadow-xs">
       <CardHeader>
@@ -114,7 +119,7 @@ export default function MemberList({
                         <RoleIcon className="mr-1 size-3" />
                         {member.role}
                       </Badge>
-                      {member.status === "pending" && (
+                      {/* {member.status === "pending" && (
                         <Badge className="text-xs" variant="outline">
                           Waiting
                         </Badge>
@@ -123,7 +128,7 @@ export default function MemberList({
                         <Badge className="text-xs" variant="destructive">
                           Rejected
                         </Badge>
-                      )}
+                      )} */}
                     </div>
                     <p className="text-muted-foreground text-sm">
                       {member.email}
@@ -158,24 +163,56 @@ export default function MemberList({
                         sideOffset={4}
                       >
                         {member.role === "member" && (
-                          <DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={async () => {
+                              const res =
+                                await authClient.organization.updateMemberRole({
+                                  role: "admin",
+                                  memberId: member.id,
+                                });
+                              if (res.error) {
+                                toast.error(res.error.message);
+                              } else {
+                                toast.success("Role updated to admin");
+                              }
+                              router.refresh();
+                            }}
+                          >
                             <Shield className="size-4" />
                             Promote to admin
                           </DropdownMenuItem>
                         )}
                         {member.role === "admin" && (
-                          <DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={async () => {
+                              const res =
+                                await authClient.organization.updateMemberRole({
+                                  role: "member",
+                                  memberId: member.id,
+                                });
+                              if (res.error) {
+                                toast.error(res.error.message);
+                              } else {
+                                toast.success("Role updated to member");
+                              }
+                              router.refresh();
+                            }}
+                          >
                             <UserCheck className="size-4" />
                             Demote to Member
                           </DropdownMenuItem>
                         )}
-                        {member.status === "pending" && (
+                        {/* {member.status === "pending" && (
                           <DropdownMenuItem>
                             <Mail className="size-4" />
                             Resend Invitation
                           </DropdownMenuItem>
-                        )}
+                        )} */}
                         {member.role !== "viewer" && <DropdownMenuSeparator />}
+                        <DropdownMenuItem variant="destructive">
+                          <Trash2 className="size-4" />
+                          Remove Member
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   )}
