@@ -22,7 +22,7 @@ export function ActionGuard({
 
   if (!session) return <>{fallback}</>;
 
-  const sessionRole = session?.role as RoleType;
+  const sessionRole = session?.role as Uppercase<RoleType>;
 
   const actionContext: ActionContext = {
     currentUserId: session?.userId,
@@ -33,7 +33,7 @@ export function ActionGuard({
   const canPerformAction = hasActionPermission(
     sessionRole,
     action,
-    actionContext
+    actionContext,
   );
 
   return canPerformAction ? <>{children}</> : <>{fallback}</>;
@@ -44,11 +44,11 @@ export function useActions() {
 
   const canPerform = (
     action: AnyStatement,
-    context?: Partial<ActionContext>
+    context?: Partial<ActionContext>,
   ): boolean => {
     if (!session) return false;
 
-    const sessionRole = session?.role as RoleType;
+    const sessionRole = session?.role as Uppercase<RoleType>;
 
     const actionContext: ActionContext = {
       currentUserId: session.userId,

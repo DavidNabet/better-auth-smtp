@@ -15,7 +15,7 @@ import {
   useRef,
   DialogHTMLAttributes,
 } from "react";
-import type { User } from "@prisma/client";
+import type { Role, User } from "@prisma/client";
 import { deleteUser, updateProfile, updateUser } from "@/lib/user/user.actions";
 import { useAuthState } from "@/hooks/use-auth";
 import { authClient } from "@/lib/auth/auth.client";
@@ -55,7 +55,6 @@ export const TableCell = ({
   column,
   table,
 }: CellContext<User, string>) => {
-  const { session } = useAuthState();
   const initialValue = getValue();
   const [value, setValue] = useState(initialValue);
   const tableMeta = table.options.meta;
@@ -97,6 +96,12 @@ export const TableCell = ({
   return value;
 };
 
+/**
+ * SelectCell rend un Select pour éditer le rôle d’un utilisateur.
+ * Règles:
+ * - L’option ADMIN est visible uniquement si le rôle courant est SUPER_ADMIN.
+ * - Toutes les autres options restent visibles pour tous les rôles.
+ */
 const SelectCell = ({
   row,
   initialValue,
@@ -108,8 +113,10 @@ const SelectCell = ({
   columnMeta: ColumnMeta<User, string>;
   onChange: (v: string) => void;
 }) => {
-  const isNotAdmin = row.original.role !== "ADMIN";
-
+  const { session } = useAuthState();
+  // ADMIN visible uniquement si le rôle courant est SUPER_ADMIN
+  const isNotAdmin = row.original.role !== "SUPER_ADMIN";
+  const isSuperAdmin = session?.role === "SUPER_ADMIN";
   if (!isNotAdmin) {
     return row.original.role;
   }
@@ -127,11 +134,16 @@ const SelectCell = ({
           <SelectValue aria-label={row.original.role} />
         </SelectTrigger>
         <SelectContent align="end">
-          {columnMeta?.options?.map((option: Option) => (
-            <SelectItem key={option.value} value={option.value}>
-              {option.label}
-            </SelectItem>
-          ))}
+          {columnMeta?.options
+            // Affiche toutes les options; ADMIN seulement si le rôle courant est SUPER_ADMIN
+            ?.filter((option: Option) =>
+              option.label === "ADMIN" ? isSuperAdmin : true,
+            )
+            .map((option: Option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
         </SelectContent>
       </Select>
     </>
@@ -160,7 +172,7 @@ export const EditCell = ({ row, table }: CellContext<User, any>) => {
 
         const updateData = {
           userId: currentRowData.id,
-          role: currentRowData.role as RoleType,
+          role: currentRowData.role as Exclude<Role, "OWNER">,
           name: currentRowData.name,
         };
 

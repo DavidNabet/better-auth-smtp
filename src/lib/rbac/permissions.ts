@@ -60,6 +60,7 @@ function buildRoleStatementsMap(): Readonly<
   return {
     [Role.SUPER_ADMIN]: Object.freeze([
       ...orgStatements.organization,
+      ...orgStatements.member,
       ...roleStatements.user,
       ...roleStatements.comments,
       ...roleStatements.session,
@@ -83,12 +84,13 @@ function buildRoleStatementsMap(): Readonly<
     [Role.ADMIN]: Object.freeze([
       ...roleStatements.comments,
       ...orgStatements.invitation,
+      ...orgStatements.member,
       "ban",
       "set-password",
       "update",
-      "member-update",
-      "member-delete",
-      "member-update-name",
+      // "member-update",
+      // "member-delete",
+      // "member-update-name",
       "apps-list",
       "view-topic",
     ]),
@@ -100,7 +102,7 @@ function buildRoleStatementsMap(): Readonly<
       "toggle-hide",
       "apps-list",
       "view-topic",
-      "member-update-name",
+      "update-name",
     ]),
 
     [Role.USER]: Object.freeze([

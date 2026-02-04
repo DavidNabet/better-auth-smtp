@@ -58,7 +58,11 @@ export function CreateOrganizationForm() {
         slug: formData.slug,
         fetchOptions: {
           onError(ctx) {
-            console.error(ctx.error);
+            if (ctx.response.status === 403) {
+              console.log(ctx.error);
+              toast.error(ctx.error.message);
+            }
+            // console.error(ctx.error);
             toast.error("Failed to create an organization");
           },
           onSuccess() {

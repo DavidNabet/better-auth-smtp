@@ -41,13 +41,13 @@ export const NAVIGATION_CONFIG: NavigationItem[] = [
     id: "organizations",
     label: "Organizations",
     href: "/dashboard/organizations",
-    permission: "org-update",
+    permission: "update-name",
     children: [
       {
         id: "organization",
         label: "Organization",
-        href: "/dashboard/organizations/[id]",
-        permission: "org-delete",
+        href: "/dashboard/organizations/[slug]",
+        permission: "update-name",
       },
     ],
   },
@@ -90,7 +90,7 @@ export const NAVIGATION_CONFIG: NavigationItem[] = [
 
 export function filterNavigationByRole(
   navigation: NavigationItem[],
-  userRole: RoleType
+  userRole: Uppercase<RoleType>,
 ): NavigationItem[] {
   return navigation
     .map((item) => {
@@ -103,8 +103,10 @@ export function filterNavigationByRole(
       if (item.children) {
         const filteredChildren = filterNavigationByRole(
           item.children,
-          userRole
+          userRole,
         );
+
+        console.log(filteredChildren);
 
         // Hide parent if no children are accessible
         if (filteredChildren.length === 0) {

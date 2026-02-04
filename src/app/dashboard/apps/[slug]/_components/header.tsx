@@ -6,6 +6,7 @@ import { getAppBySlug } from "@/lib/app/app.utils";
 import { App } from "@prisma/client";
 import { Session, User } from "@/lib/auth";
 import Link from "next/link";
+import { getInitials } from "@/lib/utils";
 
 interface Props {
   app: Awaited<ReturnType<typeof getAppBySlug>>;
@@ -16,10 +17,8 @@ export default function AppHeader({ app }: Props) {
       <CardContent className="p-6">
         <div className="flex flex-col items-center">
           <Avatar className="size-20">
-            <AvatarImage src={app?.logo!} alt="App logo" />
-            <AvatarFallback>
-              {app?.name.slice(0, 2).toUpperCase()}
-            </AvatarFallback>
+            {app?.logo && <AvatarImage src={app?.logo} alt="App logo" />}
+            <AvatarFallback>{getInitials(app?.name!)}</AvatarFallback>
           </Avatar>
           <h2 className="mt-4 text-lg font-semibold">{app?.name}</h2>
           <Badge className="mt-2" variant="secondary">

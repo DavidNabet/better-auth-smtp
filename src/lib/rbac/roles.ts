@@ -1,5 +1,5 @@
-import { Role } from "@prisma/client";
 import "server-only";
+import { Role } from "@prisma/client";
 
 /* export const roleAccessMap: Record<Role, string[]> = {
   SUPER_ADMIN: [
@@ -40,7 +40,7 @@ import "server-only";
 export const roleAccessMap: Record<string, Role[]> = {
   "/dashboard": ["SUPER_ADMIN", "ADMIN", "OWNER", "MEMBER", "USER"],
   "/dashboard/profile": ["SUPER_ADMIN", "OWNER", "ADMIN", "MEMBER", "USER"],
-  "/dashboard/organizations": ["SUPER_ADMIN", "OWNER"],
+  "/dashboard/organizations": ["SUPER_ADMIN", "OWNER", "ADMIN"],
   "/dashboard/organizations/[slug]": [
     "SUPER_ADMIN",
     "OWNER",

@@ -11,7 +11,7 @@ export const isAdminInOrg = async () => {
       headers: await headers(),
       body: {
         permissions: {
-          organization: ["org-update", "org-delete"],
+          organization: ["update", "delete"],
         },
       },
     });
@@ -136,6 +136,7 @@ export async function getMembersInvitationStatus(organizationId: string) {
     name: member.user.name,
     image: member.user.image,
     userId: member.userId,
+    organizationId: member.organizationId,
     // status: "accepted" as const,
     role: member.role,
     createdAt: member.createdAt,
@@ -161,6 +162,15 @@ export async function getInvitationsByOrgId(organizationId: string) {
   try {
     const invitations = await db.invitation.findMany({
       where: { organizationId },
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true,
+            image: true,
+          },
+        },
+      },
     });
     return invitations;
   } catch (error) {

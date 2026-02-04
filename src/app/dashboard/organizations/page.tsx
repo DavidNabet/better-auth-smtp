@@ -55,7 +55,19 @@ export default async function Organizations() {
               </EmptyContent>
             </Empty>
           ) : (
-            <DialogButton />
+            <Empty>
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <FolderCode />
+                </EmptyMedia>
+                <EmptyTitle>
+                  {organizations.length} Organizations created !
+                </EmptyTitle>
+                <EmptyDescription>
+                  You cannot create organizations
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
           )}
         </Suspense>
 

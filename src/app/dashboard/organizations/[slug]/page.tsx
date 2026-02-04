@@ -8,6 +8,7 @@ import {
 } from "@/lib/organization/organization.utils";
 import {
   getCurrentUser,
+  getUserById,
   getUsersByOrganizationId,
 } from "@/lib/user/user.utils";
 import { Metadata } from "next/types";

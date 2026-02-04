@@ -36,6 +36,7 @@ import { authClient } from "@/lib/auth/auth.client";
 import { Separator } from "@/components/ui/separator";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { hasClientPermission } from "@/lib/permissions/permissions.utils";
 
 interface MemberListProps {
   members: Awaited<ReturnType<typeof getMembersInvitationStatus>>;
@@ -137,7 +138,7 @@ export default function MemberList({
                       <span>Joined {formatDate(member.createdAt)}</span>
                       {member.updatedAt && (
                         <>
-                          <span aria-hidden="true">-</span>
+                          <span aria-hidden="true">•</span>
                           <span>
                             Active {formatRelativeTime(member.updatedAt)}
                           </span>
@@ -209,7 +210,35 @@ export default function MemberList({
                           </DropdownMenuItem>
                         )} */}
                         {member.role !== "viewer" && <DropdownMenuSeparator />}
-                        <DropdownMenuItem variant="destructive">
+                        <DropdownMenuItem
+                          variant="destructive"
+                          onClick={async () => {
+                            const res =
+                              await authClient.organization.removeMember({
+                                memberIdOrEmail: member.email,
+                                organizationId: member.organizationId,
+                                fetchOptions: {
+                                  onError(context) {
+                                    if (context.response.status === 401) {
+                                      console.log(
+                                        hasClientPermission(
+                                          "owner",
+                                          "member",
+                                          "delete",
+                                        ),
+                                      );
+                                    }
+                                  },
+                                },
+                              });
+                            if (res.error) {
+                              toast.error(res.error.message);
+                            } else {
+                              toast.success("Member removed successfully");
+                            }
+                            router.refresh();
+                          }}
+                        >
                           <Trash2 className="size-4" />
                           Remove Member
                         </DropdownMenuItem>

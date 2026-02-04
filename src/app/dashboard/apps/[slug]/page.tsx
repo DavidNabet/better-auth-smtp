@@ -12,9 +12,9 @@ export const metadata: Metadata = {
 };
 
 // export const dynamicParams = true;
-// export async function generateStaticParams() {
-//   return [{ slug: "/^[a-z0-9]+(?:[_-][a-z0-9]+)*$/" }];
-// }
+export async function generateStaticParams() {
+  return [{ slug: "/^[a-z0-9]+(?:[_-][a-z0-9]+)*$/" }];
+}
 export default async function AppDetail({
   params,
 }: {

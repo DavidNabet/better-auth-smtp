@@ -136,15 +136,6 @@ export const auth = betterAuth({
     },
     user: {
       update: {
-        // before: async (user) => {
-        //   const u = user as User;
-        //   const currentUser = await getUserByEmail(u.email);
-        //   if (currentUser?.role === "SUPER_ADMIN") {
-        //     throw new APIError("BAD_REQUEST", {
-        //       message: "Super admin accound cannot be deleted",
-        //     });
-        //   }
-        // },
         after: async (user, ctx) => {
           const ADMIN_EMAIL = process.env.ADMIN_EMAIL!;
 
@@ -196,11 +187,16 @@ export const auth = betterAuth({
       skipVerificationOnEnable: true,
     }),
     organization({
+      requireEmailVerificationOnInvitation: true,
+      allowUserToCreateOrganization(user) {
+        return user.id === process.env.SUPER_ADMIN_ID;
+      },
       ac: dc,
       roles: {
-        owner,
+        [Role.SUPER_ADMIN]: owner,
+        [Role.OWNER]: owner,
         admin: adm,
-        member,
+        [Role.MEMBER]: member,
       },
       async sendInvitationEmail(data) {
         const inviteLink = `${process.env.NEXT_PUBLIC_APP_URL}/api/accept-invitation/${data.id}`;

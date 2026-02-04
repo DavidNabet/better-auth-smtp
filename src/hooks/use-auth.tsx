@@ -40,19 +40,19 @@ type SessionUser = Awaited<ReturnType<typeof sessionDto>>;
 
 interface AuthContextType {
   session?: SessionUser;
-  isAdmin: boolean;
+  // isAdmin: boolean;
   logOut: () => void;
   verifySession: () => void;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(
-  undefined
+  undefined,
 );
 // type UserRole = (typeof auth.$Infer.Session)["user"];
 
 export function useAuthState() {
   const [s, setSession] = useState<SessionUser | undefined>(undefined);
-  const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  // const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -67,28 +67,26 @@ export function useAuthState() {
       };
     })();
   }, []);
-  useEffect(() => {
+  /*useEffect(() => {
     // Role
     if (!s) return;
     async function run() {
       const permission = hasClientPermission(
-        s?.role as RoleType,
+        s?.role as Lowercase<RoleType>,
         "user",
-        "delete"
+        "delete",
       );
       if (!permission) {
-        throw new APIError("EXPECTATION_FAILED", {
-          message: "You don't have the correct role",
+        throw new APIError("BAD_REQUEST", {
+          message: "You don't actually have the correct role",
         });
       }
-      // const isAdmin = !!data?.users.find((user) => user.id === s?.userId);
-
       setIsAdmin(permission);
     }
     if (s.role === Role.SUPER_ADMIN) {
       run();
     }
-  }, [s?.sessionId]);
+  }, [s?.sessionId]);*/
 
   async function logOut() {
     const { data, error } = await authClient.revokeSession({
@@ -112,7 +110,7 @@ export function useAuthState() {
 
   return {
     session: s,
-    isAdmin,
+    // isAdmin,
     logOut,
     verifySession: verifySessionAndSave,
   };

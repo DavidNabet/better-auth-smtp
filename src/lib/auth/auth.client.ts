@@ -37,8 +37,10 @@ export const authClient = createAuthClient({
       },
     }),
     organizationClient({
+      requireEmailVerificationOnInvitation: true,
       ac: dc,
       roles: {
+        [Role.SUPER_ADMIN]: owner,
         owner,
         admin: adm,
         member,

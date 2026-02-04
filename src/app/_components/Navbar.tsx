@@ -22,7 +22,11 @@ import { RoleType } from "@/lib/permissions/permissions.utils";
 
 export default async function Navbar() {
   const { userRole } = await getCurrentServerSession();
-  const nav = filterNavigationByRole(NAVIGATION_CONFIG, userRole as RoleType);
+  const nav = filterNavigationByRole(
+    NAVIGATION_CONFIG,
+    userRole as Uppercase<RoleType>,
+  );
+  console.log(nav);
   return (
     <header className="border border-b border-primary/10">
       <div className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">

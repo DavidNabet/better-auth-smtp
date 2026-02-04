@@ -53,10 +53,12 @@ import {
   withCallbacks,
 } from "@/app/_components/ServerActionToast";
 import { inviteMember } from "@/lib/organization/organization.action";
+import { getInvitationsByOrgId } from "@/lib/organization/organization.utils";
+
 import { toast } from "sonner";
 
 interface TeamInvitationsProps {
-  invitations: Invitation[];
+  invitations: Awaited<ReturnType<typeof getInvitationsByOrgId>>;
 }
 
 function getStatusBadge(status: Invitation["status"]) {
@@ -72,7 +74,7 @@ function getStatusBadge(status: Invitation["status"]) {
 
 function formatTimeUntil(date: Date): string {
   const now = Date.now();
-  const diff = now - date.getTime();
+  const diff = date.getTime() - now;
 
   if (diff <= 0) return "Expired";
 
@@ -185,9 +187,15 @@ export default function TeamInvitations({ invitations }: TeamInvitationsProps) {
                         <Badge variant="outline">{invitation.role}</Badge>
                       </div>
                       <div className="flex flex-wrap items-center gap-2 text-muted-foreground text-xs">
-                        <span>
-                          Expires in {formatTimeUntil(invitation.expiresAt)}
-                        </span>
+                        <span>Invited by {invitation.user.name}</span>
+                        {invitation.expiresAt && (
+                          <>
+                            <span aria-hidden="true">•</span>
+                            <span>
+                              Expires in {formatTimeUntil(invitation.expiresAt)}
+                            </span>
+                          </>
+                        )}
                       </div>
                     </div>
                     {invitation.status === "pending" && (
