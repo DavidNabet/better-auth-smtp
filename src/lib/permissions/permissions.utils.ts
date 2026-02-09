@@ -1,21 +1,38 @@
 import { authClient } from "@/lib/auth/auth.client";
-import { Entities, PermissionFor, OrgEntites } from "./permissions.types";
+import {
+  Entities,
+  PermissionFor,
+  OrgEntites,
+  PermissionOrgFor,
+} from "./permissions.types";
 import { Role, CommentAction } from "@prisma/client";
 import { db } from "@/db";
 
 export type RoleType = Lowercase<Exclude<Role, "SUPER_ADMIN" | "USER">>;
 
 // client
-export const hasClientPermission = <
-  E extends Entities,
+export const hasClientOrgPermission = <
   O extends OrgEntites,
-  P extends PermissionFor<E, O>,
+  P extends PermissionOrgFor<O>,
 >(
   role: RoleType,
-  entity: E | O,
+  entity: O,
   permission: P,
 ) => {
   return authClient.organization.checkRolePermission({
+    permissions: { [entity]: [permission] },
+    role: role!,
+  });
+};
+export const hasClientPermission = <
+  E extends Entities,
+  P extends PermissionFor<E>,
+>(
+  role: Exclude<Role, "OWNER">,
+  entity: E,
+  permission: P,
+) => {
+  return authClient.admin.checkRolePermission({
     permissions: { [entity]: [permission] },
     role: role!,
   });

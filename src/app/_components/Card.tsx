@@ -70,6 +70,7 @@ export function CardButton({
   className,
   children,
   boxed,
+  actions,
   ...props
 }: ICard & Partial<ICardLink> & CardProps) {
   const classNames = {
@@ -81,37 +82,42 @@ export function CardButton({
   };
   return (
     <Card className={cn("p-6 border-4 border-teal-500", className)} {...props}>
-      <div className={cn("flex gap-4", boxed && "items-center")}>
-        {icon && (
-          <Button
-            variant="secondary"
-            size="icon"
-            className={
-              boxed ? classNames.icon.secondary : classNames.icon.default
-            }
-          >
-            {icon}
-          </Button>
-        )}
-        {boxed ? (
-          <CardTitle className="mb-0">{title}</CardTitle>
-        ) : (
-          <div>
-            <CardTitle className="mb-2 text-lg">{title}</CardTitle>
-            <CardDescription className="mb-2 text-base">
-              {description}
-            </CardDescription>
-            <CardContent className="px-0">
-              <Link
-                href={href!}
-                title={label}
-                className="font-bold text-teal-500 transition duration-100 hover:text-teal-600 active:text-teal-700"
-              >
-                {label}
-              </Link>
-            </CardContent>
-          </div>
-        )}
+      <div
+        className={cn("flex gap-2", boxed && "items-center justify-between")}
+      >
+        <div className="flex items-center gap-2">
+          {icon && (
+            <Button
+              variant="secondary"
+              size="icon"
+              className={
+                boxed ? classNames.icon.secondary : classNames.icon.default
+              }
+            >
+              {icon}
+            </Button>
+          )}
+          {boxed ? (
+            <CardTitle className="mb-0">{title}</CardTitle>
+          ) : (
+            <div>
+              <CardTitle className="mb-2 text-lg">{title}</CardTitle>
+              <CardDescription className="mb-2 text-base">
+                {description}
+              </CardDescription>
+              <CardContent className="px-0">
+                <Link
+                  href={href!}
+                  title={label}
+                  className="font-bold text-teal-500 transition duration-100 hover:text-teal-600 active:text-teal-700"
+                >
+                  {label}
+                </Link>
+              </CardContent>
+            </div>
+          )}
+        </div>
+        {actions && actions}
       </div>
       {boxed && <>{children}</>}
     </Card>

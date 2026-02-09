@@ -11,7 +11,7 @@ import {
 import { ActionState } from "../feedback/feedback.types";
 import { toAction, toActionState } from "../feedback/feedback.utils";
 import { getCurrentUser } from "../user/user.utils";
-import { hasServerPermission } from "../permissions/permissions.actions";
+import { hasServerOrgPermission } from "../permissions/permissions.actions";
 import { APIError } from "better-auth/api";
 import { ErrorTypes } from "../user/user.actions";
 
@@ -30,7 +30,7 @@ export async function inviteMember(
   // const { session } = await getCurrentUser();
 
   try {
-    if (!hasServerPermission("invitation", "create")) {
+    if (!hasServerOrgPermission("invitation", "create")) {
       return toActionState(
         "You don't have permission to perform this action",
         "ERROR",

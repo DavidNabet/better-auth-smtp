@@ -1,4 +1,3 @@
-import Wrapper from "@/app/_components/Wrapper";
 import { Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,14 +16,23 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { CardButton } from "@/app/_components/Card";
-import { ArrowUpRightIcon, FolderCode, PlusIcon } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardTitle,
+  CardDescription,
+  CardHeader,
+} from "@/components/ui/card";
+import { FolderCode, PlusIcon, ArrowRight } from "lucide-react";
 import { Metadata } from "next";
 import { getOrganizations } from "@/lib/organization/organization.utils";
 import { CreateOrganizationForm } from "@/components/organizations/CreateOrganizationForm";
 import Link from "next/link";
 import LoadingIcon from "@/app/_components/LoadingIcon";
-import { CreateFromButton } from "@/app/_components/CreateFromButton";
+import Wrapper from "@/app/_components/Wrapper";
+import { cn } from "@/lib/utils";
+import { Organization } from "@prisma/client";
+import { CardButton, CardInner } from "@/app/_components/Card";
 
 export const metadata: Metadata = {
   title: "Organizations",
@@ -36,16 +44,13 @@ export default async function Organizations() {
     <>
       <div className="flex flex-col items-center justify-center gap-6">
         <Suspense fallback={<LoadingIcon />}>
-          {organizations.length < 3 ? (
+          {organizations.length === 0 && (
             <Empty>
               <EmptyHeader>
                 <EmptyMedia variant="icon">
                   <FolderCode />
                 </EmptyMedia>
-                <EmptyTitle>
-                  {organizations.length} Organization
-                  {organizations.length > 1 ? "s" : ""} created !
-                </EmptyTitle>
+                <EmptyTitle>You don't have any organizations yet !</EmptyTitle>
                 <EmptyDescription>
                   You can create 3 organizations max.
                 </EmptyDescription>
@@ -54,35 +59,54 @@ export default async function Organizations() {
                 <DialogButton />
               </EmptyContent>
             </Empty>
-          ) : (
-            <Empty>
-              <EmptyHeader>
-                <EmptyMedia variant="icon">
-                  <FolderCode />
-                </EmptyMedia>
-                <EmptyTitle>
-                  {organizations.length} Organizations created !
-                </EmptyTitle>
-                <EmptyDescription>
-                  You cannot create organizations
-                </EmptyDescription>
-              </EmptyHeader>
-            </Empty>
           )}
         </Suspense>
 
-        <div className="flex flex-col gap-4">
-          <h2 className="font-bold text-2xl">Organizations</h2>
-          <Suspense fallback={<LoadingIcon />}>
-            {organizations?.map((org) => (
-              <Button asChild key={org.id} variant="outline">
-                <Link href={`/dashboard/organizations/${org.slug}`}>
-                  {org.name}
-                </Link>
-              </Button>
-            ))}
-          </Suspense>
-        </div>
+        <Card
+          className={cn("w-full shadow-transparent mt-6 border-transparent")}
+        >
+          <CardHeader>
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col flex-wrap gap-3 md:flex-row md:items-center md:justify-between">
+                <div className="flex min-w-0 flex-1 flex-col gap-2">
+                  <CardTitle className="text-2xl">Your Organizations</CardTitle>
+                  <CardDescription>
+                    {organizations.length} organization
+                    {organizations.length !== 1 ? "s" : ""} created
+                  </CardDescription>
+                </div>
+                <DialogButton />
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <Suspense fallback={<LoadingIcon />}>
+              <div className="grid gap-4 md:grid-cols-3">
+                {organizations?.map((org) => (
+                  <CardButton
+                    key={org.id}
+                    icon={<FolderCode />}
+                    title={org.name}
+                    boxed
+                    className="border p-4 rounded-lg gap-4 border-accent-foreground/20"
+                    actions={
+                      <Button
+                        asChild
+                        size="icon-sm"
+                        variant="outline"
+                        className="rounded-full"
+                      >
+                        <Link href={`/dashboard/organizations/${org.slug}`}>
+                          <ArrowRight />
+                        </Link>
+                      </Button>
+                    }
+                  />
+                ))}
+              </div>
+            </Suspense>
+          </CardContent>
+        </Card>
       </div>
     </>
   );

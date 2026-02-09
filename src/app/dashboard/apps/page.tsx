@@ -46,12 +46,12 @@ export default async function Apps() {
   ]);
   return (
     <>
-      <Card className={cn("w-full shadow-xs mt-6")}>
+      <Card className={cn("w-full shadow-transparent mt-6 border-transparent")}>
         <CardHeader>
           <div className="flex flex-col gap-4">
             <div className="flex flex-col flex-wrap gap-3 md:flex-row md:items-start md:justify-between">
               <div className="flex min-w-0 flex-1 flex-col gap-2">
-                <CardTitle>Apps</CardTitle>
+                <CardTitle className="text-2xl">Apps</CardTitle>
                 <CardDescription>
                   {apps.length} app{apps.length !== 1 ? "s" : ""} created
                 </CardDescription>

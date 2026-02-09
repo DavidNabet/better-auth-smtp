@@ -31,12 +31,12 @@ import {
 import { Member } from "@prisma/client";
 import { cn, formatRelativeTime, getInitials, formatDate } from "@/lib/utils";
 import { getMembersInvitationStatus } from "@/lib/organization/organization.utils";
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 import { authClient } from "@/lib/auth/auth.client";
 import { Separator } from "@/components/ui/separator";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { hasClientPermission } from "@/lib/permissions/permissions.utils";
+import { hasClientOrgPermission } from "@/lib/permissions/permissions.utils";
 
 interface MemberListProps {
   members: Awaited<ReturnType<typeof getMembersInvitationStatus>>;
@@ -72,17 +72,16 @@ export default function MemberList({
   members,
   currentUserId,
 }: MemberListProps) {
-  console.log("members: ", members);
   const router = useRouter();
   return (
     <Card className="w-full shadow-xs">
       <CardHeader>
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-1">
-            <CardTitle>Team Members</CardTitle>
+            <CardTitle>Members</CardTitle>
             <CardDescription>
               {members?.length} member{members?.length !== 1 ? "s" : ""} in your
-              team
+              organization
             </CardDescription>
           </div>
         </div>
@@ -221,7 +220,7 @@ export default function MemberList({
                                   onError(context) {
                                     if (context.response.status === 401) {
                                       console.log(
-                                        hasClientPermission(
+                                        hasClientOrgPermission(
                                           "owner",
                                           "member",
                                           "delete",

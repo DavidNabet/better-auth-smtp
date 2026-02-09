@@ -212,6 +212,7 @@ export const auth = betterAuth({
       },
       teams: {
         enabled: true,
+        maximumTeams: 3,
         allowRemovingAllTeams: false,
       },
       schema: {

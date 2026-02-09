@@ -118,12 +118,6 @@ export default function TeamInvitations({ invitations }: TeamInvitationsProps) {
 
   return (
     <div className="relative">
-      <div className="absolute -top-16 right-0 flex justify-end items-center my-4">
-        <Button variant="outline" size="sm" onClick={() => router.refresh()}>
-          {<RefreshCw className="size-4" />}
-          Refresh
-        </Button>
-      </div>
       <Card className="w-full shadow-xs h-full">
         <CardHeader>
           <div className="flex flex-col flex-wrap gap-3 md:flex-row md:items-start md:justify-between">
@@ -134,6 +128,14 @@ export default function TeamInvitations({ invitations }: TeamInvitationsProps) {
                 {acceptedInvitations.length} accepted
               </CardDescription>
             </div>
+            <Button
+              variant="outline"
+              type="button"
+              size="icon"
+              onClick={() => router.refresh()}
+            >
+              <RefreshCw className="size-4" />
+            </Button>
             <Dialog>
               <DialogTrigger asChild>
                 <Button

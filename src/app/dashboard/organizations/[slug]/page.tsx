@@ -1,6 +1,6 @@
 import Wrapper from "@/app/_components/Wrapper";
-import TeamInvitations from "@/components/TeamInvitations";
-import MemberList from "@/components/MemberList";
+import TeamInvitations from "@/components/organizations/TeamInvitations";
+import MemberList from "@/components/organizations/MemberList";
 import {
   getInvitationsByOrgId,
   getMembersInvitationStatus,
@@ -14,6 +14,7 @@ import {
 import { Metadata } from "next/types";
 import { Suspense } from "react";
 import LoadingIcon from "@/app/_components/LoadingIcon";
+import Teams from "@/components/organizations/Teams";
 
 export const metadata: Metadata = {
   title: "Organization Details",
@@ -41,6 +42,7 @@ export default async function OrganizationPage({
       <div className="my-6">
         <h2 className="font-bold text-3xl">{organization?.name}</h2>
       </div>
+      <Teams />
       <div className="grid gap-4 sm:grid-cols-2">
         <Suspense fallback={<LoadingIcon />}>
           <MemberList currentUserId={currentUser.id} members={members} />

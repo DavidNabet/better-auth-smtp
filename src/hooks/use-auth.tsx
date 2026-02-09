@@ -72,7 +72,7 @@ export function useAuthState() {
     if (!s) return;
     async function run() {
       const permission = hasClientPermission(
-        s?.role as Lowercase<RoleType>,
+        s?.role as Exclude<Role, "OWNER">,
         "user",
         "delete",
       );
