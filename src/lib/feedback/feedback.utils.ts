@@ -91,7 +91,7 @@ export async function getFeedbackWithComments(title: string) {
       }
       return acc;
     },
-    {} as Record<string, typeof feedback.comments>
+    {} as Record<string, typeof feedback.comments>,
   );
 
   return { feedback, topLevel, repliesByParent };
@@ -119,7 +119,7 @@ export async function cleanupOrphanCommentParents(): Promise<{
     .filter((id) => !!id && id?.length > 0);
 
   const orphanIds = Array.from(
-    new Set(parentIds.filter((pid) => !existingIds.has(pid)))
+    new Set(parentIds.filter((pid) => !existingIds.has(pid))),
   );
 
   if (orphanIds.length === 0) {
@@ -207,21 +207,22 @@ export async function getCommentsTree(feedbackId: string) {
 
 export const toActionState = (
   message: string,
-  status: "SUCCESS" | "ERROR"
+  status: "SUCCESS" | "ERROR",
 ): ActionState => {
   return { message, status };
 };
 
 export const toAction = (
-  errors: string | z.ZodError<any>,
-  status: "SUCCESS" | "ERROR"
+  errors: string | z.core.$ZodError<any>,
+  status: "SUCCESS" | "ERROR",
 ): ActionState => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   if (typeof (errors as unknown) === "string") {
     return { message: errors as unknown as string, status: "ERROR" };
   }
 
-  const zodError = errors as z.ZodError<any>;
+  const zodError = errors as z.core.$ZodError;
+  const flattened = z.flattenError(zodError).fieldErrors;
 
   return {
     status: "ERROR",
@@ -230,6 +231,6 @@ export const toAction = (
         ? "Veuillez corriger les erreurs du formulaire"
         : undefined,
     errors: zodError.issues,
-    errorMessage: zodError.flatten().fieldErrors,
+    errorMessage: flattened,
   };
 };

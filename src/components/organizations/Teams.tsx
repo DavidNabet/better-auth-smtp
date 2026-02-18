@@ -1,3 +1,5 @@
+"use client";
+
 import { Team } from "@prisma/client";
 import {
   Card,
@@ -40,6 +42,18 @@ import {
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
+import { getTeams } from "@/lib/organization/organization.utils";
+import { useActionState } from "react";
+import {
+  createToastCallbacks,
+  withCallbacks,
+} from "@/app/_components/ServerActionToast";
+import { createTeam } from "@/lib/organization/organization.action";
+
+interface TeamsProps {
+  teams: Awaited<ReturnType<typeof getTeams>>;
+  organizationId?: string;
+}
 
 const tab = [
   {
@@ -83,7 +97,19 @@ const tab = [
     ],
   },
 ];
-export default async function Teams() {
+export default function Teams({ teams, organizationId }: TeamsProps) {
+  const toastCallbacks = createToastCallbacks({
+    loading: "Envoyer une invitation...",
+  });
+  const [state, action, pending] = useActionState(
+    withCallbacks(createTeam, {
+      ...toastCallbacks,
+      onSuccess(result) {
+        toastCallbacks.onSuccess?.(result);
+      },
+    }),
+    null,
+  );
   return (
     <Card className={cn("w-full shadow-xs my-6")}>
       <CardHeader>
@@ -112,6 +138,18 @@ export default async function Teams() {
                   Manage your organization's teams and permissions.
                 </DialogDescription>
               </DialogHeader>
+              <div>
+                {organizationId && (
+                  <form action={action}>
+                    <input
+                      type="hidden"
+                      name="organizationId"
+                      value={organizationId}
+                    />
+                    <Button type="submit">Envoyer</Button>
+                  </form>
+                )}
+              </div>
             </DialogContent>
           </Dialog>
         </div>

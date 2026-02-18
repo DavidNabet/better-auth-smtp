@@ -5,6 +5,7 @@ import {
   getInvitationsByOrgId,
   getMembersInvitationStatus,
   getOrganizationBySlug,
+  getTeams,
 } from "@/lib/organization/organization.utils";
 import {
   getCurrentUser,
@@ -29,9 +30,10 @@ export default async function OrganizationPage({
   const { currentUser } = await getCurrentUser();
   const organization = await getOrganizationBySlug(slug);
 
-  const [members, invitations] = await Promise.all([
+  const [members, invitations, teams] = await Promise.all([
     getMembersInvitationStatus(organization?.id || ""),
     getInvitationsByOrgId(organization?.id || ""),
+    getTeams(),
   ]);
 
   //console.log("org: ", organization);
@@ -42,7 +44,9 @@ export default async function OrganizationPage({
       <div className="my-6">
         <h2 className="font-bold text-3xl">{organization?.name}</h2>
       </div>
-      <Teams />
+      <Suspense fallback={<LoadingIcon />}>
+        <Teams teams={teams} organizationId={organization?.id} />
+      </Suspense>
       <div className="grid gap-4 sm:grid-cols-2">
         <Suspense fallback={<LoadingIcon />}>
           <MemberList currentUserId={currentUser.id} members={members} />

@@ -10,7 +10,9 @@ export interface CommentWithRelations extends Comment {
 /**
  * Alias pour les erreurs de champs Zod (fieldErrors) afin de simplifier le type.
  */
-export type FieldErrors = z.inferFlattenedErrors<z.ZodTypeAny>["fieldErrors"];
+export type FieldErrors = z.core.$ZodFlattenedError<
+  z.ZodType<any>
+>["fieldErrors"];
 
 /**
  * État de succès ou d'erreur: un message (peut alimenter un toast de succès ou un toast d'erreur).
@@ -29,7 +31,7 @@ export type State = {
 export type ZodValidationErrorState = {
   status: "ERROR";
   message?: string;
-  errors: z.ZodIssue[];
+  errors: z.core.$ZodIssueBase[];
   errorMessage: FieldErrors;
 };
 

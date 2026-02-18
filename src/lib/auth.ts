@@ -20,7 +20,10 @@ import {
   admin as adm,
 } from "./organization/organization.service";
 import { getUserByEmail } from "./user/user.utils";
-import { getActiveOrganization } from "./organization/organization.utils";
+import {
+  findTeamByName,
+  getActiveOrganization,
+} from "./organization/organization.utils";
 
 export type Session = typeof auth.$Infer.Session;
 export type User = typeof auth.$Infer.Session.user;
@@ -191,12 +194,22 @@ export const auth = betterAuth({
       allowUserToCreateOrganization(user) {
         return user.id === process.env.SUPER_ADMIN_ID;
       },
+      organizationHooks: {
+        beforeCreateTeam: async ({ team, organization }) => {
+          const existingTeam = await findTeamByName(team.name, organization.id);
+          if (existingTeam) {
+            throw new APIError("BAD_REQUEST", {
+              message: "Team name already exists in this organization",
+            });
+          }
+        },
+      },
       ac: dc,
       roles: {
         [Role.SUPER_ADMIN]: owner,
-        [Role.OWNER]: owner,
+        owner,
         admin: adm,
-        [Role.MEMBER]: member,
+        member,
       },
       async sendInvitationEmail(data) {
         const inviteLink = `${process.env.NEXT_PUBLIC_APP_URL}/api/accept-invitation/${data.id}`;
@@ -218,9 +231,9 @@ export const auth = betterAuth({
       schema: {
         team: {
           additionalFields: {
-            slug: {
+            description: {
               type: "string",
-              required: true,
+              required: false,
               input: true,
               returned: true,
             },

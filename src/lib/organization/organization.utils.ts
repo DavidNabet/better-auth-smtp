@@ -192,5 +192,58 @@ export async function getCurrentMember() {
 
   const user = await getUserById(member.userId);
 
+  if (!user) return null;
+
   return user;
+}
+
+// Teams of the organization
+export async function getTeams() {
+  const { currentUser } = await getCurrentUser();
+  try {
+    const members = await db.member.findMany({
+      where: { userId: currentUser.id },
+    });
+
+    const teams = await db.team.findMany({
+      where: {
+        id: {
+          in: members.map((m) => m.organizationId),
+        },
+      },
+      include: {
+        teamMembers: {
+          include: {
+            user: {
+              select: {
+                name: true,
+                role: true,
+                image: true,
+                email: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return teams;
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+}
+
+// Don't create the same team name
+export async function findTeamByName(teamName: string, organizationId: string) {
+  const team = await db.team.findFirst({
+    where: {
+      name: { equals: teamName },
+      AND: {
+        organizationId: organizationId,
+      },
+    },
+  });
+
+  return team;
 }

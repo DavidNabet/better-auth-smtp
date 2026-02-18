@@ -290,7 +290,7 @@ function CreateInvitation({ organizationId }: { organizationId?: string }) {
               type="email"
               placeholder="johndoe@example.com"
             />
-            <ErrorMessages errors={state?.errorMessage?.email ?? null} />
+            <ErrorMessages errors={state?.errorMessage?.type ?? null} />
           </div>
           <div className="col-span-6">
             <Label
@@ -311,7 +311,7 @@ function CreateInvitation({ organizationId }: { organizationId?: string }) {
             <p className="mt-2 text-muted-foreground text-sm">
               Members can create content, admins can manage the team
             </p>
-            <ErrorMessages errors={state?.errorMessage?.role ?? null} />
+            <ErrorMessages errors={state?.errorMessage?.type ?? null} />
           </div>
         </div>
         <DialogFooter className="mt-6 col-span-6 gap-x-6">

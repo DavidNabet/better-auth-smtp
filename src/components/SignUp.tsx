@@ -45,7 +45,7 @@ export default function AuthSignUp() {
 
     const validateFields = createUserSchema.safeParse(formData);
     if (!validateFields.success) {
-      const { fieldErrors } = validateFields.error.flatten();
+      const { fieldErrors } = z.flattenError(validateFields.error);
       setErrorMessage({
         name: fieldErrors.name ?? [""],
         email: fieldErrors.email ?? [""],
@@ -198,7 +198,7 @@ export default function AuthSignUp() {
           type="submit"
           variant="secondary"
           className={cn(
-            "border text-white shrink-0 transition-colors focus:ring-offset-2 focus:ring-offset-secondary cursor-pointer"
+            "border text-white shrink-0 transition-colors focus:ring-offset-2 focus:ring-offset-secondary cursor-pointer",
           )}
           disabled={isPending}
         >
