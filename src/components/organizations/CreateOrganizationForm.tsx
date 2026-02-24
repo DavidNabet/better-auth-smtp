@@ -11,6 +11,7 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Button } from "../ui/button";
 import { useRouter } from "next/navigation";
+import { FieldErrors } from "@/lib/feedback/feedback.types";
 
 const formSchema = z.object({
   name: z.string().min(2).max(50),
@@ -27,7 +28,7 @@ export function CreateOrganizationForm() {
   });
 
   const [errorMessage, setErrorMessage] = useState<
-    z.inferFlattenedErrors<typeof formSchema>["fieldErrors"]
+    FieldErrors<typeof formSchema>
   >({
     name: [""],
     slug: [""],
@@ -44,10 +45,10 @@ export function CreateOrganizationForm() {
     const validateFields = formSchema.safeParse(formData);
 
     if (!validateFields.success) {
-      const { fieldErrors } = validateFields.error.flatten();
+      const { fieldErrors } = z.flattenError(validateFields.error);
       setErrorMessage({
-        name: fieldErrors.name ?? [""],
-        slug: fieldErrors.slug ?? [""],
+        name: fieldErrors?.name ?? [""],
+        slug: fieldErrors?.slug ?? [""],
       });
       return;
     }

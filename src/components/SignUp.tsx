@@ -3,7 +3,11 @@ import { ChangeEvent, useState, useTransition } from "react";
 import { authClient } from "@/lib/auth/auth.client";
 import { SubmitButton } from "@/app/_components/SubmitButton";
 import { ErrorMessages } from "@/app/_components/ErrorMessages";
-import { CreateUserSchema, createUserSchema } from "@/lib/auth/auth.schema";
+import {
+  CreateUserErrors,
+  CreateUserSchema,
+  createUserSchema,
+} from "@/lib/auth/auth.schema";
 import Link from "next/link";
 import { APIError, email } from "better-auth";
 import { useRouter } from "next/navigation";
@@ -26,7 +30,7 @@ export default function AuthSignUp() {
     passwordConfirm: "",
   });
   const [errorMessage, setErrorMessage] = useState<
-    z.inferFlattenedErrors<typeof createUserSchema>["fieldErrors"]
+    CreateUserErrors["fieldErrors"]
   >({
     name: [""],
     email: [""],

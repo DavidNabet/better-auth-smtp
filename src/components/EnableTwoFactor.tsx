@@ -27,6 +27,7 @@ import { Input } from "./ui/input";
 import { z } from "zod";
 import { Button } from "./ui/button";
 import { Loader2, Shield } from "lucide-react";
+import { FieldErrors } from "@/lib/feedback/feedback.types";
 
 export default function EnableTwoFactor() {
   const { data } = authClient.useSession();
@@ -38,7 +39,7 @@ export default function EnableTwoFactor() {
   });
   const [error, setError] = useState("");
   const [errorMessage, setErrorMessage] = useState<
-    z.inferFlattenedErrors<z.ZodTypeAny>["fieldErrors"]
+    FieldErrors<typeof passwordSchema>
   >({
     password: [""],
   });
@@ -56,7 +57,7 @@ export default function EnableTwoFactor() {
     e.preventDefault();
     const validateFields = passwordSchema.safeParse(formData);
     if (!validateFields.success) {
-      const { fieldErrors } = validateFields.error.flatten();
+      const { fieldErrors } = z.flattenError(validateFields.error);
       setErrorMessage({
         password: fieldErrors.password ?? [""],
       });
@@ -172,7 +173,7 @@ export default function EnableTwoFactor() {
                 type="submit"
                 className={cn(
                   "bg-emerald-600 shadow-xs hover:bg-emerald-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 cursor-pointer text-white",
-                  isPending && "cursor-not-allowed bg-metal"
+                  isPending && "cursor-not-allowed bg-metal",
                 )}
                 disabled={isPending}
               >

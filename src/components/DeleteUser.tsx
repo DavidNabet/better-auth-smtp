@@ -22,6 +22,8 @@ import { authClient } from "@/lib/auth/auth.client";
 import { useRouter } from "next/navigation";
 import { Loader2, Trash2 } from "lucide-react";
 import { passwordSchema, PasswordSchema } from "@/lib/auth/auth.schema";
+import { FieldErrors } from "@/lib/feedback/feedback.types";
+import { ErrorMessages } from "@/app/_components/ErrorMessages";
 
 interface DeleteUserProps {
   user: User | null;
@@ -34,7 +36,7 @@ export default function DeleteUser() {
     password: "",
   });
   const [errorMessage, setErrorMessage] = useState<
-    z.inferFlattenedErrors<z.ZodTypeAny>["fieldErrors"]
+    FieldErrors<typeof passwordSchema>
   >({
     password: [""],
   });
@@ -49,7 +51,7 @@ export default function DeleteUser() {
 
     const validatedFields = passwordSchema.safeParse(formData);
     if (!validatedFields.success) {
-      const { fieldErrors } = validatedFields.error.flatten();
+      const { fieldErrors } = z.flattenError(validatedFields.error);
       setErrorMessage({
         password: fieldErrors.password ?? [""],
       });
@@ -119,6 +121,7 @@ export default function DeleteUser() {
                     errorMessage?.password ? "border-destructive" : ""
                   }`}
                 />
+                <ErrorMessages errors={errorMessage?.password} />
               </div>
             </div>
             <DialogFooter>
@@ -128,7 +131,7 @@ export default function DeleteUser() {
                 form="deleteUser"
                 className={cn(
                   " shrink-0 transition-colors focus:ring-offset-2 focus:ring-offset-secondary cursor-pointer w-full text-white bg-destructive/90 hover:bg-destructive",
-                  isPending && "opacity-50 cursor-not-allowed"
+                  isPending && "opacity-50 cursor-not-allowed",
                 )}
                 disabled={isPending}
               >

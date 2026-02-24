@@ -24,7 +24,7 @@ export async function inviteMember(
   const data = Object.fromEntries(formData);
   const validatedFields = inviteSchema.safeParse(data);
   if (!validatedFields.success) {
-    return toAction(validatedFields.error, "ERROR");
+    return toAction<typeof inviteSchema>(validatedFields.error, "ERROR");
   }
 
   const { email, organizationId, role } = validatedFields.data;
@@ -78,7 +78,7 @@ export async function createTeam(
     const { fieldErrors } = z.flattenError(validatedFields.error);
     console.log("error: ", fieldErrors);
 
-    return toAction(validatedFields.error, "ERROR");
+    return toAction<typeof createTeamSchema>(validatedFields.error, "ERROR");
   }
 
   // const { name, organizationId, description } = validatedFields.data;

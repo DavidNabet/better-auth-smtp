@@ -56,6 +56,8 @@ import { inviteMember } from "@/lib/organization/organization.action";
 import { getInvitationsByOrgId } from "@/lib/organization/organization.utils";
 
 import { toast } from "sonner";
+import { ActionState } from "@/lib/feedback/feedback.types";
+import { inviteSchema } from "@/lib/organization/organization.schema";
 
 interface TeamInvitationsProps {
   invitations: Awaited<ReturnType<typeof getInvitationsByOrgId>>;
@@ -290,7 +292,7 @@ function CreateInvitation({ organizationId }: { organizationId?: string }) {
               type="email"
               placeholder="johndoe@example.com"
             />
-            <ErrorMessages errors={state?.errorMessage?.type ?? null} />
+            <ErrorMessages errors={state?.errorMessage?.email ?? null} />
           </div>
           <div className="col-span-6">
             <Label
@@ -311,7 +313,7 @@ function CreateInvitation({ organizationId }: { organizationId?: string }) {
             <p className="mt-2 text-muted-foreground text-sm">
               Members can create content, admins can manage the team
             </p>
-            <ErrorMessages errors={state?.errorMessage?.type ?? null} />
+            <ErrorMessages errors={state?.errorMessage?.role ?? null} />
           </div>
         </div>
         <DialogFooter className="mt-6 col-span-6 gap-x-6">

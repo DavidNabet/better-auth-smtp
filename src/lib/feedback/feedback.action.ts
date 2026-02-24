@@ -2,7 +2,7 @@
 
 import { APIError } from "better-auth/api";
 import { db } from "@/db";
-import { z } from "zod";
+import { z, flattenError } from "zod";
 import { revalidatePath } from "next/cache";
 import { headers as head } from "next/headers";
 import { auth } from "@/lib/auth";
@@ -27,7 +27,7 @@ import { getAppBySlug } from "../app/app.utils";
 
 export async function createFeedback(
   formState: FormState,
-  formData: FormData
+  formData: FormData,
 ): Promise<FormState> {
   const data = Object.fromEntries(formData);
   const validatedFields = createFeedbackSchema.safeParse(data);
@@ -37,7 +37,7 @@ export async function createFeedback(
         error: "Invalid form data.",
       },
       errors: validatedFields.error.issues,
-      errorMessage: validatedFields.error.flatten().fieldErrors,
+      errorMessage: flattenError(validatedFields.error).fieldErrors,
     };
   }
 
@@ -127,12 +127,12 @@ export async function createFeedback(
 }
 export async function addComment(
   formState: ActionState,
-  formData: FormData
+  formData: FormData,
 ): Promise<ActionState> {
   const data = Object.fromEntries(formData);
   const validatedFields = createCommentSchema.safeParse(data);
   if (!validatedFields.success) {
-    return toAction(validatedFields.error, "ERROR");
+    return toAction<typeof createCommentSchema>(validatedFields.error, "ERROR");
   }
 
   const { content, feedbackId, parentId } = validatedFields.data;
@@ -237,11 +237,15 @@ export async function toggleVote(feedbackId: string, type: "UP" | "DOWN") {
   }
 }
 
+const CommentSchema = z.object({
+  commentId: z.string().min(1, "User ID is required"),
+});
+
 export async function toggleLike(formState: ActionState, formData: FormData) {
   const data = Object.fromEntries(formData);
-  const validatedFields = z.object({ commentId: z.string() }).safeParse(data);
+  const validatedFields = CommentSchema.safeParse(data);
   if (!validatedFields.success) {
-    return toAction(validatedFields.error, "ERROR");
+    return toAction<typeof CommentSchema>(validatedFields.error, "ERROR");
   }
 
   const { commentId } = validatedFields.data;
@@ -274,19 +278,15 @@ export async function toggleLike(formState: ActionState, formData: FormData) {
   return toActionState("Like updated!", "SUCCESS");
 }
 
-const CommentSchema = z.object({
-  commentId: z.string().min(1, "User ID is required"),
-});
-
 // Supprimer complètement un commentaire
 export async function deleteComment(
   formState: ActionState,
-  formData: FormData
+  formData: FormData,
 ): Promise<ActionState> {
   const data = Object.fromEntries(formData);
   const validatedFields = CommentSchema.safeParse(data);
   if (!validatedFields.success) {
-    return toAction(validatedFields.error, "ERROR");
+    return toAction<typeof CommentSchema>(validatedFields.error, "ERROR");
   }
 
   const { commentId } = validatedFields.data;
@@ -327,12 +327,12 @@ export async function deleteComment(
 // Masquer un commentaire
 export async function toggleHideComment(
   formState: ActionState,
-  formData: FormData
+  formData: FormData,
 ): Promise<ActionState> {
   const data = Object.fromEntries(formData);
   const validatedFields = CommentSchema.safeParse(data);
   if (!validatedFields.success) {
-    return toAction(validatedFields.error, "ERROR");
+    return toAction<typeof CommentSchema>(validatedFields.error, "ERROR");
   }
 
   const { commentId } = validatedFields.data;
@@ -351,7 +351,7 @@ export async function toggleHideComment(
   if (!permission)
     return toActionState(
       "You don't have the permission to do this action!",
-      "ERROR"
+      "ERROR",
     );
   try {
     await db.comment.update({

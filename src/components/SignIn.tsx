@@ -2,7 +2,11 @@
 import { ChangeEvent, useState, useTransition } from "react";
 import { authClient } from "@/lib/auth/auth.client";
 import { ErrorMessages } from "@/app/_components/ErrorMessages";
-import { SignInSchema, signInSchema } from "@/lib/auth/auth.schema";
+import {
+  SignInSchema,
+  signInSchema,
+  SignInSchemaErrors,
+} from "@/lib/auth/auth.schema";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -12,6 +16,7 @@ import { toast } from "sonner";
 import { requestOTP } from "@/lib/auth/auth.service";
 import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
+import z from "zod";
 
 export default function AuthSignIn() {
   const router = useRouter();
@@ -20,12 +25,11 @@ export default function AuthSignIn() {
     email: "",
     password: "",
   });
-  const [errorMessage, setErrorMessage] = useState<{
-    email: string;
-    password: string;
-  }>({
-    email: "",
-    password: "",
+  const [errorMessage, setErrorMessage] = useState<
+    SignInSchemaErrors["fieldErrors"]
+  >({
+    email: [""],
+    password: [""],
   });
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -38,10 +42,10 @@ export default function AuthSignIn() {
 
     const validateFields = signInSchema.safeParse(formData);
     if (!validateFields.success) {
-      const { fieldErrors } = validateFields.error.flatten();
+      const { fieldErrors } = z.flattenError(validateFields.error);
       setErrorMessage({
-        email: fieldErrors.email?.[0] ?? "",
-        password: fieldErrors.password?.[0] ?? "",
+        email: fieldErrors.email ?? [""],
+        password: fieldErrors.password ?? [""],
       });
       return;
     }
@@ -107,6 +111,7 @@ export default function AuthSignIn() {
           placeholder="john@example.com"
           className="mt-1 w-full shadow-sm"
         />
+        <ErrorMessages errors={errorMessage?.email} />
       </div>
 
       <div className="col-span-6">
@@ -123,7 +128,7 @@ export default function AuthSignIn() {
           onChange={handleChange}
           className="mt-1 w-full  shadow-sm "
         />
-        <ErrorMessages error={errorMessage?.password} />
+        <ErrorMessages errors={errorMessage?.password} />
 
         <div className="mt-2 text-sm text-gray-600 dark:text-muted-foreground">
           <Link className="underline" href="/forgot-password">
@@ -138,7 +143,7 @@ export default function AuthSignIn() {
           variant="secondary"
           className={cn(
             " shrink-0 transition-colors  focus:ring-offset-2 focus:ring-offset-secondary cursor-pointer",
-            isPending && "opacity-50 cursor-not-allowed"
+            isPending && "opacity-50 cursor-not-allowed",
           )}
           disabled={isPending}
         >

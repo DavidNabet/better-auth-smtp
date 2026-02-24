@@ -10,8 +10,8 @@ export interface CommentWithRelations extends Comment {
 /**
  * Alias pour les erreurs de champs Zod (fieldErrors) afin de simplifier le type.
  */
-export type FieldErrors = z.core.$ZodFlattenedError<
-  z.ZodType<any>
+export type FieldErrors<S extends z.ZodType<any>> = z.core.$ZodFlattenedError<
+  z.output<S>
 >["fieldErrors"];
 
 /**
@@ -20,7 +20,7 @@ export type FieldErrors = z.core.$ZodFlattenedError<
 export type State = {
   status: "SUCCESS" | "ERROR";
   message?: string;
-  errorMessage?: FieldErrors;
+  errorMessage?: FieldErrors<z.ZodType<any>>;
 };
 
 /**
@@ -28,16 +28,19 @@ export type State = {
  * - message requis (toast d'erreur),
  * - issues + fieldErrors pour afficher les erreurs de formulaire.
  */
-export type ZodValidationErrorState = {
+export type ZodValidationErrorState<S extends z.ZodType<any>> = {
   status: "ERROR";
   message?: string;
-  errors: z.core.$ZodIssueBase[];
-  errorMessage: FieldErrors;
+  errors: z.core.$ZodIssue[];
+  errorMessage: FieldErrors<S>;
 };
-
 /**
  * ActionState final: union discriminée
  * - "SUCCESS" | "ERROR" (générique) | "ERROR" (Zod)
  * - null | undefined pour conserver la compatibilité avec useActionState initial.
  */
-export type ActionState = State | ZodValidationErrorState | null | undefined;
+export type ActionState =
+  | State
+  | ZodValidationErrorState<z.ZodType<any>>
+  | null
+  | undefined;

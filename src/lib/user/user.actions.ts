@@ -8,7 +8,7 @@ import {
   updateUserSchema,
   UpdateUserSchema,
 } from "@/lib/user/user.schema";
-import { z } from "zod";
+import { z, flattenError } from "zod";
 import { APIError } from "better-auth/api";
 import { revalidatePath } from "next/cache";
 import { headers as head } from "next/headers";
@@ -25,7 +25,7 @@ export type ErrorTypes = keyof typeof authServer.$ERROR_CODES;
 
 export async function updateProfile(
   formState: FormState,
-  formData: FormData
+  formData: FormData,
 ): Promise<FormState> {
   const data = Object.fromEntries(formData);
   const validatedFields = updateProfileSchema.safeParse(data);
@@ -35,7 +35,7 @@ export async function updateProfile(
         error: "Invalid form data.",
       },
       errors: validatedFields.error.issues,
-      errorMessage: validatedFields.error.flatten().fieldErrors,
+      errorMessage: flattenError(validatedFields.error).fieldErrors,
     };
   }
   let upload;
@@ -108,14 +108,14 @@ const generateUsersSchema = z.object({
 
 export async function createUsers(
   formState: ActionState,
-  formData: FormData
+  formData: FormData,
 ): Promise<ActionState> {
   const validateField = generateUsersSchema.safeParse({
     userId: formData.get("userId"),
   });
 
   if (!validateField.success) {
-    return toAction(validateField.error, "ERROR");
+    return toAction<typeof generateUsersSchema>(validateField.error, "ERROR");
   }
   const { userId } = validateField.data;
 
@@ -147,7 +147,7 @@ export async function createUsers(
           },
           headers: await head(),
         });
-      })
+      }),
     );
     console.log("users: ", users);
     // after create users sendEmailLogin
@@ -280,7 +280,7 @@ export async function updateUser(schema: UpdateUserSchema): Promise<{
 
 export async function banUser(
   formState: FormState,
-  formData: FormData
+  formData: FormData,
 ): Promise<FormState> {
   const validatedFields = generateUsersSchema.safeParse({
     userId: formData.get("userId"),
@@ -293,7 +293,7 @@ export async function banUser(
         error: "Invalid form data.",
       },
       errors: validatedFields.error.issues,
-      errorMessage: validatedFields.error.flatten().fieldErrors,
+      errorMessage: flattenError(validatedFields.error).fieldErrors,
     };
   }
 
@@ -347,7 +347,7 @@ export async function banUser(
 
 export async function deleteUser(
   formState: FormState,
-  formData: FormData
+  formData: FormData,
 ): Promise<FormState> {
   const data = Object.fromEntries(formData);
   const validatedFields = generateUsersSchema.safeParse(data);
@@ -358,7 +358,7 @@ export async function deleteUser(
         error: "Invalid form data.",
       },
       errors: validatedFields.error.issues,
-      errorMessage: validatedFields.error.flatten().fieldErrors,
+      errorMessage: flattenError(validatedFields.error).fieldErrors,
     };
   }
 
@@ -415,7 +415,7 @@ export async function deleteUser(
 
 export async function updateUserPassword(
   formState: FormState,
-  formData: FormData
+  formData: FormData,
 ): Promise<FormState> {
   const data = Object.fromEntries(formData);
   const validatedFields = updatePasswordSchema.safeParse(data);
@@ -425,7 +425,7 @@ export async function updateUserPassword(
         error: "Invalid form data.",
       },
       errors: validatedFields.error.issues,
-      errorMessage: validatedFields.error.flatten().fieldErrors,
+      errorMessage: flattenError(validatedFields.error).fieldErrors,
     };
   }
 

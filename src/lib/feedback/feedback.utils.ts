@@ -1,7 +1,11 @@
 import { db } from "@/db";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
-import { ActionState, CommentWithRelations } from "./feedback.types";
+import {
+  ActionState,
+  CommentWithRelations,
+  FieldErrors,
+} from "./feedback.types";
 
 export const getOptions = Prisma.validator<Prisma.FeedbackInclude>()({
   votes: true,
@@ -212,8 +216,14 @@ export const toActionState = (
   return { message, status };
 };
 
-export const toAction = (
-  errors: string | z.core.$ZodError<any>,
+/**
+ * Convertit une erreur (string ou ZodError) en ActionState standardisé.
+ * - Accepte n'importe quel schéma Zod via un type générique.
+ * - Utilise z.flattenError(zodError) (recommandé Zod v4) pour obtenir fieldErrors.
+ * - Aligne errorMessage sur FieldErrors pour la consommation côté UI.
+ */
+export const toAction = <S extends z.ZodType>(
+  errors: string | z.ZodError<z.output<S>>,
   status: "SUCCESS" | "ERROR",
 ): ActionState => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -221,8 +231,9 @@ export const toAction = (
     return { message: errors as unknown as string, status: "ERROR" };
   }
 
-  const zodError = errors as z.core.$ZodError;
-  const flattened = z.flattenError(zodError).fieldErrors;
+  const zodError = errors as z.ZodError<z.output<S>>;
+  const { fieldErrors } = z.flattenError(zodError);
+  console.log("ActionState fieldErrors: ", fieldErrors);
 
   return {
     status: "ERROR",
@@ -231,6 +242,6 @@ export const toAction = (
         ? "Veuillez corriger les erreurs du formulaire"
         : undefined,
     errors: zodError.issues,
-    errorMessage: flattened,
+    errorMessage: fieldErrors as FieldErrors<S>,
   };
 };

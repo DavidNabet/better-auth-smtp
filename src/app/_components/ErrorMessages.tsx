@@ -1,4 +1,4 @@
-import { ZodIssue } from "zod";
+import { z } from "zod";
 
 export const ErrorMessages = ({
   error,
@@ -17,7 +17,10 @@ export const ErrorMessages = ({
   );
 };
 
-export const findErrors = (fieldName: string, errors: ZodIssue[]) => {
+export const findErrors = (
+  fieldName: string,
+  errors: z.core.$ZodIssueBase[],
+) => {
   if (!errors) return null;
   return errors
     .filter((item) => {

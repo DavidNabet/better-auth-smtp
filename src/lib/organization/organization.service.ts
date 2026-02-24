@@ -21,12 +21,14 @@ const member = dc.newRole({
 const admin = dc.newRole({
   member: ["update", "delete", "update-name"],
   invitation: ["create", "cancel"],
+  team: ["create", "update"],
 });
 
 const owner = dc.newRole({
   organization: ["update", "delete"],
   member: ["create", "update", "delete", "update-name"],
   invitation: ["create", "cancel"],
+  team: ["create", "update", "delete"],
 });
 
 export { statement, dc, owner, admin, member };

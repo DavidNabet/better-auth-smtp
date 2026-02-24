@@ -7,12 +7,13 @@ import { TwoFactorSchema, twoFactorSchema } from "@/lib/auth/auth.schema";
 import Alert from "@/app/_components/Alert";
 import { ErrorMessages } from "@/app/_components/ErrorMessages";
 import { Button } from "@/components/ui/button";
-
+import { z } from "zod";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "./ui/input-otp";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
 import Link from "next/link";
 import { authClient, authServer } from "@/lib/auth/auth.client";
 import { cn } from "@/lib/utils";
+import { FieldErrors } from "@/lib/feedback/feedback.types";
 
 const AuthTwoFactor: FC = () => {
   const router = useRouter();
@@ -22,8 +23,10 @@ const AuthTwoFactor: FC = () => {
   });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [errorMessage, setErrorMessage] = useState({
-    code: "",
+  const [errorMessage, setErrorMessage] = useState<
+    FieldErrors<typeof twoFactorSchema>
+  >({
+    code: [""],
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -54,9 +57,9 @@ const AuthTwoFactor: FC = () => {
 
     const validateFields = twoFactorSchema.safeParse(formData);
     if (!validateFields.success) {
-      const { fieldErrors } = validateFields.error.flatten();
+      const { fieldErrors } = z.flattenError(validateFields.error);
       setErrorMessage({
-        code: fieldErrors.code?.[0] ?? "",
+        code: fieldErrors.code ?? [""],
       });
     }
 
@@ -113,7 +116,7 @@ const AuthTwoFactor: FC = () => {
               ))}
             </InputOTPGroup>
           </InputOTP>
-          <ErrorMessages error={errorMessage?.code} />
+          <ErrorMessages errors={errorMessage?.code} />
         </>
         <div className="col-span-6">
           {error && <Alert message={error!} status="error" />}
@@ -127,7 +130,7 @@ const AuthTwoFactor: FC = () => {
             onClick={handleResendOTP}
             className={cn(
               "dark:bg-primary text-primary-foreground bg-primary shrink-0 transition-colors focus:ring-offset-2 focus:ring-offset-secondary cursor-pointer",
-              isLoading && "cursor-not-allowed dark:bg-primary/50"
+              isLoading && "cursor-not-allowed dark:bg-primary/50",
             )}
           >
             Resend OTP
@@ -137,7 +140,7 @@ const AuthTwoFactor: FC = () => {
             disabled={isLoading}
             className={cn(
               "dark:bg-teal-500 bg-teal-600 text-white shrink-0 transition-colors focus:ring-offset-2 focus:ring-offset-secondary cursor-pointer",
-              isLoading && "cursor-not-allowed bg-teal-700/50"
+              isLoading && "cursor-not-allowed bg-teal-700/50",
             )}
           >
             Verify

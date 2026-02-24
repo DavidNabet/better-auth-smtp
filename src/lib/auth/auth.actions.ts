@@ -2,7 +2,7 @@
 
 import { authServer } from "@/lib/auth/auth.client";
 import { auth } from "@/lib/auth";
-import { typeToFlattenedError, ZodError, ZodIssue } from "zod";
+import { z, ZodError, flattenError } from "zod";
 import { getUserByEmail } from "@/lib/user/user.utils";
 import { createUserSchema, signInSchema } from "./auth.schema";
 import { APIError } from "better-auth/api";
@@ -16,7 +16,7 @@ export interface FormState {
     success?: string;
   };
   header?: any;
-  errors?: ZodIssue[];
+  errors?: z.core.$ZodIssue[];
   errorMessage?: any;
   otpReceive?: boolean;
   // message: any;
@@ -28,7 +28,7 @@ type ErrorTypes = keyof typeof authServer.$ERROR_CODES;
 
 export async function signIn(
   formState: FormState,
-  formData: FormData
+  formData: FormData,
 ): Promise<FormState> {
   const data = Object.fromEntries(formData);
   const validatedFields = signInSchema.safeParse(data);
@@ -38,7 +38,7 @@ export async function signIn(
         error: "Missing fields. Failed to log in.",
       },
       errors: validatedFields.error.issues,
-      errorMessage: validatedFields.error.flatten().fieldErrors,
+      errorMessage: flattenError(validatedFields.error).fieldErrors,
     };
   }
 
@@ -91,7 +91,7 @@ export async function signIn(
 
 export async function signUp(
   formState: FormState,
-  formData: FormData
+  formData: FormData,
 ): Promise<FormState> {
   const data = Object.fromEntries(formData);
   const validatedFields = createUserSchema.safeParse(data);
@@ -102,7 +102,7 @@ export async function signUp(
         error: "Missing fields. Failed to create account.",
       },
       errors: validatedFields.error.issues,
-      errorMessage: validatedFields.error.flatten().fieldErrors,
+      errorMessage: flattenError(validatedFields.error).fieldErrors,
     };
   }
 

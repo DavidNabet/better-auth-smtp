@@ -19,13 +19,7 @@ export const updateProfileSchema = z.object({
 });
 
 export const updateEmailSchema = z.object({
-  email: z
-    .string({
-      required_error: "L'email est requis",
-      invalid_type_error: "L'email est invalide",
-    })
-    .min(1, "L'email est requis")
-    .email("Email invalide"),
+  email: z.email("Email invalide").min(1, "L'email est requis"),
 });
 
 export const updatePasswordSchema = z
@@ -33,22 +27,19 @@ export const updatePasswordSchema = z
     revokeOtherSessions: z.boolean(),
     currentPassword: z
       .string({
-        required_error: "Le mot de passe est requis",
-        invalid_type_error: "Le mot de passe est requis",
+        error: "Le mot de passe est requis",
       })
       .min(5, "Le mot de passe doit contenir plus de 5 caractères")
       .max(32, "Le mot de passe doit contenir moins de 32 caractères"),
     newPassword: z
       .string({
-        required_error: "Le mot de passe est requis",
-        invalid_type_error: "Le mot de passe est requis",
+        error: "Le mot de passe est requis",
       })
       .min(5, "Le mot de passe doit contenir plus de 5 caractères")
       .max(32, "Le mot de passe doit contenir moins de 32 caractères"),
     newPasswordConfirm: z
       .string({
-        required_error: "Veuillez confirmer votre mot de passe",
-        invalid_type_error: "Veuillez confirmer votre mot de passe",
+        error: "Veuillez confirmer votre mot de passe",
       })
       .min(1, "Veuillez confirmer votre mot de passe"),
   })
@@ -59,23 +50,13 @@ export const updatePasswordSchema = z
 
 export const createUsersSchema = z.object({
   name: z
-    .string({ required_error: "Le nom est requis" })
-    .min(1, "Le nom est requis")
+    .string({ error: "Le nom est requis" })
+    .min(4, "Le nom est supérieur à 4 caractères")
     .max(30, "Le nom doit contenir au maximum 30 caractères"),
-  email: z
-    .string({
-      required_error: "L'email est requis",
-      invalid_type_error: "L'email est requis",
-    })
-    .trim()
-    .min(1, "L'email est requis")
-    .email("Email invalide"),
+  email: z.email("Email invalide").min(1, "L'email est requis").trim(),
 
   password: z
-    .string({
-      required_error: "Le mot de passe est requis",
-      invalid_type_error: "Le mot de passe est requis",
-    })
+    .string("Le mot de passe est requis")
     .min(5, "Le mot de passe doit contenir plus de 5 caractères")
     .max(32, "Le mot de passe doit contenir moins de 32 caractères"),
 
