@@ -19,11 +19,12 @@ import {
   owner,
   admin as adm,
 } from "./organization/organization.service";
-import { getUserByEmail } from "./user/user.utils";
+import { getUserByEmail } from "@/lib/user/user.utils";
 import {
+  createDefaultTeams,
   findTeamByName,
   getActiveOrganization,
-} from "./organization/organization.utils";
+} from "@/lib/organization/organization.utils";
 
 export type Session = typeof auth.$Infer.Session;
 export type User = typeof auth.$Infer.Session.user;
@@ -195,6 +196,10 @@ export const auth = betterAuth({
         return user.id === process.env.SUPER_ADMIN_ID;
       },
       organizationHooks: {
+        afterCreateOrganization: async ({ organization, member, user }) => {
+          logger.info("Organization created: ", organization);
+          await createDefaultTeams(organization.id);
+        },
         beforeCreateTeam: async ({ team, organization }) => {
           const existingTeam = await findTeamByName(team.name, organization.id);
           if (existingTeam) {

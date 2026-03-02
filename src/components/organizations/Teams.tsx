@@ -15,6 +15,8 @@ import {
   DialogDescription,
   DialogTitle,
   DialogTrigger,
+  DialogClose,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import {
   DropdownMenu,
@@ -38,6 +40,7 @@ import {
   Trash2,
   Folder,
   Plus,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -49,6 +52,10 @@ import {
   withCallbacks,
 } from "@/app/_components/ServerActionToast";
 import { createTeam } from "@/lib/organization/organization.action";
+import { Label } from "../ui/label";
+import { ErrorMessages } from "@/app/_components/ErrorMessages";
+import { Input } from "../ui/input";
+import { Textarea } from "../ui/textarea";
 
 interface TeamsProps {
   teams: Awaited<ReturnType<typeof getTeams>>;
@@ -97,19 +104,13 @@ const tab = [
     ],
   },
 ];
+
+// TODO: Ajouter une admin Team (roles: owner et admin) et une moderation Team (roles: owner, admin, member) à chaque création d'une organization par défaut
+
+// TODO: Paramétrer les permissions s'il s'agit d'une team Admin, on procède aux permissions lié à cet effet, également pour une team moderation
+
+// TODO: Ajouter coté client un sélecteur pour sélectionner des membres dans la team avec un Drawer
 export default function Teams({ teams, organizationId }: TeamsProps) {
-  const toastCallbacks = createToastCallbacks({
-    loading: "Envoyer une invitation...",
-  });
-  const [state, action, pending] = useActionState(
-    withCallbacks(createTeam, {
-      ...toastCallbacks,
-      onSuccess(result) {
-        toastCallbacks.onSuccess?.(result);
-      },
-    }),
-    null,
-  );
   return (
     <Card className={cn("w-full shadow-xs my-6")}>
       <CardHeader>
@@ -133,21 +134,14 @@ export default function Teams({ teams, organizationId }: TeamsProps) {
             </DialogTrigger>
             <DialogContent className="md:max-w-md">
               <DialogHeader>
-                <DialogTitle>Create a new team</DialogTitle>
+                <DialogTitle>Créez une nouvelle team</DialogTitle>
                 <DialogDescription>
-                  Manage your organization's teams and permissions.
+                  Ajouter une nouvelle team à votre organization
                 </DialogDescription>
               </DialogHeader>
               <div>
                 {organizationId && (
-                  <form action={action}>
-                    <input
-                      type="hidden"
-                      name="organizationId"
-                      value={organizationId}
-                    />
-                    <Button type="submit">Envoyer</Button>
-                  </form>
+                  <CreateTeamForm organizationId={organizationId} />
                 )}
               </div>
             </DialogContent>
@@ -235,5 +229,72 @@ export default function Teams({ teams, organizationId }: TeamsProps) {
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+function CreateTeamForm({ organizationId }: { organizationId: string }) {
+  const toastCallbacks = createToastCallbacks({
+    loading: "Création de la team en cours...",
+  });
+  const [state, action, pending] = useActionState(
+    withCallbacks(createTeam, {
+      ...toastCallbacks,
+      onSuccess(result) {
+        toastCallbacks.onSuccess?.(result);
+      },
+    }),
+    null,
+  );
+  return (
+    <form className="overflow-y-auto" id="teamForm" action={action}>
+      <div className="space-y-4">
+        <div className="grid grid-cols-1 gap-3">
+          <input type="hidden" name="organizationId" value={organizationId} />
+          <div className="col-span-6">
+            <Label htmlFor="name" className="block text-sm font-medium">
+              Name
+            </Label>
+            <Input
+              name="name"
+              className="my-2 w-full"
+              type="text"
+              placeholder="My Team Name..."
+            />
+            <ErrorMessages errors={state?.errorMessage?.name ?? null} />
+          </div>
+          <div className="col-span-6">
+            <Label htmlFor="description" className="block text-sm font-medium">
+              Description
+            </Label>
+            <Textarea
+              name="description"
+              className="my-2 w-full"
+              placeholder="Description facultative..."
+            />
+            <ErrorMessages errors={state?.errorMessage?.description ?? null} />
+          </div>
+        </div>
+        <DialogFooter className="mt-6 col-span-6 gap-x-6">
+          <DialogClose asChild>
+            <Button variant="outline">Annuler</Button>
+          </DialogClose>
+          <Button
+            type="submit"
+            form="teamForm"
+            variant="default"
+            disabled={pending}
+          >
+            {pending ? (
+              <>
+                <Loader2 className="size-4 animate-spin" />
+                Creating...
+              </>
+            ) : (
+              "Créer"
+            )}
+          </Button>
+        </DialogFooter>
+      </div>
+    </form>
   );
 }

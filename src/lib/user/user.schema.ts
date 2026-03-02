@@ -14,7 +14,7 @@ export const updateProfileSchema = z.object({
     .instanceof(File)
     .refine((file) => file && file.size <= 3000000, "Max file size is 3MB.")
     .optional(),
-  avatar: z.string().url("Must be an url").optional().or(z.literal("")),
+  avatar: z.url("Must be an url").optional().or(z.literal("")),
   role: userRole.optional(),
 });
 

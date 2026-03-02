@@ -17,13 +17,18 @@ import { updateProfile } from "@/lib/user/user.actions";
 import AvatarUpload, { AvatarContext } from "@/components/AvatarUpload";
 import Alert from "@/app/_components/Alert";
 import { useActionState, useState, startTransition } from "react";
-import { UpdateProfileSchema } from "@/lib/user/user.schema";
+import {
+  updateProfileSchema,
+  UpdateProfileSchema,
+} from "@/lib/user/user.schema";
 import { ErrorMessages } from "@/app/_components/ErrorMessages";
 import GenerateAvatar from "./GenerateAvatar";
 import { useRouter } from "next/navigation";
 import { wait } from "@/lib/auth/auth.utils";
 import { Role } from "@prisma/client";
 import { RoleType } from "@/lib/permissions/permissions.utils";
+import { FieldErrors } from "@/lib/feedback/feedback.types";
+import { flattenError, TypeOf } from "zod";
 
 type Props = {
   session: Session;
@@ -39,10 +44,17 @@ export default function UserProfileForm({ session }: Props) {
     avatar: undefined,
     role: undefined,
   });
+  const [errorMessage, setErrorMessage] = useState<
+    FieldErrors<typeof updateProfileSchema>
+  >({
+    name: [""],
+    image: [""],
+    avatar: [""],
+    role: [""],
+  });
   const [
     {
       message: { error, success },
-      errorMessage,
     },
     formAction,
     pending,
@@ -51,11 +63,22 @@ export default function UserProfileForm({ session }: Props) {
       error: "",
       success: "",
     },
-    errorMessage: {},
   });
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    const validateFields = updateProfileSchema.safeParse(formData);
+    if (!validateFields.success) {
+      const { fieldErrors } = flattenError(validateFields.error);
+      setErrorMessage({
+        name: fieldErrors.name ?? [""],
+        image: fieldErrors.image ?? [""],
+        avatar: fieldErrors.avatar ?? [""],
+        role: fieldErrors.role ?? [""],
+      });
+      return;
+    }
     startTransition(async () => {
       const formData = new FormData(e.target as HTMLFormElement);
       const data = Object.fromEntries(formData);
@@ -149,7 +172,7 @@ export default function UserProfileForm({ session }: Props) {
           name="role"
           defaultValue={session?.user.role || formData.role}
           // defaultValue={session?.user.role}
-          onValueChange={(value: RoleType) =>
+          onValueChange={(value: Exclude<Role, "OWNER">) =>
             setFormData((prev) => ({
               ...prev,
               role: value,

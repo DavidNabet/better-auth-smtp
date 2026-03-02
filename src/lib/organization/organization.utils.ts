@@ -247,3 +247,65 @@ export async function findTeamByName(teamName: string, organizationId: string) {
 
   return team;
 }
+
+// TODO : Gérer les permissions d'accès pour les membres
+
+// Create default teams for init
+export async function createDefaultTeams(organizationId: string) {
+  // Crée deux équipes par défaut pour une organisation donnée.
+  // - "Admin": pour les rôles admin et owner
+  // - "Moderation": pour les rôles admin, owner et member
+  // Remarque:
+  //   Le mapping des permissions/roles est géré par l'access control (voir organization.service.ts).
+  //   Ici, on crée uniquement les entités Team et on évite les doublons par nom au sein d'une même organization.
+  try {
+    if (!organizationId) {
+      throw new Error("organizationId manquant");
+    }
+
+    // Vérifier si les équipes existent déjà pour éviter de créer des doublons.
+    const [adminTeam, moderationTeam] = await Promise.all([
+      findTeamByName("Admin", organizationId),
+      findTeamByName("Moderation", organizationId),
+    ]);
+
+    const ops: Promise<unknown>[] = [];
+
+    if (!adminTeam) {
+      ops.push(
+        db.team.create({
+          data: {
+            name: "Admin",
+            description: "Equipe d'administration (accès: roles admin, owner).",
+            organizationId,
+          },
+        }),
+      );
+    }
+
+    if (!moderationTeam) {
+      ops.push(
+        db.team.create({
+          data: {
+            name: "Moderation",
+            description:
+              "Equipe de modération (accès: roles admin, owner, member).",
+            organizationId,
+          },
+        }),
+      );
+    }
+
+    if (ops.length > 0) {
+      await Promise.all(ops);
+    }
+
+    return { success: true } as const;
+  } catch (error) {
+    console.error("Erreur createDefaultTeams:", error);
+    return {
+      success: false,
+      error: (error as Error)?.message ?? String(error),
+    } as const;
+  }
+}

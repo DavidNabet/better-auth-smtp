@@ -24,8 +24,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { updateUserPassword } from "@/lib/user/user.actions";
-import { UpdatePasswordSchema } from "@/lib/user/user.schema";
+import {
+  updatePasswordSchema,
+  UpdatePasswordSchema,
+} from "@/lib/user/user.schema";
 import { ErrorMessages } from "@/app/_components/ErrorMessages";
+import { FieldErrors } from "@/lib/feedback/feedback.types";
+import { flattenError } from "zod";
 
 export default function UserPasswordForm() {
   const [formData, setFormData] = useState<UpdatePasswordSchema>({
@@ -34,10 +39,17 @@ export default function UserPasswordForm() {
     newPasswordConfirm: "",
     revokeOtherSessions: false,
   });
+  const [errorMessage, setErrorMessage] = useState<
+    FieldErrors<typeof updatePasswordSchema>
+  >({
+    currentPassword: [""],
+    newPassword: [""],
+    newPasswordConfirm: [""],
+    revokeOtherSessions: [""],
+  });
   const [
     {
       message: { error, success },
-      errorMessage,
     },
     formAction,
     pending,
@@ -46,11 +58,22 @@ export default function UserPasswordForm() {
       error: "",
       success: "",
     },
-    errorMessage: {},
   });
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    const validateFields = updatePasswordSchema.safeParse(formData);
+    if (!validateFields.success) {
+      const { fieldErrors } = flattenError(validateFields.error);
+      setErrorMessage({
+        currentPassword: fieldErrors.currentPassword ?? [""],
+        newPassword: fieldErrors.newPassword ?? [""],
+        newPasswordConfirm: fieldErrors.newPasswordConfirm ?? [""],
+        revokeOtherSessions: fieldErrors.revokeOtherSessions ?? [""],
+      });
+      return;
+    }
     startTransition(async () => {
       const formData = new FormData(e.target as HTMLFormElement);
       const data = Object.fromEntries(formData);
@@ -175,7 +198,7 @@ export default function UserPasswordForm() {
                 variant="default"
                 className={cn(
                   "bg-teal-600 hover:bg-teal-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600 cursor-pointer",
-                  pending && "cursor-not-allowed bg-metal"
+                  pending && "cursor-not-allowed bg-metal",
                 )}
                 disabled={pending}
               >

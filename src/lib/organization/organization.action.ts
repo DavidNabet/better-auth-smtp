@@ -66,7 +66,6 @@ export async function inviteMember(
   return toActionState("Invitation sent to member", "SUCCESS");
 }
 
-// TODO: Régler le problème de Zod pour récupérer le fieldErrors côté useActionState
 export async function createTeam(
   formState: ActionState,
   formData: FormData,
@@ -75,15 +74,12 @@ export async function createTeam(
   const validatedFields = createTeamSchema.safeParse(data);
 
   if (!validatedFields.success) {
-    const { fieldErrors } = z.flattenError(validatedFields.error);
-    console.log("error: ", fieldErrors);
-
     return toAction<typeof createTeamSchema>(validatedFields.error, "ERROR");
   }
 
-  // const { name, organizationId, description } = validatedFields.data;
+  const { name, organizationId, description } = validatedFields.data;
 
-  // const { session } = await getCurrentUser();
+  const { session } = await getCurrentUser();
 
   try {
     if (!hasServerOrgPermission("team", "create")) {
@@ -92,14 +88,14 @@ export async function createTeam(
         "ERROR",
       );
     }
-    // const team = await auth.api.createTeam({
-    //   body: {
-    //     name,
-    //     organizationId,
-    //     description: description ?? undefined,
-    //   },
-    // });
-    // console.log("team: ", team);
+    const team = await auth.api.createTeam({
+      body: {
+        organizationId,
+        name,
+        description: description ?? undefined,
+      },
+    });
+    console.log("team: ", team);
   } catch (error) {
     if (error instanceof APIError) {
       console.log(error.message, error.body?.code);
