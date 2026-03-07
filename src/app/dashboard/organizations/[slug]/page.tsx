@@ -5,7 +5,7 @@ import {
   getInvitationsByOrgId,
   getMembersInvitationStatus,
   getOrganizationBySlug,
-  getTeams,
+  filterTeamsByOrganization,
 } from "@/lib/organization/organization.utils";
 import {
   getCurrentUser,
@@ -33,7 +33,7 @@ export default async function OrganizationPage({
   const [members, invitations, teams] = await Promise.all([
     getMembersInvitationStatus(organization?.id || ""),
     getInvitationsByOrgId(organization?.id || ""),
-    getTeams(),
+    filterTeamsByOrganization(organization?.id || ""),
   ]);
 
   //console.log("org: ", organization);

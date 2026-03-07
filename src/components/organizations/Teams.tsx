@@ -1,6 +1,6 @@
 "use client";
 
-import { Team } from "@prisma/client";
+import { useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -41,24 +41,27 @@ import {
   Folder,
   Plus,
   Loader2,
+  Crown,
+  GalleryVerticalEnd,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
-import { getTeams } from "@/lib/organization/organization.utils";
+import { filterTeamsByOrganization } from "@/lib/organization/organization.utils";
 import { useActionState } from "react";
 import {
   createToastCallbacks,
   withCallbacks,
 } from "@/app/_components/ServerActionToast";
 import { createTeam } from "@/lib/organization/organization.action";
-import { Label } from "../ui/label";
+import { Label } from "@/components/ui/label";
 import { ErrorMessages } from "@/app/_components/ErrorMessages";
-import { Input } from "../ui/input";
-import { Textarea } from "../ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { authClient } from "@/lib/auth/auth.client";
 
 interface TeamsProps {
-  teams: Awaited<ReturnType<typeof getTeams>>;
+  teams: Awaited<ReturnType<typeof filterTeamsByOrganization>>;
   organizationId?: string;
 }
 
@@ -105,6 +108,19 @@ const tab = [
   },
 ];
 
+function getTeamIcon(name: string) {
+  switch (name) {
+    case "Admin":
+      return <Shield className="size-5 fill-amber-500 stroke-0" />;
+    case "Moderation":
+      return <MessageCircle className="size-5 fill-indigo-500 stroke-0" />;
+    default:
+      return (
+        <GalleryVerticalEnd className="size-5 fill-emerald-500 stroke-0" />
+      );
+  }
+}
+
 // TODO: Ajouter une admin Team (roles: owner et admin) et une moderation Team (roles: owner, admin, member) à chaque création d'une organization par défaut
 
 // TODO: Paramétrer les permissions s'il s'agit d'une team Admin, on procède aux permissions lié à cet effet, également pour une team moderation
@@ -150,82 +166,97 @@ export default function Teams({ teams, organizationId }: TeamsProps) {
       </CardHeader>
       <CardContent>
         <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {tab.map((t) => (
-            <div
-              className="flex flex-col p-6 rounded-lg hover:border-primary transition-colors group border bg-card"
-              key={t.id}
-            >
-              <div className="flex justify-between items-start mb-6">
-                <Button
-                  size="icon-lg"
-                  type="button"
-                  variant="outline"
-                  className="rounded-lg"
-                >
-                  {t.icon}
-                </Button>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      aria-label={`More options for ${t.name}`}
-                      size="icon-sm"
-                      type="button"
-                      variant="ghost"
-                    >
-                      <MoreVertical className="size-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent
-                    align="end"
-                    collisionPadding={8}
-                    sideOffset={4}
+          {teams.map((t) => {
+            const TeamIcon = getTeamIcon(t.name);
+            return (
+              <div
+                className="flex flex-col p-6 rounded-lg hover:border-primary transition-colors group border bg-card"
+                key={t.id}
+              >
+                <div className="flex justify-between items-start mb-6">
+                  <Button
+                    size="icon-lg"
+                    type="button"
+                    variant="outline"
+                    className="rounded-lg"
                   >
-                    <DropdownMenuItem asChild>
-                      <Link href="#">
-                        <Folder className="size-4" />
-                        Open
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem variant="destructive">
-                      <Trash2 className="size-4" /> Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-              <h3 className="font-bold text-lg mb-2">{t.name}</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed mb-8 h-10 overflow-hidden line-clamp-2">
-                {t.description}
-              </p>
-              <Separator />
-              <div className="mt-auto pt-6 flex flex-col gap-4">
-                <div className="flex items-center justify-between">
-                  <>
-                    {t.members.length === 0 ? (
-                      "Empty"
-                    ) : (
-                      <AvatarGroup>
-                        {t.members.map((m) => (
-                          <Avatar key={m.id}>
-                            <AvatarImage src={m.image} alt={m.name} />
-                            <AvatarFallback>
-                              {getInitials(m.name)}
-                            </AvatarFallback>
-                          </Avatar>
-                        ))}
-                        <AvatarGroupCount className="bg-muted">
-                          +{t.members.length}
-                        </AvatarGroupCount>
-                      </AvatarGroup>
-                    )}
-                  </>
-                  <span className="text-xs font-medium text-muted-foreground">
-                    {t.members.length} Member{t.members.length > 1 ? "s" : ""}
-                  </span>
+                    {TeamIcon}
+                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        aria-label={`More options for ${t.name}`}
+                        size="icon-sm"
+                        type="button"
+                        variant="ghost"
+                      >
+                        <MoreVertical className="size-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                      align="end"
+                      collisionPadding={8}
+                      sideOffset={4}
+                    >
+                      <DropdownMenuItem asChild>
+                        <Link href="#">
+                          <Folder className="size-4" />
+                          Open
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem variant="destructive">
+                        <Trash2 className="size-4" /> Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+                <h3 className="font-bold text-lg mb-2">{t.name}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed mb-8 h-10 overflow-hidden line-clamp-2">
+                  {t.description}
+                </p>
+                <Separator />
+                <div className="mt-auto pt-6 flex flex-col gap-4">
+                  <div className="flex items-center justify-between">
+                    <>
+                      {t.teamMembers.length === 0 ? (
+                        <span
+                          className={cn(
+                            "rounded-full text-md bg-accent grid place-items-center size-6",
+                          )}
+                        >
+                          !
+                        </span>
+                      ) : (
+                        <AvatarGroup>
+                          {t.teamMembers.map((m) => (
+                            <Avatar key={m.id}>
+                              <AvatarImage
+                                src={m.user.image!}
+                                alt={m.user.name!}
+                              />
+                              <AvatarFallback>
+                                {getInitials(m.user.name as string)}
+                              </AvatarFallback>
+                            </Avatar>
+                          ))}
+                          {t.teamMembers.length > 3 && (
+                            <AvatarGroupCount className="bg-muted">
+                              +{t.teamMembers.length - 3}
+                            </AvatarGroupCount>
+                          )}
+                        </AvatarGroup>
+                      )}
+                    </>
+                    <span className="text-xs font-medium text-muted-foreground">
+                      {t.teamMembers.length} Member
+                      {t.teamMembers.length > 1 ? "s" : ""}
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </CardContent>
     </Card>

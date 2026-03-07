@@ -197,18 +197,30 @@ export async function getCurrentMember() {
   return user;
 }
 
-// Teams of the organization
-export async function getTeams() {
+// Filtrer les teams en fonction des organizations
+export async function filterTeamsByOrganization(organizationId: string) {
   const { currentUser } = await getCurrentUser();
   try {
     const members = await db.member.findMany({
       where: { userId: currentUser.id },
+      include: {
+        organization: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
     });
 
     const teams = await db.team.findMany({
       where: {
-        id: {
+        organizationId: {
           in: members.map((m) => m.organizationId),
+          equals: organizationId,
+        },
+        AND: {
+          name: { notIn: members.map((m) => m.organization.name) },
         },
       },
       include: {
@@ -251,7 +263,11 @@ export async function findTeamByName(teamName: string, organizationId: string) {
 // TODO : Gérer les permissions d'accès pour les membres
 
 // Create default teams for init
-export async function createDefaultTeams(organizationId: string) {
+// Chaque organization a ses propres teams
+export async function createDefaultTeams(
+  organizationId: string,
+  userId: string,
+) {
   // Crée deux équipes par défaut pour une organisation donnée.
   // - "Admin": pour les rôles admin et owner
   // - "Moderation": pour les rôles admin, owner et member
@@ -278,6 +294,11 @@ export async function createDefaultTeams(organizationId: string) {
             name: "Admin",
             description: "Equipe d'administration (accès: roles admin, owner).",
             organizationId,
+            teamMembers: {
+              create: {
+                userId,
+              },
+            },
           },
         }),
       );
@@ -291,6 +312,11 @@ export async function createDefaultTeams(organizationId: string) {
             description:
               "Equipe de modération (accès: roles admin, owner, member).",
             organizationId,
+            teamMembers: {
+              create: {
+                userId,
+              },
+            },
           },
         }),
       );

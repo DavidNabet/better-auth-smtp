@@ -198,15 +198,19 @@ export const auth = betterAuth({
       organizationHooks: {
         afterCreateOrganization: async ({ organization, member, user }) => {
           logger.info("Organization created: ", organization);
-          await createDefaultTeams(organization.id);
+          await createDefaultTeams(organization.id, user.id);
         },
-        beforeCreateTeam: async ({ team, organization }) => {
+        beforeCreateTeam: async ({ team, organization, user }) => {
           const existingTeam = await findTeamByName(team.name, organization.id);
           if (existingTeam) {
             throw new APIError("BAD_REQUEST", {
               message: "Team name already exists in this organization",
             });
           }
+        },
+        afterCreateTeam: async ({ team, user }) => {
+          // const defaultMember = await createDefaultTeamMember(team.id, user.id);
+          logger.info("Who is user: ", user);
         },
       },
       ac: dc,
@@ -230,7 +234,7 @@ export const auth = betterAuth({
       },
       teams: {
         enabled: true,
-        maximumTeams: 3,
+        maximumTeams: 4,
         allowRemovingAllTeams: false,
       },
       schema: {
