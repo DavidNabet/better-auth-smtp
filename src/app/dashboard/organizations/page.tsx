@@ -23,16 +23,13 @@ import {
   CardDescription,
   CardHeader,
 } from "@/components/ui/card";
-import { FolderCode, PlusIcon, ArrowRight } from "lucide-react";
+import { FolderCode, PlusIcon } from "lucide-react";
 import { Metadata } from "next";
 import { getOrganizations } from "@/lib/organization/organization.utils";
 import { CreateOrganizationForm } from "@/components/organizations/CreateOrganizationForm";
-import Link from "next/link";
 import LoadingIcon from "@/app/_components/LoadingIcon";
-import Wrapper from "@/app/_components/Wrapper";
 import { cn } from "@/lib/utils";
-import { Organization } from "@prisma/client";
-import { CardButton, CardInner } from "@/app/_components/Card";
+import { OrganizationCard } from "@/components/organizations/OrganizationCard";
 
 export const metadata: Metadata = {
   title: "Organizations",
@@ -83,25 +80,7 @@ export default async function Organizations() {
             <Suspense fallback={<LoadingIcon />}>
               <div className="grid gap-4 md:grid-cols-3">
                 {organizations?.map((org) => (
-                  <CardButton
-                    key={org.id}
-                    icon={<FolderCode />}
-                    title={org.name}
-                    boxed
-                    className="border p-4 rounded-lg gap-4 border-accent-foreground/20"
-                    actions={
-                      <Button
-                        asChild
-                        size="icon-sm"
-                        variant="outline"
-                        className="rounded-full"
-                      >
-                        <Link href={`/dashboard/organizations/${org.slug}`}>
-                          <ArrowRight />
-                        </Link>
-                      </Button>
-                    }
-                  />
+                  <OrganizationCard org={org} key={org.id} />
                 ))}
               </div>
             </Suspense>

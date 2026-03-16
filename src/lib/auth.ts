@@ -208,10 +208,6 @@ export const auth = betterAuth({
             });
           }
         },
-        afterCreateTeam: async ({ team, user }) => {
-          // const defaultMember = await createDefaultTeamMember(team.id, user.id);
-          logger.info("Who is user: ", user);
-        },
       },
       ac: dc,
       roles: {

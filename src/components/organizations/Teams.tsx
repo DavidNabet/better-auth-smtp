@@ -121,7 +121,7 @@ function getTeamIcon(name: string) {
   }
 }
 
-// TODO: Ajouter une admin Team (roles: owner et admin) et une moderation Team (roles: owner, admin, member) à chaque création d'une organization par défaut
+// FIXED: Ajouter une admin Team (roles: owner et admin) et une moderation Team (roles: owner, admin, member) à chaque création d'une organization par défaut
 
 // TODO: Paramétrer les permissions s'il s'agit d'une team Admin, on procède aux permissions lié à cet effet, également pour une team moderation
 

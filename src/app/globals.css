@@ -1,4 +1,4 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
@@ -38,17 +38,15 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
-  --metal: oklch(.446 .03 256.802);
+  --metal: oklch(0.446 0.03 256.802);
 }
 
 @media (prefers-color-scheme: dark) {
-
   body {
     color: var(--background);
     background: var(--foreground);
     font-family: var(--font-geist-sans);
   }
-
 }
 
 body {
@@ -58,14 +56,14 @@ body {
 }
 
 @layer components {
-  .checkbox-account:has(input:checked){
+  .checkbox-account:has(input:checked) {
     @apply bg-amber-500;
   }
 }
 
 @layer utilities {
   .disabled-input {
-    @apply disabled:bg-gray-200 disabled:cursor-not-allowed
+    @apply disabled:bg-gray-200 disabled:cursor-not-allowed;
   }
 }
 
@@ -159,3 +157,9 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+/* @layer components {
+  .selectLink:where([data-state="open"]) [data-slot="select-item"] {
+    pointer-events: visible !important;
+  }
+} */

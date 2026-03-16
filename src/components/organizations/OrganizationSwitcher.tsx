@@ -1,6 +1,7 @@
 "use client";
 
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 import {
   Select,
   SelectContent,
@@ -10,11 +11,9 @@ import {
 } from "../ui/select";
 import { authClient } from "@/lib/auth/auth.client";
 import { getOrganizations } from "@/lib/organization/organization.utils";
-import type { Organization } from "@prisma/client";
 import { use } from "react";
 
 type OrganizationSwitcherProps = {
-  // organizations: Organization[];
   organizations: ReturnType<typeof getOrganizations>;
 };
 
@@ -22,12 +21,13 @@ export function OrganizationSwitcher({
   organizations,
 }: OrganizationSwitcherProps) {
   const orgs = use(organizations);
+  const router = useRouter();
   const { data: activeOrganization } = authClient.useActiveOrganization();
 
-  const handleChangeOrganization = async (orgId: string) => {
+  const handleChangeOrganization = async (orgSlug: string) => {
     try {
       const { error } = await authClient.organization.setActive({
-        organizationId: orgId,
+        organizationSlug: orgSlug,
       });
 
       if (error) {
@@ -44,15 +44,18 @@ export function OrganizationSwitcher({
 
   return (
     <Select
-      value={activeOrganization?.id}
-      onValueChange={handleChangeOrganization}
+      value={activeOrganization?.slug}
+      onValueChange={(val) => {
+        (handleChangeOrganization(val),
+          router.push(`/dashboard/organizations/${val}`));
+      }}
     >
-      <SelectTrigger className="w-[180px]">
-        <SelectValue placeholder="Theme" />
+      <SelectTrigger className="w-[180px] selectLink">
+        <SelectValue placeholder="Select an organization" />
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent className="flex flex-col gap-2">
         {orgs.map((org) => (
-          <SelectItem key={org.id} value={org.id}>
+          <SelectItem key={org.name} value={org?.slug!}>
             {org.name}
           </SelectItem>
         ))}

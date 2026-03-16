@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, ReactNode } from "react";
+import { Fragment, ReactNode, useEffect } from "react";
 import {
   Breadcrumb,
   BreadcrumbLink,
@@ -13,7 +13,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
-export default function Breadcrumbs() {
+export default function Breadcrumbs({ children }: { children?: ReactNode }) {
   const paths = usePathname();
   const pathNames = paths.split("/").filter((path) => path);
 
@@ -39,6 +39,8 @@ export default function Breadcrumbs() {
                       {itemLink}
                     </Link>
                   </BreadcrumbLink>
+                ) : paths.startsWith("/dashboard/organizations/") ? (
+                  children
                 ) : (
                   <BreadcrumbPage>{itemLink}</BreadcrumbPage>
                 )}
