@@ -19,9 +19,11 @@ import {
   RoleType,
 } from "@/lib/permissions/permissions.utils";
 import { Role } from "@prisma/client";
-// import { auth } from "@/lib/auth";
+import { auth, Member } from "@/lib/auth";
 
-type SessionServer = typeof authServer.$Infer.Session;
+type SessionServer = typeof auth.$Infer.Session & {
+  member: Member;
+};
 
 function sessionDto(data: SessionServer | null) {
   return {
@@ -33,6 +35,8 @@ function sessionDto(data: SessionServer | null) {
     image: data?.user.image,
     token: data?.session.token!,
     expiresAt: data?.session.expiresAt!,
+    activeOrgId: data?.session.activeOrganizationId,
+    isRoleOrg: data?.member?.role ?? 1,
   };
 }
 
@@ -43,6 +47,7 @@ interface AuthContextType {
   // isAdmin: boolean;
   logOut: () => void;
   verifySession: () => void;
+  verifySessionInOrganization: () => void;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(
@@ -67,6 +72,27 @@ export function useAuthState() {
       };
     })();
   }, []);
+
+  // verify if user has member role
+  useEffect(() => {
+    let mounted = true;
+    if (!s?.activeOrgId) return;
+    (async () => {
+      try {
+        if (!mounted) return;
+        await verifyUserInOrganization();
+      } catch (error) {
+        console.error(
+          "Erreur lors de la verification du role ActiveMember ",
+          error,
+        );
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, [s?.activeOrgId, s?.isRoleOrg]);
   /*useEffect(() => {
     // Role
     if (!s) return;
@@ -108,11 +134,32 @@ export function useAuthState() {
     }
   }
 
+  /**
+   * Vérifie le rôle actif de l'utilisateur dans l'organisation courante.
+   * Si une organisation est présente dans la session et qu'un rôle est retourné
+   * par l'API, met à jour la session uniquement si le rôle diffère de celui
+   * déjà stocké (évite des mises à jour inutiles).
+   */
+  async function verifyUserInOrganization() {
+    if (!s?.isRoleOrg) return;
+    const { data, error } = await authClient.organization.getActiveMemberRole();
+    if (error || !data) return;
+    console.log("verifyRole: ", data);
+
+    const newRole = data.role;
+
+    setSession({
+      ...s,
+      isRoleOrg: newRole,
+    });
+  }
+
   return {
     session: s,
     // isAdmin,
     logOut,
     verifySession: verifySessionAndSave,
+    verifySessionInOrganization: verifyUserInOrganization,
   };
 }
 

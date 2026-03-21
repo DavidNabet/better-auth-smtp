@@ -197,6 +197,14 @@ export async function getCurrentMember() {
   return user;
 }
 
+export async function getActiveMemberRole() {
+  const { role } = await auth.api.getActiveMemberRole({
+    headers: await headers(),
+  });
+
+  return { role };
+}
+
 // Filtrer les teams en fonction des organizations
 export async function filterTeamsByOrganization(organizationId: string) {
   const { currentUser } = await getCurrentUser();

@@ -6,6 +6,7 @@ import { UsersTable, LogDisplay } from "@/components/Table/Tables";
 import { GenerateUsers } from "@/components/GenerateUsers";
 import { getCurrentServerSession } from "@/lib/session/server";
 import Link from "next/link";
+import { useAuthState } from "@/hooks/use-auth";
 
 /** TODO : Plateforme de feedback / idées collaboratives
 Les utilisateurs postent des idées ou suggestions.

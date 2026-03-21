@@ -17,8 +17,6 @@ import {
   member,
 } from "../organization/organization.service";
 
-export type User = (typeof authServer.$Infer.Session)["user"];
-
 // Access role from server in the client
 export const authClient = createAuthClient({
   baseURL: process.env.NEXT_PUBLIC_APP_URL!,
@@ -40,7 +38,7 @@ export const authClient = createAuthClient({
       requireEmailVerificationOnInvitation: true,
       ac: dc,
       roles: {
-        [Role.SUPER_ADMIN]: owner,
+        // [Role.SUPER_ADMIN]: owner,
         owner,
         admin: adm,
         member,

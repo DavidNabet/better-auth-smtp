@@ -48,7 +48,8 @@ export function useActions() {
   ): boolean => {
     if (!session) return false;
 
-    const sessionRole = session?.role as Uppercase<RoleType>;
+    // const sessionRole = session?.role as Uppercase<RoleType>;
+    const sessionRole = session?.isRoleOrg as Uppercase<RoleType>;
 
     const actionContext: ActionContext = {
       currentUserId: session.userId,

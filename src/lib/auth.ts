@@ -28,6 +28,7 @@ import {
 
 export type Session = typeof auth.$Infer.Session;
 export type User = typeof auth.$Infer.Session.user;
+export type Member = typeof auth.$Infer.Member;
 export type Organizations = typeof auth.$Infer.Organization;
 export type Invitation = typeof auth.$Infer.Invitation;
 
@@ -211,7 +212,6 @@ export const auth = betterAuth({
       },
       ac: dc,
       roles: {
-        [Role.SUPER_ADMIN]: owner,
         owner,
         admin: adm,
         member,
