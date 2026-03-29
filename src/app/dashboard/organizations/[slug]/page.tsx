@@ -30,10 +30,11 @@ export default async function OrganizationPage({
   const { currentUser } = await getCurrentUser();
   const organization = await getOrganizationBySlug(slug);
 
-  const [members, invitations, teams] = await Promise.all([
+  const [members, invitations, teams, users] = await Promise.all([
     getMembersInvitationStatus(organization?.id || ""),
     getInvitationsByOrgId(organization?.id || ""),
     filterTeamsByOrganization(organization?.id || ""),
+    getUsersByOrganizationId(organization?.id || ""),
   ]);
 
   //console.log("org: ", organization);
@@ -52,7 +53,7 @@ export default async function OrganizationPage({
           <MemberList currentUserId={currentUser.id} members={members} />
         </Suspense>
         <Suspense fallback={<LoadingIcon />}>
-          <TeamInvitations invitations={invitations} />
+          <TeamInvitations invitations={invitations} users={users} />
         </Suspense>
       </div>
     </Wrapper>

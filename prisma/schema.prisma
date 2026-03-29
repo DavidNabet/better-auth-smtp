@@ -149,6 +149,8 @@ model Invitation {
   inviterId      String
   user           User         @relation(fields: [inviterId], references: [id], onDelete: Cascade)
   teamId         String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 
   @@map("invitation")
 }

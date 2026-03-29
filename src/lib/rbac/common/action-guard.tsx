@@ -39,6 +39,7 @@ export function ActionGuard({
   return canPerformAction ? <>{children}</> : <>{fallback}</>;
 }
 
+// TODO: Il faut créer un autre hasActionPermission pour les roles d'organization spécifique
 export function useActions() {
   const { session } = useAuth();
 
@@ -47,9 +48,8 @@ export function useActions() {
     context?: Partial<ActionContext>,
   ): boolean => {
     if (!session) return false;
-
-    // const sessionRole = session?.role as Uppercase<RoleType>;
-    const sessionRole = session?.isRoleOrg as Uppercase<RoleType>;
+    const sessionRole = session?.role as Uppercase<RoleType>;
+    // const sessionRole = session?.isRoleOrg as Uppercase<RoleType>;
 
     const actionContext: ActionContext = {
       currentUserId: session.userId,

@@ -58,9 +58,13 @@ import { getInvitationsByOrgId } from "@/lib/organization/organization.utils";
 import { toast } from "sonner";
 import { ActionState } from "@/lib/feedback/feedback.types";
 import { inviteSchema } from "@/lib/organization/organization.schema";
+import { getUsersByOrganizationId } from "@/lib/user/user.utils";
+import { User } from "@prisma/client";
+import { Checkbox } from "../ui/checkbox";
 
 interface TeamInvitationsProps {
   invitations: Awaited<ReturnType<typeof getInvitationsByOrgId>>;
+  users: Awaited<ReturnType<typeof getUsersByOrganizationId>>;
 }
 
 function getStatusBadge(status: Invitation["status"]) {
@@ -90,7 +94,10 @@ function formatTimeUntil(date: Date): string {
 }
 
 // TODO: Vérifie si un utilisateur existe dans la DB alors proposer l'invitation sinon créer un compte puis l'inviter
-export default function TeamInvitations({ invitations }: TeamInvitationsProps) {
+export default function TeamInvitations({
+  invitations,
+  users,
+}: TeamInvitationsProps) {
   const [orgId, setOrgId] = useState<string | undefined>("");
   const router = useRouter();
   const pendingInvitations = invitations.filter((i) => i.status === "pending");
@@ -157,7 +164,9 @@ export default function TeamInvitations({ invitations }: TeamInvitationsProps) {
                   </DialogDescription>
                 </DialogHeader>
                 {/* <div className="flex flex-col gap-4"> */}
-                {orgId && <CreateInvitation organizationId={orgId} />}
+                {orgId && (
+                  <CreateInvitation organizationId={orgId} users={users} />
+                )}
                 {/* </div> */}
               </DialogContent>
             </Dialog>
@@ -257,8 +266,15 @@ export default function TeamInvitations({ invitations }: TeamInvitationsProps) {
   );
 }
 
-function CreateInvitation({ organizationId }: { organizationId?: string }) {
-  const ref = useRef<HTMLFormElement>(null);
+// Mettre à jour prisma
+function CreateInvitation({
+  organizationId,
+  users,
+}: {
+  organizationId?: string;
+  users: User[];
+}) {
+  const formRef = useRef<HTMLFormElement>(null);
   const toastCallbacks = createToastCallbacks({
     loading: "Envoyer une invitation...",
   });
@@ -267,14 +283,17 @@ function CreateInvitation({ organizationId }: { organizationId?: string }) {
       ...toastCallbacks,
       onSuccess(result) {
         toastCallbacks.onSuccess?.(result);
-        ref.current?.reset();
+        formRef.current?.reset();
       },
     }),
     null,
   );
+
+  const [isChecked, setIsChecked] = useState<boolean>(true);
+
   return (
     <form
-      ref={ref}
+      ref={formRef}
       className="overflow-y-auto"
       id="invitationForm"
       action={action}
@@ -282,16 +301,41 @@ function CreateInvitation({ organizationId }: { organizationId?: string }) {
       <div className="space-y-4">
         <div className="grid grid-cols-1 gap-3">
           <input type="hidden" name="organizationId" value={organizationId} />
+          <div className="flex items-center gap-2 mb-4">
+            <Checkbox
+              id="check-email"
+              onCheckedChange={(prev) => setIsChecked(!prev)}
+            />
+            <Label htmlFor="check-email">Choisi un email ou saisi-en un</Label>
+          </div>
           <div className="col-span-6">
             <Label htmlFor="email" className="block text-sm font-medium">
               Email
             </Label>
-            <Input
-              name="email"
-              className="my-2 w-full"
-              type="email"
-              placeholder="johndoe@example.com"
-            />
+
+            {!isChecked ? (
+              <Select name="email">
+                <SelectTrigger className="mt-1 w-full">
+                  <SelectValue placeholder="Users in db" />
+                </SelectTrigger>
+                <SelectContent>
+                  {users.map((user) => (
+                    <SelectItem key={user.id} value={user.email}>
+                      {user.email}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <Input
+                name="email"
+                aria-hidden
+                className="my-2 w-full"
+                type="email"
+                placeholder="johndoe@example.com"
+              />
+            )}
+
             <ErrorMessages errors={state?.errorMessage?.email ?? null} />
           </div>
           <div className="col-span-6">

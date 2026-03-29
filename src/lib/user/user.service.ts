@@ -37,6 +37,6 @@ const OWNER = ac.newRole({
 const SUPER_ADMIN = ac.newRole({
   ...adminAc.statements,
   comments: ["create-comment", "toggle-hide", "delete-comment"],
-  apps: ["apps-list", "apps-delete"],
+  apps: ["apps-create", "apps-update", "apps-list", "apps-delete"],
 });
 export { ac, statements, USER, MEMBER, ADMIN, OWNER, SUPER_ADMIN };

@@ -40,6 +40,9 @@ export const allRoleStatements = buildAllRoleStatements()[0];
 // Narrow type representing one aggregated statement; combined with string tokens
 // to allow business-friendly identifiers (e.g., "apps-list").
 export type AnyStatement = typeof allRoleStatements;
+// type AnyStatementKey = Uppercase<AnyStatement>
+
+// export type PermissionsRecord = Record<AnyStatementKey, AnyStatement[number]>;
 
 /**
  * buildRoleStatementsMap

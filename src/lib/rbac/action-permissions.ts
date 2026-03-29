@@ -12,7 +12,7 @@ export interface ActionContext {
 export function hasActionPermission(
   userRole: Role,
   action: AnyStatement,
-  context?: ActionContext
+  context?: ActionContext,
 ): boolean {
   const rolePermissions = ROLE_PERMISSIONS[userRole] || [];
 

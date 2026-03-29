@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, ReactNode, useEffect } from "react";
+import { Fragment, ReactNode } from "react";
 import {
   Breadcrumb,
   BreadcrumbLink,
@@ -12,10 +12,12 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { useActions } from "@/lib/rbac/common/action-guard";
 
 export default function Breadcrumbs({ children }: { children?: ReactNode }) {
   const paths = usePathname();
   const pathNames = paths.split("/").filter((path) => path);
+  const { canPerform } = useActions();
 
   // TODO: ⚠ useSelectedLayoutSegments pathname
 
@@ -27,6 +29,8 @@ export default function Breadcrumbs({ children }: { children?: ReactNode }) {
           let href = `/${pathNames.slice(0, idx + 1).join("/")}`;
           let itemLink =
             link.charAt(0).toUpperCase() + link.slice(1, link.length);
+
+          const isOwner = canPerform("apps-create");
 
           return (
             <Fragment key={idx}>
@@ -40,7 +44,13 @@ export default function Breadcrumbs({ children }: { children?: ReactNode }) {
                     </Link>
                   </BreadcrumbLink>
                 ) : paths.startsWith("/dashboard/organizations/") ? (
-                  children
+                  <>
+                    {isOwner ? (
+                      children
+                    ) : (
+                      <BreadcrumbPage>{itemLink}</BreadcrumbPage>
+                    )}
+                  </>
                 ) : (
                   <BreadcrumbPage>{itemLink}</BreadcrumbPage>
                 )}

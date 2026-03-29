@@ -38,15 +38,15 @@ export async function inviteMember(
         "ERROR",
       );
     }
-    // const invitation = await auth.api.createInvitation({
-    //   body: {
-    //     email,
-    //     role,
-    //     organizationId,
-    //   },
-    //   headers: await head(),
-    // });
-    // console.log("invitation: ", invitation);
+    const invitation = await auth.api.createInvitation({
+      body: {
+        email,
+        role,
+        organizationId,
+      },
+      headers: await head(),
+    });
+    console.log("invitation: ", invitation);
   } catch (error) {
     if (error instanceof APIError) {
       console.log(error.message, error.body?.code);
