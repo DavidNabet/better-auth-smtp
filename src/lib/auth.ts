@@ -1,15 +1,15 @@
 import { betterAuth, logger } from "better-auth";
-
 import { APIError } from "better-auth/api";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
-import { createMiddleware } from "better-auth";
 import { db } from "@/db";
+import { headers } from "next/headers";
 import { admin, twoFactor, username, organization } from "better-auth/plugins";
 import {
   sendMagicLinkforLogin,
   sendOTPforLogin,
   sendInviteEmail,
+  sendCancelInvitation,
 } from "@/lib/auth/auth.mails";
 import { ac, USER, MEMBER, ADMIN, SUPER_ADMIN } from "@/lib/user/user.service";
 import { Role } from "@prisma/client";
@@ -36,7 +36,10 @@ export const auth = betterAuth({
   database: prismaAdapter(db, {
     provider: "postgresql",
   }),
-  trustedOrigins: [process.env.BETTER_AUTH_URL!],
+  baseURL: {
+    allowedHosts: [process.env.BETTER_AUTH_URL?.split("https://")[0]!],
+    protocol: process.env.NODE_ENV === "development" ? "http" : "https",
+  },
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
@@ -80,6 +83,18 @@ export const auth = betterAuth({
     max: 50,
     storage: "database",
     modelName: "rateLimit",
+    customRules: {
+      "/sign-in/email": {
+        window: 10,
+        max: 3,
+      },
+      "/two-factor/*": async (request) => {
+        return {
+          window: 10,
+          max: 3,
+        };
+      },
+    },
   },
   user: {
     additionalFields: {
@@ -157,15 +172,31 @@ export const auth = betterAuth({
           }
         },
       },
-      // create: {
-      //   after: async (user, ctx) => {
-      //     if (ctx?.path.startsWith("/admin/create-user")) {
-      //       console.log("after created users");
-      //       console.log("Sending emails: ", ctx?.context.session?.session);
-      //       // await sendMagicLinkforLogin(user.name, user.email, user.id)
-      //     }
-      //   },
-      // },
+      create: {
+        // on sign up
+        before: async (user, ctx) => {
+          const pendingInvitation = await db.invitation.findFirst({
+            where: {
+              email: user.email, // leummouvixudu-6843@yopmail.com
+              status: "pending",
+            },
+          });
+
+          if (pendingInvitation) {
+            return { data: { ...user, emailVerified: true } };
+          }
+
+          logger.info("Not invite");
+          return { data: user };
+        },
+        //   after: async (user, ctx) => {
+        //     if (ctx?.path.startsWith("/admin/create-user")) {
+        //       console.log("after created users");
+        //       console.log("Sending emails: ", ctx?.context.session?.session);
+        //       // await sendMagicLinkforLogin(user.name, user.email, user.id)
+        //     }
+        //   },
+      },
     },
   },
   plugins: [
@@ -196,7 +227,49 @@ export const auth = betterAuth({
       allowUserToCreateOrganization(user) {
         return user.id === process.env.SUPER_ADMIN_ID;
       },
+      cancelPendingInvitationsOnReInvite: true,
       organizationHooks: {
+        // FIX: L'utilisateur doit d'abord créer un compte puis accepter l'invitation envoyé par mail
+        // path: api/accept-invitation/:invitationId
+        beforeAcceptInvitation: async ({ invitation, organization }) => {
+          logger.info(`Adding ${invitation.email} to ${organization.name}`);
+
+          const exisitingUser = await getUserByEmail(invitation.email);
+
+          if (!exisitingUser) {
+            // await db.user.create({
+            //   data: {
+            //     email: invitation.email,
+            //     name:
+            //       invitation.email.split("@")[0] || `userinvited${Date.now()}`,
+            //     role: Role.MEMBER,
+            //     emailVerified: false,
+            //     createdAt: new Date(),
+            //     updatedAt: new Date(),
+            //   },
+            // });
+
+            logger.info(
+              `New user account created for ${invitation.email} during invitation acceptance`,
+            );
+          }
+        },
+        afterCancelInvitation: async ({
+          invitation,
+          organization,
+          cancelledBy,
+        }) => {
+          logger.success(
+            `Invitation for ${invitation.email} to join ${organization.name} has been cancelled by ${cancelledBy.name}`,
+          );
+
+          void (await sendCancelInvitation(
+            invitation.email,
+            invitation.name,
+            organization.name,
+            cancelledBy.name,
+          ));
+        },
         afterCreateOrganization: async ({ organization, member, user }) => {
           logger.info("Organization created: ", organization);
           await createDefaultTeams(organization.id, user.id);

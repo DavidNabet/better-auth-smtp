@@ -3,6 +3,7 @@ import nodemailer from "nodemailer";
 import signInMagicLink from "@/emails/signin-magiclink";
 import signInOTPMail from "@/emails/signin-otp-mail";
 import invitationEmail from "@/emails/invitation-email";
+import cancelInvitation from "@/emails/cancel-invitation";
 
 const emailFrom = process.env.EMAIL_FROM ?? "";
 const passwordForm = process.env.EMAIL_PASSWORD ?? "";
@@ -69,5 +70,27 @@ export const sendInviteEmail = async (
     to: email,
     subject: "You've been invited to join our organization",
     html: inviteEmailHtml,
+  });
+};
+export const sendCancelInvitation = async (
+  invitationEmail: string,
+  invitationName: string,
+  organizationName: string,
+  cancelledBy: string,
+) => {
+  const cancelInvitationHtml = await render(
+    cancelInvitation({
+      invitationEmail,
+      invitationName,
+      organizationName,
+      cancelledBy,
+    }),
+  );
+
+  await transporter.sendMail({
+    from: "<support@smtp.com>",
+    to: invitationEmail,
+    subject: "The admin canceled your invitation",
+    html: cancelInvitationHtml,
   });
 };

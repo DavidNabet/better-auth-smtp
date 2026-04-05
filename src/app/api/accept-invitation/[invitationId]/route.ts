@@ -20,6 +20,6 @@ export async function GET(
     return NextResponse.redirect(new URL("/dashboard", req.url));
   } catch (error) {
     console.error(error);
-    return NextResponse.redirect(new URL("/dashboard", req.url));
+    return NextResponse.redirect(new URL("/auth/signup", req.url));
   }
 }

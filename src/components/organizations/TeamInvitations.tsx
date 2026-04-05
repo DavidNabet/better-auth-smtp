@@ -73,8 +73,12 @@ function getStatusBadge(status: Invitation["status"]) {
       return <Badge variant="secondary">Pending</Badge>;
     case "accepted":
       return <Badge variant="default">Accepted</Badge>;
-    case "rejected":
-      return <Badge variant="destructive">Rejected</Badge>;
+    case "canceled":
+      return (
+        <Badge variant="secondary" className="bg-orange-500 text-white">
+          Cancelled
+        </Badge>
+      );
   }
 }
 
@@ -103,6 +107,9 @@ export default function TeamInvitations({
   const pendingInvitations = invitations.filter((i) => i.status === "pending");
   const acceptedInvitations = invitations.filter(
     (i) => i.status === "accepted",
+  );
+  const canceledInvitations = invitations.filter(
+    (i) => i.status === "canceled",
   );
 
   const params = useParams<{ slug: string }>();
@@ -134,7 +141,8 @@ export default function TeamInvitations({
               <CardTitle>Invitations</CardTitle>
               <CardDescription>
                 {pendingInvitations.length} pending,{" "}
-                {acceptedInvitations.length} accepted
+                {acceptedInvitations.length} accepted,{" "}
+                {canceledInvitations.length} cancelled
               </CardDescription>
             </div>
             <Button

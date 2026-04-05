@@ -15,61 +15,42 @@ import {
   Text,
 } from "@react-email/components";
 
-interface inviteEmailProps {
-  email: string;
-  invitedByUsername: string;
-  invitedByEmail: string;
-  teamName: string;
-  inviteLink: string;
+interface cancelInvitationProps {
+  invitationEmail: string;
+  invitationName: string;
+  organizationName: string;
+  cancelledBy: string;
 }
 
-// TODO: Ajouter une condition, si l'utilisateur n'a pas de session alors il faut d'abord créer un compte. Une notification, lui demandera s'il veut rejoindre une organization, à faire côté client
-function invitationEmail({
-  email,
-  inviteLink,
-  invitedByEmail,
-  invitedByUsername,
-  teamName,
-}: inviteEmailProps) {
+function cancelInvitation({
+  invitationEmail,
+  invitationName,
+  organizationName,
+  cancelledBy,
+}: cancelInvitationProps) {
   return (
     <Html>
       <Head />
       <Body style={main}>
-        <Preview>You&apos;ve been invited to join ${teamName}</Preview>
+        <Preview>Someone cancel your invitation !</Preview>
         <Container style={container}>
           <Section style={content}>
-            <Heading>You&apos;re invited!</Heading>
+            <Heading>You&apos;re canceled {invitationName}!</Heading>
             <Text style={paragraph}>
-              Join {teamName} and start collaborating
-            </Text>
-            <Text style={paragraph}>
-              Hi there, <strong>{invitedByUsername}</strong> ({invitedByEmail})
-              has invited you to join <strong>{teamName}</strong> on our
-              platform.
-            </Text>
-            <Text style={paragraph}>
-              Accept this invitation to start collaborating with your team
-              members and access all the tools and resources available in your
-              organization.
-            </Text>
-            <Button style={button} href={inviteLink}>
-              Accept Invitation
-            </Button>
-            <Text style={smallParagraph}>
-              If you did not request this, please ignore this email.
+              Hi there, the admin cancelled your invitation to join the
+              organization {organizationName} on our platform.
             </Text>
           </Section>
           <Section style={sectionInfo}>
             <Text style={additionalInfo}>
-              <strong>Organization:</strong> {teamName}
+              <strong>Organization:</strong> {organizationName}
             </Text>
             <Text style={additionalInfo}>
-              <strong>Invited by:</strong> {invitedByUsername} ({invitedByEmail}
-              )
+              <strong>Cancelled by:</strong> {cancelledBy}
             </Text>
             <Text style={additionalInfo}>
               <strong>Your email: </strong>
-              {email}
+              {invitationEmail}
             </Text>
           </Section>
           <Section style={footer}>
@@ -81,7 +62,7 @@ function invitationEmail({
   );
 }
 
-export default invitationEmail;
+export default cancelInvitation;
 
 const main = {
   backgroundColor: "#f6f9fc",
