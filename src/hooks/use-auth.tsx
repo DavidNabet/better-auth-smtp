@@ -143,7 +143,7 @@ export function useAuthState() {
   async function verifyUserInOrganization() {
     if (!s?.isRoleOrg) return;
     const { data, error } = await authClient.organization.getActiveMemberRole();
-    if (error || !data) return;
+    if (error || !data) return false;
     console.log("verifyRole: ", data);
 
     const newRole = data.role;

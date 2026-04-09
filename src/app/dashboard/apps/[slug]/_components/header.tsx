@@ -7,6 +7,7 @@ import { App } from "@prisma/client";
 import { Session, User } from "@/lib/auth";
 import Link from "next/link";
 import { getInitials } from "@/lib/utils";
+import { getUserById } from "@/lib/user/user.utils";
 
 interface Props {
   app: Awaited<ReturnType<typeof getAppBySlug>>;
@@ -31,11 +32,6 @@ export default function AppHeader({ app }: Props) {
             <span>{app?.createdAt.toLocaleDateString()}</span>
           </div>
 
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Created by</span>
-            <span>{app?.member?.name}</span>
-          </div>
-
           {app?.feedbacks && app.feedbacks.length > 0 && (
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Feedbacks</span>
@@ -43,15 +39,29 @@ export default function AppHeader({ app }: Props) {
             </div>
           )}
           {app?.organization && (
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Organization</span>
-              <Link
-                href={`/dashboard/organizations/${app.organization.slug}`}
-                title={app.organization.name}
-              >
-                <Badge variant="outline">{app.organization.name}</Badge>
-              </Link>
-            </div>
+            <>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Created by</span>
+                <span>
+                  {app.organization.members.length > 0 &&
+                    app.organization.members
+                      .filter((i) => i.role === "owner")
+                      .map(async (i) => {
+                        const user = await getUserById(i.userId);
+                        return user?.name;
+                      })}
+                </span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Organization</span>
+                <Link
+                  href={`/dashboard/organizations/${app.organization.slug}`}
+                  title={app.organization.name}
+                >
+                  <Badge variant="outline">{app.organization.name}</Badge>
+                </Link>
+              </div>
+            </>
           )}
         </div>
       </CardContent>

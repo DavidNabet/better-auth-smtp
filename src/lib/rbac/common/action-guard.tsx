@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Role } from "@prisma/client";
 import { RoleType } from "@/lib/permissions/permissions.utils";
 import { AnyStatement } from "@/lib/rbac/permissions";
+import { getCurrentUser } from "@/lib/user/user.utils";
 
 interface ActionGuardProps {
   action: AnyStatement;
@@ -11,6 +12,11 @@ interface ActionGuardProps {
   fallback?: ReactNode;
   resourceOwnerId?: string;
 }
+
+type MinimalSession = {
+  id: string;
+  role: Uppercase<RoleType>;
+};
 
 export function ActionGuard({
   action,
@@ -40,25 +46,50 @@ export function ActionGuard({
 }
 
 // TODO: Il faut créer un autre hasActionPermission pour les roles d'organization spécifique
-export function useActions() {
-  const { session } = useAuth();
-
-  const canPerform = (
-    action: AnyStatement,
-    context?: Partial<ActionContext>,
-  ): boolean => {
+function createCanPerform(session: MinimalSession | null) {
+  return (action: AnyStatement, context?: Partial<ActionContext>): boolean => {
+    // Si pas de session, l'utilisateur ne peut effectuer aucune action
     if (!session) return false;
-    const sessionRole = session?.role as Uppercase<RoleType>;
-    // const sessionRole = session?.isRoleOrg as Uppercase<RoleType>;
 
+    const sessionRole = session.role;
+
+    // Construit le contexte d'action en fusionnant les infos de session
+    // avec un éventuel contexte spécifique passé à l'appel.
     const actionContext: ActionContext = {
-      currentUserId: session.userId,
+      currentUserId: session.id,
       userRole: sessionRole,
       ...context,
     };
 
     return hasActionPermission(sessionRole, action, actionContext);
   };
+}
+export function useActions() {
+  const { session } = useAuth();
+
+  const minimalSession: MinimalSession | null = session
+    ? {
+        id: session.userId,
+        role: session.role as Uppercase<RoleType>,
+        // session.isRoleOrg as Uppercase<RoleType>
+      }
+    : null;
+
+  const canPerform = createCanPerform(minimalSession);
+
+  return { canPerform };
+}
+export async function useActionsServer() {
+  const { currentUser: session } = await getCurrentUser();
+
+  const minimalSession: MinimalSession | null = session
+    ? {
+        id: session.id,
+        role: session.role as Uppercase<RoleType>,
+      }
+    : null;
+
+  const canPerform = createCanPerform(minimalSession);
 
   return { canPerform };
 }

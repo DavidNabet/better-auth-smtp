@@ -58,7 +58,10 @@ export async function getOrganizations() {
 
 export async function getActiveOrganization(userId: string) {
   const memberUser = await db.member.findFirst({
-    where: { userId },
+    where: {
+      userId: userId,
+      role: "owner",
+    },
   });
 
   if (!memberUser) {

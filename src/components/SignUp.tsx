@@ -202,7 +202,7 @@ export default function AuthSignUp() {
           type="submit"
           variant="secondary"
           className={cn(
-            "border text-white shrink-0 transition-colors focus:ring-offset-2 focus:ring-offset-secondary cursor-pointer",
+            "border shrink-0 transition-colors focus:ring-offset-2 focus:ring-offset-secondary cursor-pointer",
           )}
           disabled={isPending}
         >

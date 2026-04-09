@@ -3,10 +3,6 @@ import Navbar from "@/app/_components/Navbar";
 import Breadcrumbs from "../_components/Breadcrumb";
 import { redirect } from "next/navigation";
 import { getCurrentServerSession } from "@/lib/session/server";
-import { RoleType } from "@/lib/permissions/permissions.utils";
-import { Switcher } from "@/components/organizations/Switcher";
-import { useActions } from "@/lib/rbac/common/action-guard";
-import { getActiveMemberRole } from "@/lib/organization/organization.utils";
 export const metadata: Metadata = {
   title: {
     template: "%s | Dashboard",
@@ -22,19 +18,12 @@ export default async function PrivateLayout({
   const { sessionToken } = await getCurrentServerSession();
   if (!sessionToken) redirect("/auth/signin");
 
-  const { role } = await getActiveMemberRole();
-
   return (
     <main className="dark:bg-background bg-white">
       <Navbar />
       <div className="max-w-screen-xl min-h-screen text-primary mx-auto py-10 px-4 sm:px-6 lg:px-8">
-        {role === "owner" ? (
-          <Breadcrumbs>
-            <Switcher />
-          </Breadcrumbs>
-        ) : (
-          <Breadcrumbs />
-        )}
+        <Breadcrumbs />
+
         {/* your content goes here ... */}
         {children}
       </div>

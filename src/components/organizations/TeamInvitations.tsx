@@ -61,6 +61,7 @@ import { inviteSchema } from "@/lib/organization/organization.schema";
 import { getUsersByOrganizationId } from "@/lib/user/user.utils";
 import { User } from "@prisma/client";
 import { Checkbox } from "../ui/checkbox";
+import { ActionButton } from "@/lib/rbac/common/action-button";
 
 interface TeamInvitationsProps {
   invitations: Awaited<ReturnType<typeof getInvitationsByOrgId>>;
@@ -155,14 +156,14 @@ export default function TeamInvitations({
             </Button>
             <Dialog>
               <DialogTrigger asChild>
-                <Button
+                <ActionButton
+                  action={"ban"}
                   className="w-full shrink-0 md:w-auto"
-                  type="button"
                   onClick={fetchOrganizationSlug}
                 >
                   <Plus className="size-4" />
                   Create Invitation
-                </Button>
+                </ActionButton>
               </DialogTrigger>
               <DialogContent className="md:max-w-md">
                 <DialogHeader>

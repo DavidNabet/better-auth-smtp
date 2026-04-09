@@ -43,6 +43,7 @@ export async function inviteMember(
         email,
         role,
         organizationId,
+        resend: true,
       },
       headers: await head(),
     });

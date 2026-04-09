@@ -13,6 +13,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useActions } from "@/lib/rbac/common/action-guard";
+import { Switcher } from "@/components/organizations/Switcher";
 
 export default function Breadcrumbs({ children }: { children?: ReactNode }) {
   const paths = usePathname();
@@ -46,7 +47,7 @@ export default function Breadcrumbs({ children }: { children?: ReactNode }) {
                 ) : paths.startsWith("/dashboard/organizations/") ? (
                   <>
                     {isOwner ? (
-                      children
+                      <Switcher />
                     ) : (
                       <BreadcrumbPage>{itemLink}</BreadcrumbPage>
                     )}

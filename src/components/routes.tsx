@@ -20,11 +20,11 @@ export const menu = [
 ];
 
 export const adminRoute = [
-  {
-    name: "SUPER_ADMIN",
-    href: "/dashboard/users/super_admin",
-    isAdmin: true,
-  },
+  // {
+  //   name: "SUPER_ADMIN",
+  //   href: "/dashboard/users/super_admin",
+  //   isAdmin: true,
+  // },
   {
     name: "ADMIN",
     href: "/dashboard/users/admin",

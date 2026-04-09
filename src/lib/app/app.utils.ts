@@ -93,11 +93,8 @@ export async function getAppBySlug(slug: string) {
       return null;
     }
 
-    const member = await getCurrentMember();
-
     return {
       ...getSlug,
-      member: member ? member : null,
     };
   } catch (error) {
     console.error(error);

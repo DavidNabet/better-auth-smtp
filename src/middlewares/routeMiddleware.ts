@@ -20,7 +20,7 @@ export const routeMiddleware: Middleware = async (req, _event, next) => {
       headers: {
         cookie: req.headers.get("cookie") || "",
       },
-    }
+    },
   );
 
   function getToken(data: Session) {
@@ -33,7 +33,7 @@ export const routeMiddleware: Middleware = async (req, _event, next) => {
 
   // Check if the path is protected
   for (const [routes, allowedRoles] of Object.entries(roleAccessMap)) {
-    if (path.startsWith(routes) && session) {
+    if (path.endsWith(routes) && session) {
       // If user is not logged in, redirect to login
       if (!user) {
         return NextResponse.redirect(new URL("/auth/signin", req.url));

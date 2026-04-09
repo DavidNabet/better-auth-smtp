@@ -233,26 +233,6 @@ export const auth = betterAuth({
         // path: api/accept-invitation/:invitationId
         beforeAcceptInvitation: async ({ invitation, organization }) => {
           logger.info(`Adding ${invitation.email} to ${organization.name}`);
-
-          const exisitingUser = await getUserByEmail(invitation.email);
-
-          if (!exisitingUser) {
-            // await db.user.create({
-            //   data: {
-            //     email: invitation.email,
-            //     name:
-            //       invitation.email.split("@")[0] || `userinvited${Date.now()}`,
-            //     role: Role.MEMBER,
-            //     emailVerified: false,
-            //     createdAt: new Date(),
-            //     updatedAt: new Date(),
-            //   },
-            // });
-
-            logger.info(
-              `New user account created for ${invitation.email} during invitation acceptance`,
-            );
-          }
         },
         afterCancelInvitation: async ({
           invitation,
@@ -290,6 +270,7 @@ export const auth = betterAuth({
         member,
       },
       async sendInvitationEmail(data) {
+        // data.role
         const inviteLink = `${process.env.NEXT_PUBLIC_APP_URL}/api/accept-invitation/${data.id}`;
         logger.info("Invitation Email: ", data.email);
 

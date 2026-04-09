@@ -41,7 +41,7 @@ export const NAVIGATION_CONFIG: NavigationItem[] = [
     id: "organizations",
     label: "Organizations",
     href: "/dashboard/organizations",
-    permission: "update-name",
+    permission: "ban",
     children: [
       {
         id: "organization",
@@ -106,7 +106,7 @@ export function filterNavigationByRole(
           userRole,
         );
 
-        console.log(filteredChildren);
+        console.log("filteredChildren: ", filteredChildren);
 
         // Hide parent if no children are accessible
         if (filteredChildren.length === 0) {
