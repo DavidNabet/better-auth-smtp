@@ -19,6 +19,9 @@ import {
   NAVIGATION_CONFIG,
 } from "@/lib/rbac/navigation";
 import { RoleType } from "@/lib/permissions/permissions.utils";
+import Notifications, {
+  fakeTeamNotifications,
+} from "@/components/Notifications";
 
 export default async function Navbar() {
   const { userRole } = await getCurrentServerSession();
@@ -27,6 +30,7 @@ export default async function Navbar() {
     userRole as Uppercase<RoleType>,
   );
   console.log(nav);
+
   return (
     <header className="border border-b border-primary/10">
       <div className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">
@@ -58,6 +62,11 @@ export default async function Navbar() {
                   ))}
             </nav>
             <div className="hidden md:flex items-center space-x-4 gap-3">
+              <Notifications
+                notifications={fakeTeamNotifications}
+                showFilters
+                unreadCount={0}
+              />
               <Suspense fallback={<LoadingIcon />}>
                 <UserNav />
               </Suspense>
