@@ -3,6 +3,7 @@ import Navbar from "@/app/_components/Navbar";
 import Breadcrumbs from "../_components/Breadcrumb";
 import { redirect } from "next/navigation";
 import { getCurrentServerSession } from "@/lib/session/server";
+import { Switcher } from "@/components/organizations/Switcher";
 export const metadata: Metadata = {
   title: {
     template: "%s | Dashboard",
@@ -22,7 +23,9 @@ export default async function PrivateLayout({
     <main className="dark:bg-background bg-white">
       <Navbar />
       <div className="max-w-screen-xl min-h-screen text-primary mx-auto py-10 px-4 sm:px-6 lg:px-8">
-        <Breadcrumbs />
+        <Breadcrumbs>
+          <Switcher />
+        </Breadcrumbs>
 
         {/* your content goes here ... */}
         {children}

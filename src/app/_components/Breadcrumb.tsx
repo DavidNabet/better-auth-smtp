@@ -47,7 +47,7 @@ export default function Breadcrumbs({ children }: { children?: ReactNode }) {
                 ) : paths.startsWith("/dashboard/organizations/") ? (
                   <>
                     {isOwner ? (
-                      <Switcher />
+                      children
                     ) : (
                       <BreadcrumbPage>{itemLink}</BreadcrumbPage>
                     )}

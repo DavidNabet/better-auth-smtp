@@ -10,6 +10,8 @@ import { db } from "@/db";
 
 export type RoleType = Lowercase<Exclude<Role, "SUPER_ADMIN" | "USER">>;
 
+export type ExcludeUser = Exclude<Role, "USER">;
+
 // client
 export const hasClientOrgPermission = <
   O extends OrgEntites,

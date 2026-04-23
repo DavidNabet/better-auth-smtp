@@ -28,6 +28,8 @@ export default async function Dashboard() {
     return null;
   }
 
+  // TODO: Appeler un fetch("/api/socket") pour appeler la dernière notif pour accepter ou refuser l'invitation
+
   return (
     <Wrapper title={`Welcome ${userName}`}>
       <p>Content</p>

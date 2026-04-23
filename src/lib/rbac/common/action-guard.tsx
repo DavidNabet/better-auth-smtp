@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 import { ActionContext, hasActionPermission } from "../action-permissions";
 import { useAuth } from "@/hooks/use-auth";
 import { Role } from "@prisma/client";
-import { RoleType } from "@/lib/permissions/permissions.utils";
+import { ExcludeUser, RoleType } from "@/lib/permissions/permissions.utils";
 import { AnyStatement } from "@/lib/rbac/permissions";
 import { getCurrentUser } from "@/lib/user/user.utils";
 
@@ -15,7 +15,7 @@ interface ActionGuardProps {
 
 type MinimalSession = {
   id: string;
-  role: Uppercase<RoleType>;
+  role: ExcludeUser;
 };
 
 export function ActionGuard({
@@ -28,7 +28,7 @@ export function ActionGuard({
 
   if (!session) return <>{fallback}</>;
 
-  const sessionRole = session?.role as Uppercase<RoleType>;
+  const sessionRole = session?.role as ExcludeUser;
 
   const actionContext: ActionContext = {
     currentUserId: session?.userId,
@@ -85,7 +85,7 @@ export async function useActionsServer() {
   const minimalSession: MinimalSession | null = session
     ? {
         id: session.id,
-        role: session.role as Uppercase<RoleType>,
+        role: session.role as ExcludeUser,
       }
     : null;
 

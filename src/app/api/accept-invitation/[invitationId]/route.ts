@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { APIError } from "better-auth";
 
 export async function GET(
   req: Request,
@@ -15,11 +16,14 @@ export async function GET(
       },
       headers: await headers(),
     });
-    console.log(data);
 
     return NextResponse.redirect(new URL("/dashboard", req.url));
   } catch (error) {
-    console.error(error);
-    return NextResponse.redirect(new URL("/auth/signup", req.url));
+    if (error instanceof APIError) {
+      console.error(error.body);
+    }
+    return NextResponse.redirect(
+      new URL("/auth/signup?error=invitation_not_found", req.url),
+    );
   }
 }

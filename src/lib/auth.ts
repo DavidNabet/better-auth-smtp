@@ -25,6 +25,7 @@ import {
   findTeamByName,
   getActiveOrganization,
 } from "@/lib/organization/organization.utils";
+import { NextResponse } from "next/server";
 
 export type Session = typeof auth.$Infer.Session;
 export type User = typeof auth.$Infer.Session.user;
@@ -52,8 +53,14 @@ export const auth = betterAuth({
     sendOnSignIn: true,
 
     sendVerificationEmail: async ({ user, url }) => {
-      logger.info("Email verification", `Sending verification url ${url}`);
+      console.info("Email verification", `Sending verification url ${url}`);
       await sendMagicLinkforLogin(user.name, user.email, url);
+    },
+    afterEmailVerification: async (user, req) => {
+      console.info("Request verification: ", req);
+      console.log(
+        `${user.email} has successfully verified their email address!`,
+      );
     },
     // afterEmailVerification: async (user, request) => {
     //   console.log(
@@ -84,10 +91,10 @@ export const auth = betterAuth({
     storage: "database",
     modelName: "rateLimit",
     customRules: {
-      "/sign-in/email": {
-        window: 10,
-        max: 3,
-      },
+      // "/sign-in/email": {
+      //   window: 10,
+      //   max: 3,
+      // },
       "/two-factor/*": async (request) => {
         return {
           window: 10,

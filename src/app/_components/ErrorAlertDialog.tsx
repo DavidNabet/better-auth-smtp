@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 
-export function AlertDialog02() {
+export function ErrorAlertDialog() {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>

@@ -8,7 +8,7 @@ import {
   MoreVertical,
   X,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn, getInitials, formatRelativeTime } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -183,6 +183,7 @@ function getNotificationIcon(type: NotificationType) {
   }
 }
 
+// TODO: Recevoir les notifications
 export default function Notifications({
   notifications = [],
   showFilters,
