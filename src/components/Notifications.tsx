@@ -9,7 +9,7 @@ import {
   X,
 } from "lucide-react";
 import { useState, useEffect } from "react";
-import { cn, getInitials, formatRelativeTime } from "@/lib/utils";
+import { cn, getInitials, formatRelativeTime, formatDate } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -51,15 +51,27 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { useSocket } from "@/hooks/use-socket";
+import { toast } from "sonner";
+import { NotificationsInvitations } from "./notifications/NotificationsInvitations";
+import { Notification } from "@prisma/client";
+import {
+  getNotificationsByUserId,
+  onMarkAsRead,
+} from "@/lib/notification/notification.utils";
+import { unstable_noStore } from "next/cache";
+
+unstable_noStore();
 
 type NotificationType =
   | "mention"
   | "ai_event"
   | "member_joined"
+  | "invitation_pending"
   | "system"
   | "info";
 
-interface TeamNotification {
+export interface TeamNotification {
   id: string;
   type: NotificationType;
   title: string;
@@ -70,11 +82,13 @@ interface TeamNotification {
     avatar?: string;
   };
   link?: string;
+  invitationId?: string;
   read: boolean;
-  timestamp: Date;
-  metadata?: Record<string, unknown>;
+  createdAt: Date;
 }
 
+type AllNotification = Awaited<ReturnType<typeof getNotificationsByUserId>>;
+type onMarkAsReadType = ReturnType<typeof onMarkAsRead>;
 /**
  * Tableau de notifications factices (fake) pour le développement / tests.
  *
@@ -85,7 +99,7 @@ interface TeamNotification {
  * - user : informations sur l'utilisateur lié à la notification
  * - link : lien éventuel vers une page de détail / action
  * - read : indique si la notification a été lue
- * - timestamp : date de création / réception de la notification
+ * - createdAt : date d'expiration de la notification
  * - metadata : données supplémentaires spécifiques au type de notification
  */
 export const fakeTeamNotifications: TeamNotification[] = [
@@ -101,11 +115,7 @@ export const fakeTeamNotifications: TeamNotification[] = [
     },
     link: "/teams/frontend-squad",
     read: false,
-    timestamp: new Date(Date.now() - 5 * 60 * 1000), // il y a 5 minutes
-    metadata: {
-      teamId: "team_frontend_squad",
-      role: "MEMBER",
-    },
+    createdAt: new Date(Date.now() - 5 * 60 * 1000), // il y a 5 minutes
   },
   {
     id: "2",
@@ -119,11 +129,7 @@ export const fakeTeamNotifications: TeamNotification[] = [
     },
     link: "/channels/general?message=123",
     read: false,
-    timestamp: new Date(Date.now() - 30 * 60 * 1000), // il y a 30 minutes
-    metadata: {
-      channelId: "general",
-      messageId: "123",
-    },
+    createdAt: new Date(Date.now() - 30 * 60 * 1000), // il y a 30 minutes
   },
   {
     id: "3",
@@ -136,12 +142,7 @@ export const fakeTeamNotifications: TeamNotification[] = [
     },
     link: "/teams/backend-core/settings",
     read: true,
-    timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000), // il y a 1 jour
-    metadata: {
-      teamId: "team_backend_core",
-      previousRole: "MEMBER",
-      newRole: "ADMIN",
-    },
+    createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000), // il y a 1 jour
   },
   {
     id: "4",
@@ -154,17 +155,11 @@ export const fakeTeamNotifications: TeamNotification[] = [
       name: "Julie Robert",
     },
     read: true,
-    timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // il y a 3 jours
-    metadata: {
-      teamId: "team_design_system",
-      expiredAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-    },
+    createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // il y a 3 jours
   },
 ];
 
 interface TeamNotificationsProps {
-  notifications?: TeamNotification[];
-  onMarkAsRead?: (notificationId: string) => Promise<void>;
   onMarkAllAsRead?: () => Promise<void>;
   onDelete?: (notificationId: string) => Promise<void>;
   onClearAll?: () => Promise<void>;
@@ -172,7 +167,7 @@ interface TeamNotificationsProps {
   unreadCount?: number;
 }
 
-function getNotificationIcon(type: NotificationType) {
+function getNotificationIcon(type: string) {
   switch (type) {
     case "mention":
       return MessageSquare;
@@ -183,18 +178,54 @@ function getNotificationIcon(type: NotificationType) {
   }
 }
 
-// TODO: Recevoir les notifications
+// TODO: Créer les fonctions de gestion pour les notifications
 export default function Notifications({
-  notifications = [],
   showFilters,
   onClearAll,
   onDelete,
   onMarkAllAsRead,
-  onMarkAsRead,
   unreadCount,
 }: TeamNotificationsProps) {
   const [typeFilter, setTypeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [openDrawer, setOpenDrawer] = useState(false);
+
+  const [notifications, setNotifications] = useState<AllNotification>([]);
+
+  const socket = useSocket();
+
+  useEffect(() => {
+    if (!socket) return;
+    console.log("Socket connected");
+
+    socket.on("message", (newNotif) => {
+      setNotifications((prev) => {
+        // Evite les doublons: vérifié si la notif existe déjà
+        const isDuplicate = prev?.some((n) => n.id === newNotif.id);
+        if (isDuplicate) {
+          console.warn(`Notification dupliquée détectée: ${newNotif.id}`);
+        }
+        return [newNotif, ...prev];
+      });
+    });
+
+    // Ecoute l'événement "display_toast" du serveur pour afficher une notification toast
+    socket.on("display_toast", (data) => {
+      console.log("display_toast received: ", data);
+      toast(data.message, {
+        description: `Vous avez ${data.notifications.length} notifications non lues`,
+        action: {
+          label: "Voir",
+          onClick: () => setOpenDrawer(true),
+        },
+      });
+    });
+
+    return () => {
+      socket.off("message");
+      socket.off("display_toast");
+    };
+  }, [socket]);
 
   const filteredNotifications = notifications.filter((notification) => {
     const matchesType =
@@ -211,8 +242,22 @@ export default function Notifications({
   const unreadNotifications = filteredNotifications.filter((n) => !n.read);
   const displayUnreadCount = unreadCount ?? unreadNotifications.length;
 
+  async function handleAcceptNotification(notificationId: string) {
+    await fetch(`/api/notifications/${notificationId}`, {
+      method: "POST",
+    });
+
+    setNotifications((prev) =>
+      prev.map((notif) =>
+        notif.id === notificationId
+          ? { ...notif, read: true, status: "accepted" }
+          : notif,
+      ),
+    );
+  }
+
   return (
-    <Drawer direction="right">
+    <Drawer direction="right" open={openDrawer} onOpenChange={setOpenDrawer}>
       <DrawerTrigger asChild>
         <Button
           aria-label="Notifications"
@@ -274,6 +319,9 @@ export default function Notifications({
                     <SelectItem value="mention">Mentions</SelectItem>
                     <SelectItem value="ai_event">AI Events</SelectItem>
                     <SelectItem value="member_joined">Members</SelectItem>
+                    <SelectItem value="invitation_pending">
+                      Invitations
+                    </SelectItem>
                     <SelectItem value="system">System</SelectItem>
                   </SelectContent>
                 </Select>
@@ -291,7 +339,7 @@ export default function Notifications({
             )}
           </div>
         </DrawerHeader>
-        <Card className="w-full shadow-none border-none">
+        <Card className="w-full shadow-none border-none overflow-y-auto">
           <CardContent className="px-4">
             {filteredNotifications.length === 0 ? (
               <Empty>
@@ -333,11 +381,11 @@ export default function Notifications({
                           {notification.user ? (
                             <Avatar>
                               <AvatarImage
-                                alt={notification.user.name}
-                                src={notification.user.avatar}
+                                alt={notification.user.name!}
+                                src={notification.user.image!}
                               />
                               <AvatarFallback>
-                                {getInitials(notification.user.name)}
+                                {getInitials(notification.user.name!)}
                               </AvatarFallback>
                             </Avatar>
                           ) : (
@@ -360,7 +408,9 @@ export default function Notifications({
                             {notification.message}
                           </p>
                           <span className="text-muted-foreground text-xs">
-                            {formatRelativeTime(notification.timestamp)}
+                            {formatRelativeTime(
+                              new Date(notification.createdAt),
+                            )}
                           </span>
                         </div>
                         <DropdownMenu>
@@ -375,9 +425,24 @@ export default function Notifications({
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            {!notification.read && onMarkAsRead && (
+                            {notification.type === "invitation_pending" && (
+                              <NotificationsInvitations
+                                invitationId={notification?.invitationId!}
+                              >
+                                <DropdownMenuItem
+                                  onSelect={(e) => e.preventDefault()}
+                                >
+                                  <CheckCheck className="size-4" />
+                                  Respond to invitation
+                                </DropdownMenuItem>
+                              </NotificationsInvitations>
+                            )}
+                            {!notification.read && (
                               <DropdownMenuItem
-                                onClick={() => onMarkAsRead(notification.id)}
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  handleAcceptNotification(notification.id);
+                                }}
                               >
                                 <Check className="size-4" />
                                 Mark as read

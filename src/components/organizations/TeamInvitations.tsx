@@ -80,6 +80,12 @@ function getStatusBadge(status: Invitation["status"]) {
           Cancelled
         </Badge>
       );
+    case "rejected":
+      return (
+        <Badge variant="destructive" className="text-white">
+          Rejected
+        </Badge>
+      );
   }
 }
 
@@ -111,6 +117,9 @@ export default function TeamInvitations({
   );
   const canceledInvitations = invitations.filter(
     (i) => i.status === "canceled",
+  );
+  const rejectedInvitations = invitations.filter(
+    (i) => i.status === "rejected",
   );
 
   const params = useParams<{ slug: string }>();
@@ -275,8 +284,6 @@ export default function TeamInvitations({
   );
 }
 
-// Mettre à jour prisma
-// TODO: Emit le message avec une exec Notification côté db
 function CreateInvitation({
   organizationId,
   users,

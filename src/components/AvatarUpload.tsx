@@ -59,7 +59,9 @@ export default function AvatarUpload({
           ) : !!ctx.session ? (
             <AvatarSession {...ctx} avatarSize="12" />
           ) : (
-            <AvatarFallback className="text-white">LOGO</AvatarFallback>
+            <AvatarFallback className="text-black dark:text-white">
+              LOGO
+            </AvatarFallback>
           )}
         </Avatar>
       </div>

@@ -19,9 +19,7 @@ import {
   NAVIGATION_CONFIG,
 } from "@/lib/rbac/navigation";
 import { RoleType } from "@/lib/permissions/permissions.utils";
-import Notifications, {
-  fakeTeamNotifications,
-} from "@/components/Notifications";
+import Notifications from "@/components/Notifications";
 
 export default async function Navbar() {
   const { userRole } = await getCurrentServerSession();
@@ -62,11 +60,7 @@ export default async function Navbar() {
                   ))}
             </nav>
             <div className="hidden md:flex items-center space-x-4 gap-3">
-              <Notifications
-                notifications={fakeTeamNotifications}
-                showFilters
-                unreadCount={0}
-              />
+              <Notifications showFilters unreadCount={0} />
               <Suspense fallback={<LoadingIcon />}>
                 <UserNav />
               </Suspense>

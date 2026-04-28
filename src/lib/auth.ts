@@ -37,10 +37,7 @@ export const auth = betterAuth({
   database: prismaAdapter(db, {
     provider: "postgresql",
   }),
-  baseURL: {
-    allowedHosts: [process.env.BETTER_AUTH_URL?.split("https://")[0]!],
-    protocol: process.env.NODE_ENV === "development" ? "http" : "https",
-  },
+  baseURL: process.env.BETTER_AUTH_URL ?? "",
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
@@ -230,7 +227,7 @@ export const auth = betterAuth({
       skipVerificationOnEnable: true,
     }),
     organization({
-      requireEmailVerificationOnInvitation: true,
+      requireEmailVerificationOnInvitation: false,
       allowUserToCreateOrganization(user) {
         return user.id === process.env.SUPER_ADMIN_ID;
       },
@@ -239,7 +236,32 @@ export const auth = betterAuth({
         // FIX: L'utilisateur doit d'abord créer un compte puis accepter l'invitation envoyé par mail
         // path: api/accept-invitation/:invitationId
         beforeAcceptInvitation: async ({ invitation, organization }) => {
+          const ctx = auth.$context;
+          logger.info(
+            "Before accepting invitation ctx",
+            (await ctx).session?.session,
+          );
           logger.info(`Adding ${invitation.email} to ${organization.name}`);
+        },
+        afterAcceptInvitation: async ({
+          invitation,
+          organization,
+          user,
+          member,
+        }) => {
+          console.log("after Accept Invitation: ", user.email);
+          if (user.role === Role.USER) {
+            await db.user.update({
+              where: { id: user.id },
+              data: {
+                role: Role.MEMBER,
+              },
+            });
+          }
+          // logout user after accepting invitation to update session with new role and permissions
+          await auth.api.signOut({
+            headers: await headers(),
+          });
         },
         afterCancelInvitation: async ({
           invitation,
@@ -269,6 +291,31 @@ export const auth = betterAuth({
             });
           }
         },
+        afterUpdateMemberRole: async ({
+          member,
+          previousRole,
+          user,
+          organization,
+        }) => {
+          logger.success(
+            `✅ UpdateMemberRole: ${user.email} role => ${member.role}`,
+          );
+          if (previousRole === "member" && user.role === Role.MEMBER) {
+            await db.user.update({
+              where: { id: user.id },
+              data: {
+                role: Role.ADMIN,
+              },
+            });
+          } else if (previousRole === "admin" && user.role === Role.ADMIN) {
+            await db.user.update({
+              where: { id: user.id },
+              data: {
+                role: Role.MEMBER,
+              },
+            });
+          }
+        },
       },
       ac: dc,
       roles: {
@@ -288,6 +335,27 @@ export const auth = betterAuth({
           data.organization.name,
           inviteLink,
         );
+
+        await db.notification.create({
+          data: {
+            type: "invitation_pending",
+            title: "Invitation en attente",
+            message: `Vous avez une invitation à rejoindre ${data.organization.name}`,
+            read: false,
+            user: {
+              connect: {
+                email: data.email,
+              },
+            },
+            invitation: {
+              connect: {
+                id: data.id,
+              },
+            },
+            expiresAt: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // expire in 3 days
+            status: "pending",
+          },
+        });
       },
       teams: {
         enabled: true,

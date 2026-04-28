@@ -37,6 +37,7 @@ import { Separator } from "@/components/ui/separator";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { hasClientOrgPermission } from "@/lib/permissions/permissions.utils";
+import { useActions } from "@/lib/rbac/common/action-guard";
 
 interface MemberListProps {
   members: Awaited<ReturnType<typeof getMembersInvitationStatus>>;
@@ -90,6 +91,7 @@ export default function MemberList({
         <div className="flex flex-col gap-0 overflow-hidden rounded-lg border">
           {members?.map((member, idx) => {
             const RoleIcon = getRoleIcon(member.role);
+            // const { canPerform } = useActions();
             const isCurrentUser = member.userId === currentUserId;
             const canModify = !isCurrentUser && member.role !== "owner";
 

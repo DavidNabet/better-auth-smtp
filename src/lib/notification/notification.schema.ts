@@ -3,6 +3,7 @@ import { z } from "zod";
 const notificationTypeSchema = z.enum([
   "mention",
   "member_joined",
+  "invitation_pending",
   "system",
   "info",
   "user_created",

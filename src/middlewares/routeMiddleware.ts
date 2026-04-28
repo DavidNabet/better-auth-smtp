@@ -41,7 +41,7 @@ export const routeMiddleware: Middleware = async (req, _event, next) => {
       // If user doesn't have the required role, redirect to unauthorized page
       const role = getToken(session);
       if (!allowedRoles.includes(role as Role)) {
-        return NextResponse.redirect(new URL("/unauthorized", req.url));
+        return NextResponse.redirect(new URL("/", req.url));
       }
     }
   }

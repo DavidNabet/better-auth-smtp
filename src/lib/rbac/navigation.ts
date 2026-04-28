@@ -33,11 +33,6 @@ export const NAVIGATION_CONFIG: NavigationItem[] = [
     href: "/dashboard",
   },
   {
-    id: "settings",
-    label: "Settings",
-    href: "/dashboard/settings",
-  },
-  {
     id: "organizations",
     label: "Organizations",
     href: "/dashboard/organizations",
@@ -85,6 +80,11 @@ export const NAVIGATION_CONFIG: NavigationItem[] = [
     href: "/dashboard/manage-users",
     permission: "list",
     badge: "Admin",
+  },
+  {
+    id: "settings",
+    label: "Settings",
+    href: "/dashboard/settings",
   },
 ];
 

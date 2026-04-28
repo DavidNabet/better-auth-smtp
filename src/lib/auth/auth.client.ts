@@ -20,6 +20,9 @@ import {
 // Access role from server in the client
 export const authClient = createAuthClient({
   baseURL: process.env.NEXT_PUBLIC_APP_URL!,
+  sessionOptions: {
+    refetchOnWindowFocus: true,
+  },
   plugins: [
     twoFactorClient(),
     inferAdditionalFields<typeof auth>(),

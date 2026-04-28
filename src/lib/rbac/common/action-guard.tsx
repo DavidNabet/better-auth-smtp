@@ -70,7 +70,7 @@ export function useActions() {
   const minimalSession: MinimalSession | null = session
     ? {
         id: session.userId,
-        role: session.role as Uppercase<RoleType>,
+        role: session.role as ExcludeUser,
         // session.isRoleOrg as Uppercase<RoleType>
       }
     : null;

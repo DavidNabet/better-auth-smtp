@@ -9,9 +9,7 @@ export const getNotAdminUsers = async () => {
     const users = await db.user.findMany({
       where: {
         role: {
-          not: {
-            equals: "SUPER_ADMIN",
-          },
+          notIn: ["SUPER_ADMIN"],
         },
       },
     });
@@ -37,6 +35,11 @@ export const getCurrentUser = async () => {
       email: true,
       name: true,
       id: true,
+      members: {
+        select: {
+          role: true,
+        },
+      },
     },
   });
 

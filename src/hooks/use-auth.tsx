@@ -4,12 +4,10 @@ import {
   useEffect,
   useState,
   createContext,
-  useContext,
   ReactNode,
-  useLayoutEffect,
-  use,
+  useContext,
 } from "react";
-import { authClient, authServer } from "@/lib/auth/auth.client";
+import { authClient } from "@/lib/auth/auth.client";
 import { useRouter } from "next/navigation";
 import { getCurrentClientSession } from "@/lib/session/client";
 // import { Session } from "@/lib/auth";
@@ -65,6 +63,7 @@ export function useAuthState() {
       const { data } = await authClient.getSession();
       const filteredData = sessionDto(data as SessionServer);
       setSession(filteredData);
+      // if (!filteredData.email) router.refresh();
       console.log("session provider: ", data);
 
       return () => {
@@ -169,7 +168,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 }
 
 export function useAuth() {
-  const auth = use(AuthContext);
+  const auth = useContext(AuthContext);
   if (!auth) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
