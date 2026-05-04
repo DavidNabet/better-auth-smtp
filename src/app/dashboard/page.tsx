@@ -9,6 +9,7 @@ import Link from "next/link";
 import { useAuthState } from "@/hooks/use-auth";
 
 /** TODO : Plateforme de feedback / idées collaboratives
+Title: The Best MVP
 Les utilisateurs postent des idées ou suggestions.
 
 Les autres votent pour mettre en avant les meilleures.
@@ -17,7 +18,17 @@ Les admins/modérateurs gèrent les abus, suppriment le contenu inapproprié.
 Chaque post peut-être liké/upvoté
 Tu peux ajouter des features comme des badges ou niveaux selon l’activité.
  
-➡️ Exemple : Canny.io, utilisé par des startups pour gérer le feedback produit.*/
+➡️ Exemple : Canny.io, utilisé par des startups pour gérer le feedback produit.
+
+⚠ Proposition de suivi du projet: Un utilisateur (client) propose l'idée d'un MVP (App + description), les users proposent des idées collaboratives pour alimenter le projet. 
+Plusieurs upvotes pour chaque idées.
+Le client peut accepter ou non les idées en attente, (Avec un board), si oui, validez.
+Le client soumet un pourcentage de finition pour le projet MVP.
+Puis il est adopté -> avec proposition entre le client et quelqu'un pour créer le MVP.
+
+Système plateforme intermédiaire style MALT beaucoup plus tard.
+
+*/
 
 // ⚠ Créer un upvote avec des commentaires pour les utilisateurs, les moderateurs pourront ban les users qui ont été odieux ou insultant. Les commentaires peuvent être likés par les users.
 export default async function Dashboard() {

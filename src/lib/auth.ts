@@ -108,6 +108,12 @@ export const auth = betterAuth({
         defaultValue: Role.USER,
         input: false,
       },
+      notificationStatus: {
+        type: "boolean",
+        required: true,
+        defaultValue: false,
+        input: false,
+      },
     },
     deleteUser: {
       enabled: true,

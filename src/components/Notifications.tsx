@@ -61,7 +61,7 @@ import {
 } from "@/lib/notification/notification.utils";
 import { unstable_noStore } from "next/cache";
 
-unstable_noStore();
+// unstable_noStore();
 
 type NotificationType =
   | "mention"
@@ -79,7 +79,7 @@ export interface TeamNotification {
   user?: {
     id: string;
     name: string;
-    avatar?: string;
+    image?: string;
   };
   link?: string;
   invitationId?: string;
@@ -111,7 +111,7 @@ export const fakeTeamNotifications: TeamNotification[] = [
     user: {
       id: "u_1",
       name: "Alice Martin",
-      avatar: "https://api.dicebear.com/7.x/identicon/svg?seed=alice",
+      image: "https://api.dicebear.com/7.x/identicon/svg?seed=alice",
     },
     link: "/teams/frontend-squad",
     read: false,
@@ -125,7 +125,7 @@ export const fakeTeamNotifications: TeamNotification[] = [
     user: {
       id: "u_2",
       name: "Thomas Dupont",
-      avatar: "https://api.dicebear.com/7.x/identicon/svg?seed=thomas",
+      image: "https://api.dicebear.com/7.x/identicon/svg?seed=thomas",
     },
     link: "/channels/general?message=123",
     read: false,
@@ -160,6 +160,7 @@ export const fakeTeamNotifications: TeamNotification[] = [
 ];
 
 interface TeamNotificationsProps {
+  notifications?: TeamNotification[];
   onMarkAllAsRead?: () => Promise<void>;
   onDelete?: (notificationId: string) => Promise<void>;
   onClearAll?: () => Promise<void>;
@@ -180,6 +181,7 @@ function getNotificationIcon(type: string) {
 
 // TODO: Créer les fonctions de gestion pour les notifications
 export default function Notifications({
+  notifications: initialNotifications = [],
   showFilters,
   onClearAll,
   onDelete,
@@ -190,7 +192,8 @@ export default function Notifications({
   const [statusFilter, setStatusFilter] = useState("all");
   const [openDrawer, setOpenDrawer] = useState(false);
 
-  const [notifications, setNotifications] = useState<AllNotification>([]);
+  const [notifications, setNotifications] =
+    useState<TeamNotification[]>(initialNotifications);
 
   const socket = useSocket();
 
@@ -364,7 +367,7 @@ export default function Notifications({
                       <div
                         className={cn(
                           "flex items-start gap-4 p-4 transition-colors",
-                          !notification.read && "bg-primary/5",
+                          !notification.read && "bg-teal-500/15",
                           "hover:bg-muted/50",
                           isFirst && "rounded-t-lg",
                           isLast && "rounded-b-lg",
@@ -398,7 +401,7 @@ export default function Notifications({
                               {notification.title}
                             </span>
                             {!notification.read && (
-                              <div className="size-2 shrink-0 rounded-full bg-primary" />
+                              <div className="size-2 shrink-0 rounded-full bg-teal-600" />
                             )}
                             <Badge className="text-xs" variant="outline">
                               {notification.type}

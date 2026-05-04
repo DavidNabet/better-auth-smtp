@@ -178,13 +178,13 @@ export default function UserProfileForm({ session }: Props) {
               role: value,
             }))
           }
-          disabled={session?.user.role !== "ADMIN"}
+          disabled={session?.user.role !== "SUPER_ADMIN"}
         >
           <SelectTrigger id="Role" className="mt-1 w-full">
             <SelectValue aria-label={session?.user.role!} />
           </SelectTrigger>
           <SelectContent
-            className={`${session?.user.role !== "ADMIN" && "disabled:cursor-pointer"}`}
+            className={`${session?.user.role !== "SUPER_ADMIN" && "disabled:cursor-pointer"}`}
           >
             <SelectItem value="SUPER_ADMIN">SUPER_ADMIN</SelectItem>
             <SelectItem value="ADMIN">ADMIN</SelectItem>

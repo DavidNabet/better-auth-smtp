@@ -25,3 +25,8 @@ export const notificationSchema = z.object({
   read: z.boolean(),
   expiresAt: z.iso.datetime(),
 });
+
+export const notificationSettingSchema = z.object({
+  userId: z.string(),
+  // notificationStatus: z.coerce.boolean(),
+});

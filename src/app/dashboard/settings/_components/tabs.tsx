@@ -17,6 +17,7 @@ import UserPasswordForm from "@/components/UserPasswordForm";
 import EnableTwoFactor from "@/components/EnableTwoFactor";
 import { ActiveSessions } from "./activeSessions";
 import DeleteUser from "@/components/DeleteUser";
+import NotificationsSettings from "@/components/notifications/NotificationSettings";
 
 export default async function TabbedUserProfile({
   session,
@@ -58,6 +59,7 @@ export default async function TabbedUserProfile({
             <UserProfileForm session={session} />
           </CardContent>
         </Card>
+        <NotificationsSettings />
         <Card className="px-3">
           <CardContent className="px-6">
             <h2 className="mb-4 text-lg font-semibold">Data Management</h2>

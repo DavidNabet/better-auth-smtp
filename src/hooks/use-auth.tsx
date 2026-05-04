@@ -63,7 +63,6 @@ export function useAuthState() {
       const { data } = await authClient.getSession();
       const filteredData = sessionDto(data as SessionServer);
       setSession(filteredData);
-      // if (!filteredData.email) router.refresh();
       console.log("session provider: ", data);
 
       return () => {
@@ -82,7 +81,7 @@ export function useAuthState() {
         await verifyUserInOrganization();
       } catch (error) {
         console.error(
-          "Erreur lors de la verification du role ActiveMember ",
+          "Erreur lors de la verification du role isRoleOrg ",
           error,
         );
       }

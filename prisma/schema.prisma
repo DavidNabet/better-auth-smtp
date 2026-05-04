@@ -41,9 +41,10 @@ model User {
   likes          Like[]
   moderationLogs ModerationLog[]
 
-  twoFactorEnabled Boolean        @default(false)
-  twofactors       TwoFactor[]
-  notifications    Notification[]
+  twoFactorEnabled   Boolean        @default(false)
+  notificationStatus Boolean        @default(false)
+  twofactors         TwoFactor[]
+  notifications      Notification[]
 
   @@map("user")
 }

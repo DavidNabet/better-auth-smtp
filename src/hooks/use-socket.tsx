@@ -10,7 +10,7 @@ import {
   useState,
 } from "react";
 import { io, Socket } from "socket.io-client";
-import { useAuth } from "./use-auth";
+import { getCurrentClientSession } from "@/lib/session/client";
 
 interface SocketContextType {
   socket: Socket | null;
@@ -20,59 +20,111 @@ const SocketContext = createContext<SocketContextType | undefined>(undefined);
 
 export const SocketProvider = ({ children }: { children: ReactNode }) => {
   const [socket, setSocket] = useState<Socket | null>(null);
-  const { session: s } = useAuth();
+  const {
+    data: s,
+    isPending,
+    error,
+    isRefetching,
+    refetch,
+  } = getCurrentClientSession();
 
+  // évite les appels dupliqués des notifications statut pending
   const hasFetchedPendingRef = useRef(false);
+  // évite les refetch en boucle infinie
+  const hasAttemptedRefetchRef = useRef(false);
 
   useEffect(() => {
-    const socketInstance = io("http://localhost:3005", {
-      reconnection: true,
-      reconnectionAttempts: Infinity,
-      reconnectionDelay: 1000,
-      reconnectionDelayMax: 5000,
-      timeout: 20000,
-      withCredentials: true,
-    });
-    setSocket(socketInstance);
+    if (!s) return;
+    async function handleInit() {
+      const socketInstance = io("http://localhost:3005", {
+        reconnection: true,
+        reconnectionAttempts: Infinity,
+        reconnectionDelay: 1000,
+        reconnectionDelayMax: 5000,
+        timeout: 20000,
+        withCredentials: true,
+      });
+      setSocket(socketInstance);
 
-    return () => {
-      socketInstance.disconnect();
-    };
-  }, [s]);
+      return () => {
+        socketInstance.disconnect();
+      };
+    }
+    if (!!s?.user.notificationStatus) {
+      handleInit();
+    }
+  }, [s, s?.user.notificationStatus]);
 
   // Listen for join the room after the login
   useEffect(() => {
-    if (!s) return;
-    if (socket) {
-      socket.emit("join_room", {
-        userId: s.userId,
-      });
-      console.log(`Requête de join pour room user_${s.userId}`);
+    async function handleJoinRoom() {
+      if (s?.session.userId && socket) {
+        socket.emit("join_room", {
+          userId: s?.session.userId,
+        });
+        console.log(`Requête de join pour room user_${s?.session.userId}`);
+        hasAttemptedRefetchRef.current = false;
+      } else if (socket && !s && error && !hasAttemptedRefetchRef.current) {
+        console.warn(
+          "Session invalide ou manquante. Tentative de refetch la session",
+        );
+        hasAttemptedRefetchRef.current = true;
+        refetch();
+      }
     }
-  }, [socket, s?.userId]);
+    if (!!s?.user.notificationStatus) {
+      handleJoinRoom();
+    }
+  }, [
+    socket,
+    s?.session.userId,
+    error,
+    isRefetching,
+    refetch,
+    s?.user.notificationStatus,
+  ]);
 
   // Fetch pending notifications for the user
   useEffect(() => {
-    if (s?.userId && socket && !hasFetchedPendingRef.current) {
-      hasFetchedPendingRef.current = true;
-      fetchPendingNotifications(s.userId)
-        .then((pendingNotifications: Notification[]) => {
-          if (pendingNotifications.length > 0) {
-            console.log("Pending notifications:", pendingNotifications);
-            socket.emit("show_pending_toast", {
-              userId: s.userId,
-              notifications: pendingNotifications,
-            });
-          }
-        })
-        .catch((err) => {
-          console.error(
-            "Erreur lors de la récupération des notifs pending:",
-            err,
-          );
-        });
+    async function handlePendingNotifications() {
+      if (s?.user.id && socket && !hasFetchedPendingRef.current && !isPending) {
+        hasFetchedPendingRef.current = true;
+        fetchPendingNotifications(s.user.id)
+          .then((pendingNotifications: Notification[]) => {
+            if (pendingNotifications.length > 0) {
+              console.log("Pending notifications:", pendingNotifications);
+              socket.emit("show_pending_toast", {
+                userId: s.user.id,
+                notifications: pendingNotifications,
+              });
+            }
+          })
+          .catch((err) => {
+            console.error(
+              "Erreur lors de la récupération des notifs pending:",
+              err,
+            );
+            if (err.status === 401 && !hasAttemptedRefetchRef.current) {
+              console.warn(
+                "Erreur 401: session invalide. Tentative de refetch de la session...",
+              );
+              hasAttemptedRefetchRef.current = true;
+              refetch();
+            }
+          });
+      }
     }
-  }, [s?.userId, socket]);
+    if (!!s?.user.notificationStatus) {
+      handlePendingNotifications();
+    }
+  }, [
+    s?.user.id,
+    socket,
+    isPending,
+    isRefetching,
+    refetch,
+    s?.user.notificationStatus,
+  ]);
 
   async function fetchPendingNotifications(
     userId: string,
