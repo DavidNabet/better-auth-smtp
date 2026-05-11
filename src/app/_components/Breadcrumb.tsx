@@ -44,7 +44,7 @@ export default function Breadcrumbs({ children }: { children?: ReactNode }) {
                       {itemLink}
                     </Link>
                   </BreadcrumbLink>
-                ) : paths.startsWith("/dashboard/organizations/") ? (
+                ) : paths.startsWith("/dashboard/orgs/") ? (
                   <>
                     {isOwner ? (
                       children

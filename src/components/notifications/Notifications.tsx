@@ -53,7 +53,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { useSocket } from "@/hooks/use-socket";
 import { toast } from "sonner";
-import { NotificationsInvitations } from "./notifications/NotificationsInvitations";
+import { NotificationsInvitations } from "./NotificationsInvitations";
 import { Notification } from "@prisma/client";
 import {
   getNotificationsByUserId,

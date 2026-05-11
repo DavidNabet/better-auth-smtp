@@ -5,7 +5,7 @@ import { Role } from "@prisma/client";
   SUPER_ADMIN: [
     "/dashboard",
     "/dashboard/profile",
-    "/dashboard/organizations",
+    "/dashboard/orgs",
     "/dashboard/apps",
     "/dashboard/apps/[id]",
     "/dashboard/team",
@@ -14,8 +14,8 @@ import { Role } from "@prisma/client";
   OWNER: [
     "/dashboard",
     "/dashboard/profile",
-    "/dashboard/organizations",
-    "/dashboard/organizations/[id]",
+    "/dashboard/orgs",
+    "/dashboard/orgs/[id]",
     "/dashboard/apps",
     "/dashboard/apps/[id]",
     "/dashboard/team",
@@ -23,7 +23,7 @@ import { Role } from "@prisma/client";
   ADMIN: [
     "/dashboard",
     "/dashboard/profile",
-    "/dashboard/organizations/[id]",
+    "/dashboard/orgs/[id]",
     "/dashboard/apps",
     "/dashboard/apps/[id]",
     "/dashboard/team",
@@ -31,7 +31,7 @@ import { Role } from "@prisma/client";
   MEMBER: [
     "/dashboard",
     "/dashboard/profile",
-    "/dashboard/organizations/[id]",
+    "/dashboard/orgs/[id]",
     "/dashboard/apps/[id]",
   ],
   USER: ["/dashboard", "/dashboard/profile", "/dashboard/apps"],
@@ -40,13 +40,8 @@ import { Role } from "@prisma/client";
 export const roleAccessMap: Record<string, Role[]> = {
   "/dashboard": ["SUPER_ADMIN", "ADMIN", "OWNER", "MEMBER", "USER"],
   "/dashboard/profile": ["SUPER_ADMIN", "OWNER", "ADMIN", "MEMBER", "USER"],
-  "/dashboard/organizations": ["SUPER_ADMIN", "OWNER", "ADMIN"],
-  "/dashboard/organizations/[slug]": [
-    "SUPER_ADMIN",
-    "OWNER",
-    "ADMIN",
-    "MEMBER",
-  ],
+  "/dashboard/orgs": ["SUPER_ADMIN", "OWNER", "ADMIN"],
+  "/dashboard/orgs/[slug]": ["SUPER_ADMIN", "OWNER", "ADMIN", "MEMBER"],
   "/dashboard/apps": ["SUPER_ADMIN", "ADMIN", "OWNER", "MEMBER", "USER"],
   "/dashboard/apps/[slug]": ["SUPER_ADMIN", "OWNER", "ADMIN", "MEMBER", "USER"],
   "/dashboard/feedbacks": ["SUPER_ADMIN", "OWNER", "ADMIN", "MEMBER", "USER"],

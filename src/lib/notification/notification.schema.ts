@@ -27,6 +27,8 @@ export const notificationSchema = z.object({
 });
 
 export const notificationSettingSchema = z.object({
-  userId: z.string(),
-  // notificationStatus: z.coerce.boolean(),
+  userId: z.string().min(1, "User Id requis"),
+  notificationStatus: z.coerce.boolean({
+    error: "Le statut de notification est requis",
+  }),
 });

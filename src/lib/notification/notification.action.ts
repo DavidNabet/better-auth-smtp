@@ -18,7 +18,14 @@ export async function updateNotificationSetting(
   formState: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  const data = Object.fromEntries(formData);
+  // const data = Object.fromEntries(formData);
+  const userId = formData.get("userId") as string;
+  const notificationStatusRaw = formData.get("notificationStatus");
+  const notificationStatus = notificationStatusRaw === "on";
+  const data = {
+    userId,
+    notificationStatus,
+  };
   const validateField = notificationSettingSchema.safeParse(data);
   const session = await auth.api.getSession({ headers: await head() });
 
@@ -32,8 +39,6 @@ export async function updateNotificationSetting(
     };
   }
 
-  const { userId } = validateField.data;
-
   if (!hasServerPermission("user", "update")) {
     throw new APIError("NOT_ACCEPTABLE", {
       message: "You don't have permission to perform this action",
@@ -42,9 +47,9 @@ export async function updateNotificationSetting(
 
   try {
     const updatedSetting = await db.user.update({
-      where: { id: userId },
+      where: { id: validateField.data.userId },
       data: {
-        notificationStatus: session?.user.notificationStatus,
+        notificationStatus: validateField.data.notificationStatus,
       },
     });
     console.log("updatedSettingNotification: ", updatedSetting);

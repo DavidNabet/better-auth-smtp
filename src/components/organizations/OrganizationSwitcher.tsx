@@ -46,8 +46,7 @@ export function OrganizationSwitcher({
     <Select
       value={activeOrganization?.slug}
       onValueChange={(val) => {
-        (handleChangeOrganization(val),
-          router.push(`/dashboard/organizations/${val}`));
+        (handleChangeOrganization(val), router.push(`/dashboard/orgs/${val}`));
       }}
     >
       <SelectTrigger className="w-[180px] selectLink">

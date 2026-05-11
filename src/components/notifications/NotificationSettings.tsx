@@ -34,10 +34,16 @@ import { toast } from "sonner";
 type NotificationSetting = z.infer<typeof notificationSettingSchema>;
 
 export default function NotificationsSettings() {
-  const { data } = authClient.useSession();
-  const [formData, setFormData] = useState<NotificationSetting>({
-    userId: data?.user.id ?? "",
-  });
+  const { data, refetch } = authClient.useSession();
+  const [isUserId, setIsUserId] = useState(data?.user.id ?? "");
+  const [isEnabled, setIsEnabled] = useState(
+    data?.user.notificationStatus ?? false,
+  );
+
+  // const [formData, setFormData] = useState<NotificationSetting>({
+  //   userId: "",
+  //   notificationStatus: false,
+  // });
 
   const [
     {
@@ -58,12 +64,12 @@ export default function NotificationsSettings() {
     return;
   }
 
-  const handleChange = <K extends keyof NotificationSetting>(
-    key: K,
-    value: NotificationSetting[K],
-  ) => {
-    setFormData((prev) => ({ ...prev, [key]: value }));
-  };
+  // const handleChange = <K extends keyof NotificationSetting>(
+  //   key: K,
+  //   value: NotificationSetting[K],
+  // ) => {
+  //   setFormData((prev) => ({ ...prev, [key]: value }));
+  // };
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -78,6 +84,7 @@ export default function NotificationsSettings() {
         toast.success(success, {
           id: "notificationSettingForm",
         });
+        refetch();
       } catch (err) {
         console.log(err);
         toast.error(error, {
@@ -98,11 +105,12 @@ export default function NotificationsSettings() {
             Enable or Disable system notifications
           </CardDescription>
           <CardAction className="my-2">
-            <input type="hidden" name="userId" value={formData.userId} />
+            <input type="hidden" name="userId" value={isUserId} />
             <Switch
               id="notificationStatus"
-              defaultChecked={data?.user.notificationStatus}
-              onCheckedChange={(checked) => !checked}
+              name="notificationStatus"
+              defaultChecked={isEnabled}
+              onCheckedChange={(checked) => setIsEnabled(checked)}
             />
             {/* <ErrorMessages errors={errorMessage?.notificationStatus} /> */}
           </CardAction>

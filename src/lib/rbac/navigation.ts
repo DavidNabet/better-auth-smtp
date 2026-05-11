@@ -35,13 +35,13 @@ export const NAVIGATION_CONFIG: NavigationItem[] = [
   {
     id: "organizations",
     label: "Organizations",
-    href: "/dashboard/organizations",
+    href: "/dashboard/orgs",
     permission: "ban",
     children: [
       {
         id: "organization",
         label: "Organization",
-        href: "/dashboard/organizations/[slug]",
+        href: "/dashboard/orgs/[slug]",
         permission: "update-name",
       },
     ],

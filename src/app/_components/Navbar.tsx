@@ -21,7 +21,7 @@ import {
 import { RoleType } from "@/lib/permissions/permissions.utils";
 import Notifications, {
   fakeTeamNotifications,
-} from "@/components/Notifications";
+} from "@/components/notifications/Notifications";
 
 export default async function Navbar() {
   const { userRole } = await getCurrentServerSession();

@@ -30,7 +30,7 @@ export function OrganizationCard({ org }: OrganizationCardProps) {
           variant="outline"
           className="rounded-full"
         >
-          <Link href={`/dashboard/organizations/${org.slug}`}>
+          <Link href={`/dashboard/orgs/${org.slug}`}>
             <ArrowRight />
           </Link>
         </Button>

@@ -30,6 +30,8 @@ export default async function OrganizationPage({
   const { currentUser } = await getCurrentUser();
   const organization = await getOrganizationBySlug(slug);
 
+  // /dashboard/org/[orgSlug]/apps/[appSlug]/teams/[teamSlug]-[id]
+
   const [members, invitations, teams, users] = await Promise.all([
     getMembersInvitationStatus(organization?.id || ""),
     getInvitationsByOrgId(organization?.id || ""),

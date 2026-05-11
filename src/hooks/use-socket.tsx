@@ -126,6 +126,15 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
     s?.user.notificationStatus,
   ]);
 
+  function connect(socket: Socket) {
+    if (socket.disconnected) socket.connect();
+    socket.connect();
+  }
+
+  function disconnect(socket: Socket) {
+    if (socket.connected) socket.disconnect();
+  }
+
   async function fetchPendingNotifications(
     userId: string,
   ): Promise<Notification[]> {

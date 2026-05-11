@@ -55,7 +55,7 @@ export default function AppHeader({ app }: Props) {
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Organization</span>
                 <Link
-                  href={`/dashboard/organizations/${app.organization.slug}`}
+                  href={`/dashboard/orgs/${app.organization.slug}`}
                   title={app.organization.name}
                 >
                   <Badge variant="outline">{app.organization.name}</Badge>
