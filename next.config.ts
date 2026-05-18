@@ -33,7 +33,8 @@ const nextConfig: NextConfig = {
       "@/lib",
     ],
   },
-  serverExternalPackages: ["@prisma/client"],
+  transpilePackages: ["prettier"],
+  // serverExternalPackages: ["@prisma/client"],
   async headers() {
     return [
       {

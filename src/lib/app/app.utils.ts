@@ -101,3 +101,8 @@ export async function getAppBySlug(slug: string) {
     return null;
   }
 }
+
+export async function filterAppsByTeam() {
+  try {
+  } catch (error) {}
+}

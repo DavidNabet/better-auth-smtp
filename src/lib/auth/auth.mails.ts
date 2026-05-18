@@ -1,4 +1,4 @@
-import { render } from "@react-email/components";
+import { render } from "react-email";
 import nodemailer from "nodemailer";
 import signInMagicLink from "@/emails/signin-magiclink";
 import signInOTPMail from "@/emails/signin-otp-mail";

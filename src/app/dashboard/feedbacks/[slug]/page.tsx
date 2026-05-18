@@ -21,9 +21,7 @@ export async function generateStaticParams() {
 
 export default async function FeedbackDetails({
   params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+}: PageProps<"/dashboard/feedbacks/[slug]">) {
   const { slug } = await params;
   const details = await getFeedbackWithComments(decodeSlug(slug));
   if (!details) return <div>Feedback Introuvable!</div>;

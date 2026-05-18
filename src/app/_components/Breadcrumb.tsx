@@ -13,12 +13,16 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useActions } from "@/lib/rbac/common/action-guard";
-import { Switcher } from "@/components/organizations/Switcher";
+// import { Switcher } from "@/components/organizations/Switcher";
 
 export default function Breadcrumbs({ children }: { children?: ReactNode }) {
   const paths = usePathname();
   const pathNames = paths.split("/").filter((path) => path);
   const { canPerform } = useActions();
+
+  const pattern = new URLPattern({
+    pathname: "/dashboard/orgs/:slug",
+  });
 
   // TODO: ⚠ useSelectedLayoutSegments pathname
 
@@ -44,7 +48,7 @@ export default function Breadcrumbs({ children }: { children?: ReactNode }) {
                       {itemLink}
                     </Link>
                   </BreadcrumbLink>
-                ) : paths.startsWith("/dashboard/orgs/") ? (
+                ) : pattern.test({ pathname: paths }) ? (
                   <>
                     {isOwner ? (
                       children

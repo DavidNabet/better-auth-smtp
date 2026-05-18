@@ -164,9 +164,12 @@ model Team {
   organizationId String
   description    String?
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  slug           String?
+  logo           String?
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
   teamMembers    TeamMember[]
+  apps           App[]
 }
 
 model TeamMember {
@@ -240,6 +243,8 @@ model App {
   organization   Organization @relation(fields: [organizationId], references: [id], onUpdate: Cascade)
 
   feedbacks Feedback[]
+  team      Team?      @relation(fields: [teamId], references: [id])
+  teamId    String?
 
   @@unique([slug])
   @@map("app")

@@ -377,6 +377,17 @@ export const auth = betterAuth({
               input: true,
               returned: true,
             },
+            logo: {
+              type: "string",
+              required: false,
+              input: false,
+            },
+            slug: {
+              type: "string",
+              required: true,
+              input: true,
+              returned: true,
+            },
           },
         },
       },

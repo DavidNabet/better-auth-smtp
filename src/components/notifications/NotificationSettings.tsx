@@ -30,6 +30,8 @@ import { ErrorMessages } from "@/app/_components/ErrorMessages";
 import { Button } from "../ui/button";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useSocket } from "@/hooks/use-socket";
+import { Label } from "../ui/label";
 
 type NotificationSetting = z.infer<typeof notificationSettingSchema>;
 
@@ -39,6 +41,8 @@ export default function NotificationsSettings() {
   const [isEnabled, setIsEnabled] = useState(
     data?.user.notificationStatus ?? false,
   );
+
+  const { socket, isConnected } = useSocket();
 
   // const [formData, setFormData] = useState<NotificationSetting>({
   //   userId: "",
@@ -76,10 +80,13 @@ export default function NotificationsSettings() {
     startTransition(async () => {
       try {
         const fd = new FormData(e.target as HTMLFormElement);
-        const data = Object.fromEntries(fd);
-        console.log(data);
-        formAction(fd);
+        // const data = Object.fromEntries(fd);
+        // console.log(data);
+        if (data?.user.notificationStatus) {
+          console.log("end");
+        }
         wait(2000);
+        formAction(fd);
 
         toast.success(success, {
           id: "notificationSettingForm",
@@ -106,6 +113,9 @@ export default function NotificationsSettings() {
           </CardDescription>
           <CardAction className="my-2">
             <input type="hidden" name="userId" value={isUserId} />
+            <Label htmlFor="notificationStatus">
+              {isConnected ? "connected" : "disconnect"}
+            </Label>
             <Switch
               id="notificationStatus"
               name="notificationStatus"

@@ -235,6 +235,11 @@ export async function filterTeamsByOrganization(organizationId: string) {
         },
       },
       include: {
+        organization: {
+          select: {
+            slug: true,
+          },
+        },
         teamMembers: {
           include: {
             user: {
@@ -254,6 +259,23 @@ export async function filterTeamsByOrganization(organizationId: string) {
   } catch (error) {
     console.error(error);
     return [];
+  }
+}
+
+export async function getTeamBySlug(teamSlug: string) {
+  try {
+    const organizationBySlug = await db.team.findFirst({
+      where: { slug: teamSlug },
+      include: {
+        apps: true,
+        organization: true,
+        teamMembers: true,
+      },
+    });
+    return organizationBySlug;
+  } catch (error) {
+    console.error(error);
+    return null;
   }
 }
 

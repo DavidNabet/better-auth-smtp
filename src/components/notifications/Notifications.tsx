@@ -195,7 +195,7 @@ export default function Notifications({
   const [notifications, setNotifications] =
     useState<TeamNotification[]>(initialNotifications);
 
-  const socket = useSocket();
+  const { socket } = useSocket();
 
   useEffect(() => {
     if (!socket) return;

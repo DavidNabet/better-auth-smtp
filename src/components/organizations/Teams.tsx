@@ -199,7 +199,9 @@ export default function Teams({ teams, organizationId }: TeamsProps) {
                       sideOffset={4}
                     >
                       <DropdownMenuItem asChild>
-                        <Link href="#">
+                        <Link
+                          href={`/dashboard/orgs/${t.organization.slug}/teams/${t.name.toLowerCase()}-${t.id}`}
+                        >
                           <Folder className="size-4" />
                           Open
                         </Link>

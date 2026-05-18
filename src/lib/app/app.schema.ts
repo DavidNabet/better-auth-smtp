@@ -3,12 +3,12 @@ import z, { TypeOf } from "zod";
 // Name, slug, description, logo, organization
 export const createAppSchema = z.object({
   name: z
-    .string({ required_error: "The name is required" })
+    .string({ error: "The name is required" })
     .min(1, "The app name is required")
     .max(50, "The app name must be at most 50 characters"),
   // Slug: my-org
   slug: z
-    .string({ required_error: "The slug is required" })
+    .string({ error: "The slug is required" })
     .min(3, "The slug must be at least 3 characters")
     .transform((val, ctx) => {
       const c = val
@@ -30,7 +30,7 @@ export const createAppSchema = z.object({
     }),
 
   description: z
-    .string({ required_error: "The description is required" })
+    .string({ error: "The description is required" })
     .min(3, "The description must be at least 3 characters")
     .optional(),
 

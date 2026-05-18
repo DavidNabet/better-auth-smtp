@@ -75,7 +75,7 @@ export async function updateNotificationSetting(
     throw error;
   }
 
-  revalidatePath("/dashboard/settings");
+  revalidatePath("/dashboard/settings", "page");
 
   return {
     message: {

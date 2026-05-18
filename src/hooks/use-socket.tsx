@@ -14,12 +14,14 @@ import { getCurrentClientSession } from "@/lib/session/client";
 
 interface SocketContextType {
   socket: Socket | null;
+  isConnected: boolean;
 }
 
 const SocketContext = createContext<SocketContextType | undefined>(undefined);
 
-export const SocketProvider = ({ children }: { children: ReactNode }) => {
+export const useSocketContext = () => {
   const [socket, setSocket] = useState<Socket | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
   const {
     data: s,
     isPending,
@@ -36,24 +38,24 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (!s) return;
     async function handleInit() {
-      const socketInstance = io("http://localhost:3005", {
-        reconnection: true,
-        reconnectionAttempts: Infinity,
-        reconnectionDelay: 1000,
-        reconnectionDelayMax: 5000,
-        timeout: 20000,
-        withCredentials: true,
+      const socketInstance = io("http://localhost:3005");
+
+      socketInstance.on("connect", () => {
+        setIsConnected(true);
       });
+
+      socketInstance.on("disconnect", () => {
+        setIsConnected(false);
+      });
+
       setSocket(socketInstance);
 
       return () => {
         socketInstance.disconnect();
       };
     }
-    if (!!s?.user.notificationStatus) {
-      handleInit();
-    }
-  }, [s, s?.user.notificationStatus]);
+    handleInit();
+  }, [s?.user.notificationStatus]);
 
   // Listen for join the room after the login
   useEffect(() => {
@@ -72,17 +74,9 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
         refetch();
       }
     }
-    if (!!s?.user.notificationStatus) {
-      handleJoinRoom();
-    }
-  }, [
-    socket,
-    s?.session.userId,
-    error,
-    isRefetching,
-    refetch,
-    s?.user.notificationStatus,
-  ]);
+
+    handleJoinRoom();
+  }, [socket, s?.session.userId, error, isRefetching, refetch]);
 
   // Fetch pending notifications for the user
   useEffect(() => {
@@ -126,15 +120,6 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
     s?.user.notificationStatus,
   ]);
 
-  function connect(socket: Socket) {
-    if (socket.disconnected) socket.connect();
-    socket.connect();
-  }
-
-  function disconnect(socket: Socket) {
-    if (socket.connected) socket.disconnect();
-  }
-
   async function fetchPendingNotifications(
     userId: string,
   ): Promise<Notification[]> {
@@ -149,18 +134,24 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
     return response.json();
   }
 
+  return {
+    socket,
+    isConnected,
+  };
+};
+
+export const SocketProvider = ({ children }: { children: ReactNode }) => {
+  const ctx = useSocketContext();
   return (
-    <SocketContext.Provider value={{ socket }}>
-      {children}
-    </SocketContext.Provider>
+    <SocketContext.Provider value={ctx}>{children}</SocketContext.Provider>
   );
 };
 
-export const useSocket = (): Socket | null => {
+export const useSocket = () => {
   const context = useContext(SocketContext);
   if (!context) {
     throw new Error("useSocket must bet used within a SocketProvider");
   }
 
-  return context.socket;
+  return context;
 };
