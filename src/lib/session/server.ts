@@ -1,5 +1,9 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import {
+  unstable_cache as cache,
+  unstable_cacheLife as cacheLife,
+} from "next/cache";
 
 export async function getCurrentServerSession() {
   "use server";
@@ -14,5 +18,6 @@ export async function getCurrentServerSession() {
     userName: session?.user ? session.user.name : "",
     sessionToken: session?.session.token,
     expiresAt: session?.session.expiresAt,
+    notificationsEnabled: session?.user.notificationStatus!,
   };
 }

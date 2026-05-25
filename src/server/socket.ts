@@ -3,15 +3,31 @@ import { Server, Socket } from "socket.io";
 const socketHandler = (socket: Socket, io: Server): void => {
   console.log("⚡ A user connected: ", socket.id);
 
-  socket.on("join_room", (data) => {
-    if (!data.userId) {
+  const userId = socket.handshake.auth.userId;
+
+  socket.on("tenant_room", () => {
+    if (!userId) {
       console.warn("join_room: userId manquant");
       return;
     }
+    socket.join(`tenant:${userId}`);
+    console.log(`Socket ${socket.id} a rejoint la room tenant:${userId}`);
+  });
 
-    const roomName = `user_${data.userId}`;
-    socket.join(roomName);
-    console.log(`Socket ${socket.id} a rejoint la room user_${data.userId}`);
+  /**
+   * Notifications ON au login
+   */
+  socket.on("notifications:subscribe", () => {
+    socket.join(`tenant:${userId}:notifications`);
+    console.log("✅ subscribed notifications");
+  });
+  /**
+   * Notifications OFF au login
+   */
+  socket.on("notifications:unsubscribe", () => {
+    socket.leave(`tenant:${userId}:notifications`);
+
+    console.log("❌ unsubscribe notifications");
   });
 
   socket.on("message", (msg: string) => {
@@ -35,14 +51,17 @@ const socketHandler = (socket: Socket, io: Server): void => {
       data.notifications?.[0]?.message ||
       "Vous avez des notifications en attente.";
     // Relaye l'événement à tous les clients connectés de l'utilisateur
-    io.to(`user_${data.userId}`).emit("display_toast", {
+    io.to(`tenant:${data.userId}:notifications`).emit("display_toast", {
       message: toastMessage,
       notifications: data.notifications,
     });
 
     // Chaque notification via "message" est ajouter côté client
     data.notifications.forEach((notification: any) => {
-      io.to(`user_${data.userId}`).emit("message", notification);
+      io.to(`tenant:${data.userId}:notifications`).emit(
+        "message",
+        notification,
+      );
     });
   });
 

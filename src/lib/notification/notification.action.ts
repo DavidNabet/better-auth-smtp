@@ -27,7 +27,7 @@ export async function updateNotificationSetting(
     notificationStatus,
   };
   const validateField = notificationSettingSchema.safeParse(data);
-  const session = await auth.api.getSession({ headers: await head() });
+  // const session = await auth.api.getSession({ headers: await head() });
 
   if (!validateField.success) {
     return {
@@ -50,6 +50,11 @@ export async function updateNotificationSetting(
       where: { id: validateField.data.userId },
       data: {
         notificationStatus: validateField.data.notificationStatus,
+      },
+      select: {
+        email: true,
+        notificationStatus: true,
+        notifications: true,
       },
     });
     console.log("updatedSettingNotification: ", updatedSetting);

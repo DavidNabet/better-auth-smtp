@@ -35,10 +35,8 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
-            <SocketProvider>
-              {children}
-              <Toaster position="bottom-right" richColors />
-            </SocketProvider>
+            {children}
+            <Toaster position="bottom-right" richColors />
           </AuthProvider>
         </ThemeProvider>
       </body>

@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import {
   useState,
+  useEffect,
   FormEvent,
   useActionState,
   startTransition,
@@ -37,12 +38,12 @@ type NotificationSetting = z.infer<typeof notificationSettingSchema>;
 
 export default function NotificationsSettings() {
   const { data, refetch } = authClient.useSession();
-  const [isUserId, setIsUserId] = useState(data?.user.id ?? "");
+  // const [isUserId, setIsUserId] = useState(data?.user.id ?? "");
   const [isEnabled, setIsEnabled] = useState(
     data?.user.notificationStatus ?? false,
   );
 
-  const { socket, isConnected } = useSocket();
+  const { userId, socket } = useSocket();
 
   // const [formData, setFormData] = useState<NotificationSetting>({
   //   userId: "",
@@ -68,6 +69,26 @@ export default function NotificationsSettings() {
     return;
   }
 
+  /**
+   * Subscribe notifications
+   */
+
+  useEffect(() => {
+    if (!socket || !socket.connected) return;
+
+    refetch();
+    if (isEnabled) {
+      socket.emit("notifications:subscribe");
+    } else {
+      socket.emit("notifications:unsubscribe");
+    }
+
+    return () => {
+      socket.off("notifications:subscribe");
+      socket.off("notifications:unsubscribe");
+    };
+  }, [isEnabled, socket, refetch]);
+
   // const handleChange = <K extends keyof NotificationSetting>(
   //   key: K,
   //   value: NotificationSetting[K],
@@ -80,8 +101,8 @@ export default function NotificationsSettings() {
     startTransition(async () => {
       try {
         const fd = new FormData(e.target as HTMLFormElement);
-        // const data = Object.fromEntries(fd);
-        // console.log(data);
+        const dt = Object.fromEntries(fd);
+        console.log(dt);
         if (data?.user.notificationStatus) {
           console.log("end");
         }
@@ -112,17 +133,27 @@ export default function NotificationsSettings() {
             Enable or Disable system notifications
           </CardDescription>
           <CardAction className="my-2">
-            <input type="hidden" name="userId" value={isUserId} />
-            <Label htmlFor="notificationStatus">
-              {isConnected ? "connected" : "disconnect"}
-            </Label>
-            <Switch
-              id="notificationStatus"
-              name="notificationStatus"
-              defaultChecked={isEnabled}
-              onCheckedChange={(checked) => setIsEnabled(checked)}
+            <input
+              type="hidden"
+              name="userId"
+              value={data?.user.id ?? userId}
             />
-            {/* <ErrorMessages errors={errorMessage?.notificationStatus} /> */}
+
+            <div className="flex items-center gap-2">
+              <Switch
+                id="notificationStatus"
+                name="notificationStatus"
+                defaultChecked={isEnabled}
+                onCheckedChange={(checked) => setIsEnabled(!checked)}
+              />
+              <Label
+                htmlFor="notificationsStatus"
+                className="text-sm font-medium"
+              >
+                {!isEnabled ? "No" : "Yes"}
+              </Label>
+              {/* <ErrorMessages errors={errorMessage?.notificationStatus} /> */}
+            </div>
           </CardAction>
         </CardHeader>
         <CardFooter className="mt-4 flex-col items-baseline gap-2">

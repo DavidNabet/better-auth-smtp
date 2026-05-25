@@ -4,6 +4,8 @@ import Breadcrumbs from "../_components/Breadcrumb";
 import { redirect } from "next/navigation";
 import { getCurrentServerSession } from "@/lib/session/server";
 import { Switcher } from "@/components/organizations/Switcher";
+import { SocketProvider } from "@/hooks/use-socket";
+
 export const metadata: Metadata = {
   title: {
     template: "%s | Dashboard",
@@ -16,20 +18,22 @@ export const metadata: Metadata = {
 export default async function PrivateLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const { sessionToken } = await getCurrentServerSession();
+  const { sessionToken, userId } = await getCurrentServerSession();
   if (!sessionToken) redirect("/auth/signin");
 
   return (
     <main className="dark:bg-background bg-white">
-      <Navbar />
-      <div className="max-w-screen-xl min-h-screen text-primary mx-auto py-10 px-4 sm:px-6 lg:px-8">
-        <Breadcrumbs>
-          <Switcher />
-        </Breadcrumbs>
+      <SocketProvider userId={userId}>
+        <Navbar />
+        <div className="max-w-screen-xl min-h-screen text-primary mx-auto py-10 px-4 sm:px-6 lg:px-8">
+          <Breadcrumbs>
+            <Switcher />
+          </Breadcrumbs>
 
-        {/* your content goes here ... */}
-        {children}
-      </div>
+          {/* your content goes here ... */}
+          {children}
+        </div>
+      </SocketProvider>
     </main>
   );
 }

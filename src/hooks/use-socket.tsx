@@ -9,19 +9,27 @@ import {
   useRef,
   useState,
 } from "react";
-import { io, Socket } from "socket.io-client";
+import { Socket } from "socket.io-client";
 import { getCurrentClientSession } from "@/lib/session/client";
+import { socketInstance } from "@/lib/socket";
 
 interface SocketContextType {
   socket: Socket | null;
-  isConnected: boolean;
+  userId: string;
+  // notificationsEnabled: boolean;
+  // setNotificationsEnabled: (value: boolean) => void;
 }
+
+type Props = {
+  children: ReactNode;
+  // notificationsStatus: boolean;
+  userId: string;
+};
 
 const SocketContext = createContext<SocketContextType | undefined>(undefined);
 
-export const useSocketContext = () => {
+export const SocketProvider = ({ children, userId }: Props) => {
   const [socket, setSocket] = useState<Socket | null>(null);
-  const [isConnected, setIsConnected] = useState(false);
   const {
     data: s,
     isPending,
@@ -30,6 +38,8 @@ export const useSocketContext = () => {
     refetch,
   } = getCurrentClientSession();
 
+  // const [notificationsEnabled, setNotificationsEnabled] =
+  //   useState(notificationsStatus);
   // évite les appels dupliqués des notifications statut pending
   const hasFetchedPendingRef = useRef(false);
   // évite les refetch en boucle infinie
@@ -38,16 +48,13 @@ export const useSocketContext = () => {
   useEffect(() => {
     if (!s) return;
     async function handleInit() {
-      const socketInstance = io("http://localhost:3005");
+      if (!socketInstance.connected) {
+        socketInstance.auth = {
+          userId,
+        };
+      }
 
-      socketInstance.on("connect", () => {
-        setIsConnected(true);
-      });
-
-      socketInstance.on("disconnect", () => {
-        setIsConnected(false);
-      });
-
+      socketInstance.connect();
       setSocket(socketInstance);
 
       return () => {
@@ -55,16 +62,16 @@ export const useSocketContext = () => {
       };
     }
     handleInit();
-  }, [s?.user.notificationStatus]);
+  }, [s]);
 
-  // Listen for join the room after the login
+  /* Listen for join the room after the login */
   useEffect(() => {
     async function handleJoinRoom() {
       if (s?.session.userId && socket) {
-        socket.emit("join_room", {
+        socket.emit("tenant_room", {
           userId: s?.session.userId,
         });
-        console.log(`Requête de join pour room user_${s?.session.userId}`);
+        console.log(`Requête de join pour room tenant:${s?.session.userId}`);
         hasAttemptedRefetchRef.current = false;
       } else if (socket && !s && error && !hasAttemptedRefetchRef.current) {
         console.warn(
@@ -111,20 +118,16 @@ export const useSocketContext = () => {
     if (!!s?.user.notificationStatus) {
       handlePendingNotifications();
     }
-  }, [
-    s?.user.id,
-    socket,
-    isPending,
-    isRefetching,
-    refetch,
-    s?.user.notificationStatus,
-  ]);
+  }, [s?.user.id, socket, isPending, isRefetching, refetch]);
 
   async function fetchPendingNotifications(
     userId: string,
   ): Promise<Notification[]> {
     const response = await fetch(
       `/api/notifications?userId=${userId}&status=pending`,
+      {
+        next: { revalidate: 300 },
+      },
     );
 
     if (!response.ok) {
@@ -134,21 +137,21 @@ export const useSocketContext = () => {
     return response.json();
   }
 
-  return {
-    socket,
-    isConnected,
-  };
-};
-
-export const SocketProvider = ({ children }: { children: ReactNode }) => {
-  const ctx = useSocketContext();
   return (
-    <SocketContext.Provider value={ctx}>{children}</SocketContext.Provider>
+    <SocketContext.Provider
+      value={{
+        userId,
+        socket,
+      }}
+    >
+      {children}
+    </SocketContext.Provider>
   );
 };
 
 export const useSocket = () => {
   const context = useContext(SocketContext);
+  console.log(context);
   if (!context) {
     throw new Error("useSocket must bet used within a SocketProvider");
   }

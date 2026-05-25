@@ -7,7 +7,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsTrigger, TabsList } from "@/components/ui/tabs";
-import { Shield, Lock, User, Key } from "lucide-react";
+import { Shield, Lock, User, Key, Send } from "lucide-react";
 import UserProfileForm from "@/components/UserProfileForm";
 import { auth, Session } from "@/lib/auth";
 import { headers } from "next/headers";
@@ -43,6 +43,13 @@ export default async function TabbedUserProfile({
           <Lock className="mr-2 size-4" />
           Security
         </TabsTrigger>
+        <TabsTrigger
+          value="notifications"
+          className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+        >
+          <Send className="mr-2 size-4" />
+          Notifications
+        </TabsTrigger>
       </TabsList>
 
       <TabsContent value="profile" className="space-y-6">
@@ -59,7 +66,6 @@ export default async function TabbedUserProfile({
             <UserProfileForm session={session} />
           </CardContent>
         </Card>
-        <NotificationsSettings />
         <Card className="px-3">
           <CardContent className="px-6">
             <h2 className="mb-4 text-lg font-semibold">Data Management</h2>
@@ -105,6 +111,9 @@ export default async function TabbedUserProfile({
             <ActiveSessions data={session} activeSessions={activeSessions} />
           </CardContent>
         </Card>
+      </TabsContent>
+      <TabsContent value="notifications" className="space-y-6">
+        <NotificationsSettings />
       </TabsContent>
     </Tabs>
   );
