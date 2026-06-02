@@ -3,6 +3,10 @@ import { cn } from "@/lib/utils";
 import { Metadata } from "next";
 import TeamHeader from "./_components/header";
 import { getTeamBySlug } from "@/lib/organization/organization.utils";
+import { Suspense } from "react";
+import TeamActivityFeed, {
+  fakeActivityEntries,
+} from "@/components/organizations/Activity";
 
 export const metadata: Metadata = {
   title: "Team",
@@ -28,6 +32,11 @@ export default async function TeamDetails({
           members={team?.teamMembers!}
           teamName={team?.name!}
         />
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Suspense>
+          <TeamActivityFeed activities={fakeActivityEntries} />
+        </Suspense>
       </div>
     </Wrapper>
   );

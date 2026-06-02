@@ -122,8 +122,6 @@ export async function getMembersInvitationStatus(organizationId: string) {
     },
   });
 
-  // return confirmedMembers;
-
   // Récupère toutes les invitations en attente pour cette organization
   /*const pendingInvitations = await db.invitation.findMany({
     where: { organizationId },
@@ -158,6 +156,34 @@ export async function getMembersInvitationStatus(organizationId: string) {
   }));*/
 
   return [...formattedMembers];
+}
+
+export async function getAdminMemberRole(organizationId: string) {
+  try {
+    const members = await db.member.findMany({
+      where: { organizationId, role: { not: "member" } },
+      include: {
+        user: true,
+      },
+    });
+    const formattedMembers = members.map((member) => ({
+      id: member.id,
+      email: member.user.email,
+      name: member.user.name,
+      image: member.user.image,
+      userId: member.userId,
+      organizationId: member.organizationId,
+      // status: "accepted" as const,
+      role: member.role,
+      createdAt: member.createdAt,
+      // invitationId: member.,
+      updatedAt: member.user.updatedAt,
+    }));
+    return [...formattedMembers];
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
 }
 
 // Recupérer l'id d'Organization sans passer par Member

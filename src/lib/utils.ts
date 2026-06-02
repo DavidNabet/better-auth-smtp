@@ -26,11 +26,37 @@ export function formatRelativeTime(date?: Date): string {
   return formatDate(date);
 }
 
+export function formatYesterdayDate(date: Date): string {
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  if (date.toDateString() === today.toDateString()) {
+    return "Today";
+  }
+  if (date.toDateString() === yesterday.toDateString()) {
+    return "Yesterday";
+  }
+
+  return new Intl.DateTimeFormat("fr-FR", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(date);
+}
+
 export function formatDate(date: Date): string {
   return new Intl.DateTimeFormat("fr-FR", {
     month: "short",
     day: "numeric",
     year: "numeric",
+  }).format(date);
+}
+
+export function formatTime(date: Date): string {
+  return new Intl.DateTimeFormat("fr-FR", {
+    hour: "numeric",
+    minute: "2-digit",
   }).format(date);
 }
 

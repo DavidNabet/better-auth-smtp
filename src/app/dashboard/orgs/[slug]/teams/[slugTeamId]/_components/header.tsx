@@ -28,7 +28,7 @@ export default function TeamHeader({
           <AvatarFallback>{getInitials(teamName)}</AvatarFallback>
         </Avatar>
         <div className="flex flex-col gap-1">
-          <h1 className="font-semibold text-xl">{teamName}</h1>
+          <h1 className="font-semibold text-xl">{teamName} Team</h1>
           <div className="flex items-center gap-2">
             <span className="text-muted-foreground text-sm">
               {members.length} member{members.length !== 1 ? "s" : ""}
