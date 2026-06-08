@@ -2,7 +2,7 @@ import AppHeader from "./_components/header";
 import Wrapper from "@/app/_components/Wrapper";
 import { Metadata } from "next";
 import { getAppBySlug } from "@/lib/app/app.utils";
-import { Star, Users } from "lucide-react";
+import { Star, Users, MessageSquare } from "lucide-react";
 import Stats, { StatProps } from "./_components/stats";
 import { Card, CardContent } from "@/components/ui/card";
 import Activity from "./_components/activity";
@@ -15,12 +15,10 @@ export const metadata: Metadata = {
 export async function generateStaticParams() {
   return [{ slug: "/^[a-z0-9]+(?:[_-][a-z0-9]+)*$/" }];
 }
-export default async function AppDetail({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
-  const { slug } = await params;
+export default async function AppDetail(
+  props: PageProps<"/dashboard/apps/[slug]">,
+) {
+  const { slug } = await props.params;
   const details = await getAppBySlug(slug);
   if (!details) return <div>App Introuvable!</div>;
   const tab = [
@@ -39,6 +37,12 @@ export default async function AppDetail({
       stat: "99%",
       icon: <Star className="text-primary size-5" />,
     },
+    {
+      title: "Vote Rate",
+      // stat: details.feedbacks.find((f) => f.votes.length),
+      stat: 3,
+      icon: <MessageSquare className="text-primary size-5" />,
+    },
   ];
   return (
     <div className="container mx-auto px-4 py-6 md:px-6 2xl:max-w-[1400px]">
@@ -50,7 +54,7 @@ export default async function AppDetail({
           </div>
           {/* Main Content */}
           <div className="space-y-6 md:col-span-3">
-            <div className="grid gap-4 sm:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-4">
               {tab.map((item: StatProps) => (
                 <Stats key={item.title} {...item} />
               ))}

@@ -288,6 +288,63 @@ export async function filterTeamsByOrganization(organizationId: string) {
   }
 }
 
+export async function filterMembersByTeam(teamId: string) {
+  try {
+    const teamMembers = await db.teamMember.findMany({
+      where: { teamId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            image: true,
+          },
+        },
+        team: {
+          select: {
+            organizationId: true,
+          },
+        },
+      },
+    });
+    const organizationId = teamMembers[0]?.team.organizationId;
+
+    if (!organizationId) return [];
+
+    const organizationMembers = await db.member.findMany({
+      where: {
+        organizationId,
+        userId: {
+          in: teamMembers.map((member) => member.userId),
+        },
+      },
+      select: {
+        organizationId: true,
+        userId: true,
+        role: true,
+      },
+    });
+    const rolesMap = new Map(
+      organizationMembers.map((member) => [member.userId, member.role]),
+    );
+    return teamMembers.map((member) => ({
+      id: member.id,
+      userId: member.user.id,
+      name: member.user.name,
+      email: member.user.email,
+      image: member.user.image,
+      organizationId: member.team.organizationId,
+      role: rolesMap.get(member.userId) ?? "member",
+      createdAt: member.createdAt,
+      updatedAt: member.createdAt,
+    }));
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+}
+
 export async function getTeamBySlug(teamSlug: string) {
   try {
     const organizationBySlug = await db.team.findFirst({

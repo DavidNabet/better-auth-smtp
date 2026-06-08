@@ -9,20 +9,36 @@ export const getInitials = (name: string): string => {
   return name.toUpperCase().slice(0, 2);
 };
 
-export function formatRelativeTime(date?: Date): string {
-  if (!date) return "Never";
+export function formatRelativeTime(date: Date): string {
+  if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
+    return "Never";
+  }
   const now = Date.now();
-  const diff = now - date.getTime();
-  const minutes = Math.floor(diff / 60000);
+  const timestamp = date.getTime();
+  const diff = now - timestamp;
+
+  const seconds = Math.floor(diff / 1000);
+  const minutes = Math.floor(seconds / 60);
   const hours = Math.floor(minutes / 60);
   const days = Math.floor(hours / 24);
-  const months = Math.floor(days / 30);
+  const weeks = Math.floor(days / 7);
 
-  if (minutes < 1) return "Just now";
+  // Calcul plus précis des mois (entre 28-31 jours)
+  const nowDate = new Date(now);
+  const dateObj = new Date(timestamp);
+  const monthsDiff =
+    (nowDate.getFullYear() - dateObj.getFullYear()) * 12 +
+    (nowDate.getMonth() - dateObj.getMonth());
+
+  const years = Math.floor(monthsDiff / 12);
+
+  if (diff < 0 || seconds < 60) return "Just now";
   if (minutes < 60) return `${minutes}m ago`;
   if (hours < 24) return `${hours}h ago`;
   if (days < 7) return `${days}d ago`;
-  if (months < 12) return `${months}m ago`;
+  if (weeks < 4) return `${weeks}w ago`;
+  if (monthsDiff < 12) return `${monthsDiff}m ago`;
+  if (years < 2) return `${years}y ago`;
   return formatDate(date);
 }
 
@@ -47,8 +63,9 @@ export function formatYesterdayDate(date: Date): string {
 
 export function formatDate(date: Date): string {
   return new Intl.DateTimeFormat("fr-FR", {
-    month: "short",
+    month: "long",
     day: "numeric",
+    weekday: "long",
     year: "numeric",
   }).format(date);
 }

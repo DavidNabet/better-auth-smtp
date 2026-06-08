@@ -1,9 +1,15 @@
 import Link from "next/link";
+import { Metadata } from "next";
 import { headers } from "next/headers";
+
+export const metadata: Metadata = {
+  title: "Not Found",
+};
 
 export default async function NotFound() {
   const headersList = await headers();
   const domain = headersList.get("host");
+  const referer = headersList.get("Referer");
 
   return (
     <div className="grid h-screen place-content-center bg-white px-4">

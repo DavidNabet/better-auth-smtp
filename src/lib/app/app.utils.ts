@@ -74,14 +74,20 @@ export async function getAppBySlug(slug: string) {
         feedbacks: {
           include: {
             comments: {
-              take: 3,
+              take: 5,
               select: {
                 content: true,
+                isHidden: true,
                 user: {
                   select: {
                     name: true,
                   },
                 },
+              },
+            },
+            votes: {
+              select: {
+                type: true,
               },
             },
           },

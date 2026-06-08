@@ -20,12 +20,10 @@ import Teams from "@/components/organizations/Teams";
 export const metadata: Metadata = {
   title: "Organization Details",
 };
-export default async function OrganizationPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
-  const { slug } = await params;
+export default async function OrganizationPage(
+  props: PageProps<"/dashboard/orgs/[slug]">,
+) {
+  const { slug } = await props.params;
 
   const { currentUser } = await getCurrentUser();
   const organization = await getOrganizationBySlug(slug);

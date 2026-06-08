@@ -2,11 +2,17 @@ import Wrapper from "@/app/_components/Wrapper";
 import { cn } from "@/lib/utils";
 import { Metadata } from "next";
 import TeamHeader from "./_components/header";
-import { getTeamBySlug } from "@/lib/organization/organization.utils";
+import {
+  filterMembersByTeam,
+  getTeamBySlug,
+} from "@/lib/organization/organization.utils";
 import { Suspense } from "react";
 import TeamActivityFeed, {
   fakeActivityEntries,
 } from "@/components/organizations/Activity";
+import LoadingIcon from "@/app/_components/LoadingIcon";
+import MemberList from "@/components/organizations/MemberList";
+import { getCurrentUser } from "@/lib/user/user.utils";
 
 export const metadata: Metadata = {
   title: "Team",
@@ -23,7 +29,9 @@ export default async function TeamDetails({
 }) {
   const { slugTeamId } = await params;
   const name = slugTeamId.split("-")[0];
+  const { currentUser } = await getCurrentUser();
   const team = await getTeamBySlug(name);
+  const teamMembers = await filterMembersByTeam(team?.id || "");
   return (
     <Wrapper>
       <div className={cn("flex w-full flex-col gap-6 my-6")}>
@@ -34,7 +42,15 @@ export default async function TeamDetails({
         />
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
-        <Suspense>
+        <div>
+          <Suspense fallback={<LoadingIcon />}>
+            <MemberList
+              currentUserId={currentUser.id}
+              teamMembers={teamMembers}
+            />
+          </Suspense>
+        </div>
+        <Suspense fallback={<LoadingIcon />}>
           <TeamActivityFeed activities={fakeActivityEntries} />
         </Suspense>
       </div>

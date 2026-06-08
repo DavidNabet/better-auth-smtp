@@ -5,12 +5,12 @@ import {
   Mail,
   Shield,
   User,
+  Users,
   UserCheck,
   Loader2,
   MoreVertical,
   Trash2,
 } from "lucide-react";
-import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -30,7 +30,10 @@ import {
 // import { RoleType } from "@/lib/permissions/permissions.utils";
 import { Member } from "@prisma/client";
 import { cn, formatRelativeTime, getInitials, formatDate } from "@/lib/utils";
-import { getMembersInvitationStatus } from "@/lib/organization/organization.utils";
+import {
+  filterMembersByTeam,
+  getMembersInvitationStatus,
+} from "@/lib/organization/organization.utils";
 import { Button } from "../ui/button";
 import { authClient } from "@/lib/auth/auth.client";
 import { Separator } from "@/components/ui/separator";
@@ -38,9 +41,16 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { hasClientOrgPermission } from "@/lib/permissions/permissions.utils";
 import { useActions } from "@/lib/rbac/common/action-guard";
+import {
+  Empty,
+  EmptyHeader,
+  EmptyTitle,
+  EmptyMedia,
+} from "@/components/ui/empty";
 
 interface MemberListProps {
-  members: Awaited<ReturnType<typeof getMembersInvitationStatus>>;
+  teamMembers?: Awaited<ReturnType<typeof filterMembersByTeam>>;
+  members?: Awaited<ReturnType<typeof getMembersInvitationStatus>>;
   currentUserId: string;
 }
 
@@ -70,9 +80,11 @@ function getRoleBadgeVariant(role: Member["role"]) {
   }
 }
 export default function MemberList({
+  teamMembers,
   members,
   currentUserId,
 }: MemberListProps) {
+  const membersList = members || teamMembers;
   const router = useRouter();
   return (
     <Card className="w-full shadow-xs">
@@ -81,15 +93,25 @@ export default function MemberList({
           <div className="flex flex-col gap-1">
             <CardTitle>Members</CardTitle>
             <CardDescription>
-              {members?.length} member{members?.length !== 1 ? "s" : ""} in your
-              organization
+              {membersList?.length} member{membersList?.length !== 1 ? "s" : ""}{" "}
+              in your {teamMembers ? "team" : "organization"}
             </CardDescription>
           </div>
         </div>
       </CardHeader>
       <CardContent>
         <div className="flex flex-col gap-0 overflow-hidden rounded-lg border">
-          {members?.map((member, idx) => {
+          {membersList?.length === 0 && (
+            <Empty>
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <Users className="size-6" />
+                </EmptyMedia>
+                <EmptyTitle>No Members found</EmptyTitle>
+              </EmptyHeader>
+            </Empty>
+          )}
+          {membersList?.map((member, idx) => {
             const RoleIcon = getRoleIcon(member.role);
             // const { canPerform } = useActions();
             const isCurrentUser = member.userId === currentUserId;
@@ -137,7 +159,7 @@ export default function MemberList({
                     </p>
                     <div className="flex flex-wrap items-center gap-1 text-muted-foreground text-xs">
                       <span>Joined {formatDate(member.createdAt)}</span>
-                      {member.updatedAt && (
+                      {member?.updatedAt && (
                         <>
                           <span aria-hidden="true">•</span>
                           <span>
@@ -155,6 +177,7 @@ export default function MemberList({
                           size="icon"
                           type="button"
                           variant="ghost"
+                          id="more-options"
                         >
                           <MoreVertical className="size-4" />
                         </Button>
@@ -247,7 +270,7 @@ export default function MemberList({
                     </DropdownMenu>
                   )}
                 </div>
-                {idx < members.length - 1 && <Separator />}
+                {idx < membersList.length - 1 && <Separator />}
               </div>
             );
           })}
