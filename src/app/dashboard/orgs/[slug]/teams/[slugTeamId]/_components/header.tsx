@@ -1,8 +1,12 @@
+"use client";
+
 import AvatarUpload from "@/components/AvatarUpload";
+import InviteDialog from "@/components/organizations/InviteDialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { getInitials } from "@/lib/utils";
 import { Plus } from "lucide-react";
+import { CreateInvitation } from "@/components/organizations/TeamInvitations";
 
 interface HeaderTeamProps {
   logo?: string;
@@ -37,10 +41,9 @@ export default function TeamHeader({
         </div>
       </div>
       <div className="flex flex-wrap items-center gap-2">
-        <Button type="button">
-          <Plus className="size-4" />
-          Invite Member
-        </Button>
+        <InviteDialog title="Invite Member" action={() => true}>
+          <p>Members</p>
+        </InviteDialog>
       </div>
     </div>
   );

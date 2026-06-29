@@ -22,12 +22,10 @@ export async function generateStaticParams() {
   return [{ slugTeamId: "/^[a-z0-9]+(?:[_-][a-zA-Z0-9]+)*$/" }];
 }
 
-export default async function TeamDetails({
-  params,
-}: {
-  params: Promise<{ slugTeamId: string }>;
-}) {
-  const { slugTeamId } = await params;
+export default async function TeamDetails(
+  props: PageProps<"/dashboard/orgs/[slug]/teams/[slugTeamId]">,
+) {
+  const { slugTeamId, slug } = await props.params;
   const name = slugTeamId.split("-")[0];
   const { currentUser } = await getCurrentUser();
   const team = await getTeamBySlug(name);
@@ -47,6 +45,7 @@ export default async function TeamDetails({
             <MemberList
               currentUserId={currentUser.id}
               teamMembers={teamMembers}
+              refreshButton={true}
             />
           </Suspense>
         </div>

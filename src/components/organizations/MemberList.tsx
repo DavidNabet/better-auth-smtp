@@ -10,6 +10,7 @@ import {
   Loader2,
   MoreVertical,
   Trash2,
+  RefreshCw,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -52,6 +53,7 @@ interface MemberListProps {
   teamMembers?: Awaited<ReturnType<typeof filterMembersByTeam>>;
   members?: Awaited<ReturnType<typeof getMembersInvitationStatus>>;
   currentUserId: string;
+  refreshButton: boolean;
 }
 
 function getRoleIcon(role: Member["role"]) {
@@ -83,13 +85,14 @@ export default function MemberList({
   teamMembers,
   members,
   currentUserId,
+  refreshButton,
 }: MemberListProps) {
   const membersList = members || teamMembers;
   const router = useRouter();
   return (
     <Card className="w-full shadow-xs">
       <CardHeader>
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div className="flex flex-col gap-1">
             <CardTitle>Members</CardTitle>
             <CardDescription>
@@ -97,6 +100,16 @@ export default function MemberList({
               in your {teamMembers ? "team" : "organization"}
             </CardDescription>
           </div>
+          {refreshButton && (
+            <Button
+              variant="outline"
+              type="button"
+              size="icon"
+              onClick={() => router.refresh()}
+            >
+              <RefreshCw className="size-4" />
+            </Button>
+          )}
         </div>
       </CardHeader>
       <CardContent>

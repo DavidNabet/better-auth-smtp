@@ -50,7 +50,11 @@ export default async function OrganizationPage(
       </Suspense>
       <div className="grid gap-4 sm:grid-cols-2">
         <Suspense fallback={<LoadingIcon />}>
-          <MemberList currentUserId={currentUser.id} members={members} />
+          <MemberList
+            currentUserId={currentUser.id}
+            members={members}
+            refreshButton={false}
+          />
         </Suspense>
         <Suspense fallback={<LoadingIcon />}>
           <TeamInvitations invitations={invitations} users={users} />

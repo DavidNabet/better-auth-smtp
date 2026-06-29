@@ -62,6 +62,7 @@ import { getUsersByOrganizationId } from "@/lib/user/user.utils";
 import { User } from "@prisma/client";
 import { Checkbox } from "../ui/checkbox";
 import { ActionButton } from "@/lib/rbac/common/action-button";
+import InviteDialog from "./InviteDialog";
 
 interface TeamInvitationsProps {
   invitations: Awaited<ReturnType<typeof getInvitationsByOrgId>>;
@@ -163,31 +164,14 @@ export default function TeamInvitations({
             >
               <RefreshCw className="size-4" />
             </Button>
-            <Dialog>
-              <DialogTrigger asChild>
-                <ActionButton
-                  action={"ban"}
-                  className="w-full shrink-0 md:w-auto"
-                  onClick={fetchOrganizationSlug}
-                >
-                  <Plus className="size-4" />
-                  Create Invitation
-                </ActionButton>
-              </DialogTrigger>
-              <DialogContent className="md:max-w-md">
-                <DialogHeader>
-                  <DialogTitle>Create Invitation</DialogTitle>
-                  <DialogDescription>
-                    Invite someone to join your team
-                  </DialogDescription>
-                </DialogHeader>
-                {/* <div className="flex flex-col gap-4"> */}
-                {orgId && (
-                  <CreateInvitation organizationId={orgId} users={users} />
-                )}
-                {/* </div> */}
-              </DialogContent>
-            </Dialog>
+            <InviteDialog
+              title="Create Invitation"
+              action={fetchOrganizationSlug}
+            >
+              {orgId && (
+                <CreateInvitation organizationId={orgId} users={users} />
+              )}
+            </InviteDialog>
           </div>
         </CardHeader>
         <CardContent>
@@ -284,7 +268,7 @@ export default function TeamInvitations({
   );
 }
 
-function CreateInvitation({
+export function CreateInvitation({
   organizationId,
   users,
 }: {

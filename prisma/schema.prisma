@@ -181,6 +181,19 @@ model TeamMember {
   createdAt DateTime @default(now())
 }
 
+model Activity {
+  id             String   @id @default(cuid())
+  organizationId String
+  teamId         String?
+  actorId        String
+  type           String
+  entityType     String?
+  entityId       String?
+  metadata       Json?
+  createdAt      DateTime @default(now())
+  // organization   Organization @relation(fields: [organizationId], references: [id])
+}
+
 model RateLimit {
   id          String  @id
   key         String?
