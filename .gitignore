@@ -12,6 +12,8 @@
 
 .qodo
 .vscode
+.claude
+ARCHITECTURE_REVIEW.*
 
 # testing
 /coverage

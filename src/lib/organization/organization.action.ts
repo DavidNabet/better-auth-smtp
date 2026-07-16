@@ -2,7 +2,7 @@
 
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { headers as head } from "next/headers";
 import {
   createTeamSchema,
@@ -16,6 +16,8 @@ import { hasServerOrgPermission } from "../permissions/permissions.actions";
 import { APIError } from "better-auth/api";
 import { ErrorTypes } from "../user/user.actions";
 import z from "zod/v4";
+
+// TODO: Faire un check côté DB de l'OrgId, s'il est invalide, on peut quand même lire les informations lié à l'organization (les membres, etc...)
 
 export async function inviteMember(
   formState: ActionState,
@@ -91,10 +93,12 @@ export async function createTeam(
     }
     const team = await auth.api.createTeam({
       body: {
-        organizationId,
         name,
+        organizationId: organizationId!,
         description: description ?? undefined,
+        slug: name.toLowerCase(),
       },
+      headers: await head(),
     });
     console.log("team: ", team);
   } catch (error) {
@@ -112,4 +116,8 @@ export async function createTeam(
   }
 
   return toActionState("Team created successfully!!!", "SUCCESS");
+}
+
+export async function revalidateInvitations(organizationId: string) {
+  revalidateTag(`invitations:${organizationId}`);
 }

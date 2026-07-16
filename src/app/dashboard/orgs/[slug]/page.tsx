@@ -1,21 +1,13 @@
 import Wrapper from "@/app/_components/Wrapper";
 import TeamInvitations from "@/components/organizations/TeamInvitations";
-import MemberList from "@/components/organizations/MemberList";
-import {
-  getInvitationsByOrgId,
-  getMembersInvitationStatus,
-  getOrganizationBySlug,
-  filterTeamsByOrganization,
-} from "@/lib/organization/organization.utils";
-import {
-  getCurrentUser,
-  getUserById,
-  getUsersByOrganizationId,
-} from "@/lib/user/user.utils";
+import { getOrganizationBySlug } from "@/lib/organization/organization.utils";
+import { getCurrentUser } from "@/lib/user/user.utils";
 import { Metadata } from "next/types";
 import { Suspense } from "react";
 import LoadingIcon from "@/app/_components/LoadingIcon";
 import Teams from "@/components/organizations/Teams";
+import MemberListTrigger from "@/components/organizations/MemberListTrigger";
+import TeamInvitationsSection from "@/components/organizations/TeamInvitationsSection";
 
 export const metadata: Metadata = {
   title: "Organization Details",
@@ -30,34 +22,31 @@ export default async function OrganizationPage(
 
   // /dashboard/org/[orgSlug]/apps/[appSlug]/teams/[teamSlug]-[id]
 
-  const [members, invitations, teams, users] = await Promise.all([
-    getMembersInvitationStatus(organization?.id || ""),
-    getInvitationsByOrgId(organization?.id || ""),
-    filterTeamsByOrganization(organization?.id || ""),
-    getUsersByOrganizationId(organization?.id || ""),
-  ]);
+  // const [invitations, users] = await Promise.all([
+  //   getInvitationsByOrgId(organization?.id || ""),
+  //   getUsersByOrganizationId(organization?.id || ""),
+  // ]);
 
-  //console.log("org: ", organization);
-  // users non présents dans l'organization
-  // const users = await getUsersByOrganizationId(organization?.id || "");
+  // ⚠ TODO: Créer un SKILL.md où je recense toutes les règles (/caveman + GPT) pour améliorer le code et l'afficher côté Shell (Contexte, etc...) + Eviter le surplus de tokens
+
   return (
     <Wrapper>
       <div className="my-6">
         <h2 className="font-bold text-3xl">{organization?.name}</h2>
       </div>
       <Suspense fallback={<LoadingIcon />}>
-        <Teams teams={teams} organizationId={organization?.id} />
+        <Teams organizationId={organization!.id} />
       </Suspense>
       <div className="grid gap-4 sm:grid-cols-2">
         <Suspense fallback={<LoadingIcon />}>
-          <MemberList
+          <MemberListTrigger
+            teamId={organization!.id}
             currentUserId={currentUser.id}
-            members={members}
-            refreshButton={false}
+            memberCount={0}
           />
         </Suspense>
         <Suspense fallback={<LoadingIcon />}>
-          <TeamInvitations invitations={invitations} users={users} />
+          <TeamInvitations organizationId={organization?.id!} />
         </Suspense>
       </div>
     </Wrapper>

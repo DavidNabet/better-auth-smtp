@@ -45,7 +45,7 @@ export type AllModerationsLogs = Awaited<ReturnType<typeof allModerationsLogs>>;
 export const allModerationsLogs = async () => {
   return await db.moderationLog.findMany({
     orderBy: { updatedAt: "desc" },
-    include: {
+    select: {
       moderator: true,
       comment: true,
     },

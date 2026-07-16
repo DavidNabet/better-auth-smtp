@@ -90,7 +90,7 @@ export function useAuthState() {
     return () => {
       mounted = false;
     };
-  }, [s?.activeOrgId, s?.isRoleOrg]);
+  }, [s?.activeOrgId]);
   /*useEffect(() => {
     // Role
     if (!s) return;

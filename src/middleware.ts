@@ -23,6 +23,7 @@ export const config = {
     "/dashboard/:path*",
     "/auth/:path*",
     "/",
+    "/api/*",
     // "/((?!api|_next/static|_next/image|favicon.ico).*)",
   ],
 };

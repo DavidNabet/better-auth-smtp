@@ -1,29 +1,18 @@
-"use client";
-
-import AvatarUpload from "@/components/AvatarUpload";
 import InviteDialog from "@/components/organizations/InviteDialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import { getInitials } from "@/lib/utils";
-import { Plus } from "lucide-react";
-import { CreateInvitation } from "@/components/organizations/TeamInvitations";
 
-interface HeaderTeamProps {
+interface TeamHeaderProps {
   logo?: string;
   teamName: string;
-  members: {
-    id: string;
-    createdAt: Date;
-    userId: string;
-    teamId: string;
-  }[];
+  memberCount: number;
 }
 
 export default function TeamHeader({
   logo,
   teamName,
-  members,
-}: HeaderTeamProps) {
+  memberCount,
+}: TeamHeaderProps) {
   return (
     <div className="flex flex-col flex-wrap gap-4 md:flex-row md:items-center md:justify-between">
       <div className="flex items-center gap-4">
@@ -35,13 +24,13 @@ export default function TeamHeader({
           <h1 className="font-semibold text-xl">{teamName} Team</h1>
           <div className="flex items-center gap-2">
             <span className="text-muted-foreground text-sm">
-              {members.length} member{members.length !== 1 ? "s" : ""}
+              {memberCount} member{memberCount !== 1 ? "s" : ""}
             </span>
           </div>
         </div>
       </div>
       <div className="flex flex-wrap items-center gap-2">
-        <InviteDialog title="Invite Member" action={() => true}>
+        <InviteDialog title="Invite Member">
           <p>Members</p>
         </InviteDialog>
       </div>

@@ -54,6 +54,9 @@ export const roleAccessMap: Record<string, Role[]> = {
   ],
   "/dashboard/team": ["SUPER_ADMIN", "OWNER", "ADMIN"],
   "/dashboard/manage-users": ["SUPER_ADMIN"],
+  // P1.3 — routes admin auparavant protégées par authn seulement, pas par rôle.
+  "/dashboard/users/admin": ["SUPER_ADMIN", "ADMIN"],
+  "/dashboard/users/super_admin": ["SUPER_ADMIN"],
 };
 
 // export function doesRoleHaveAccessToURL(role: Role, url: string) {

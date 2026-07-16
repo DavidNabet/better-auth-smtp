@@ -8,7 +8,7 @@ interface ActionButtonProps {
   className: string;
   action: AnyStatement;
   children: ReactNode;
-  onClick: () => void;
+  onClick?: () => void;
   variant?: "default" | "secondary" | "outline" | "ghost";
   resourceOwnerId?: string;
 }

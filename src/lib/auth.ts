@@ -50,7 +50,7 @@ export const auth = betterAuth({
     sendOnSignIn: true,
 
     sendVerificationEmail: async ({ user, url }) => {
-      console.info("Email verification", `Sending verification url ${url}`);
+      console.info("Verification email sent to", user.email);
       await sendMagicLinkforLogin(user.name, user.email, url);
     },
     afterEmailVerification: async (user, req) => {
@@ -88,10 +88,6 @@ export const auth = betterAuth({
     storage: "database",
     modelName: "rateLimit",
     customRules: {
-      // "/sign-in/email": {
-      //   window: 10,
-      //   max: 3,
-      // },
       "/two-factor/*": async (request) => {
         return {
           window: 10,
@@ -118,9 +114,12 @@ export const auth = betterAuth({
     deleteUser: {
       enabled: true,
       beforeDelete: async (user, request) => {
-        const ADMIN_EMAIL = process.env.ADMIN_EMAIL!;
-
-        if (ADMIN_EMAIL.includes(user.email)) {
+        // P1.4 — correspondance EXACTE (évite le substring match et le crash si var absente).
+        const ADMIN_EMAILS =
+          process.env.ADMIN_EMAIL?.split(",")
+            .map((e) => e.trim().toLowerCase())
+            .filter(Boolean) ?? [];
+        if (ADMIN_EMAILS.includes((user.email ?? "").toLowerCase())) {
           throw new APIError("BAD_REQUEST", {
             message: "Admin accounts can't be deleted",
           });
@@ -134,11 +133,17 @@ export const auth = betterAuth({
   session: {
     expiresIn: 60 * 60 * 24 * 30,
     updateAge: 60 * 60 * 24 * 3,
+    // cookieCache: {
+    //   enabled: true,
+    //   maxAge: 60 * 60 * 24,
+    //   strategy: "compact",
+    //   version: "2",
+    // },
   },
   advanced: {
     defaultCookieAttributes: {
       maxAge: 60 * 60 * 24 * 7,
-      secure: false,
+      secure: process.env.NODE_ENV === "production",
       httpOnly: true,
     },
     ipAddress: {
@@ -167,9 +172,12 @@ export const auth = betterAuth({
     user: {
       update: {
         after: async (user, ctx) => {
-          const ADMIN_EMAIL = process.env.ADMIN_EMAIL!;
-
-          if (ADMIN_EMAIL.includes(user.email!)) {
+          // P1.4 — correspondance EXACTE (cohérent avec beforeDelete).
+          const ADMIN_EMAILS =
+            process.env.ADMIN_EMAIL?.split(",")
+              .map((e) => e.trim().toLowerCase())
+              .filter(Boolean) ?? [];
+          if (ADMIN_EMAILS.includes((user.email ?? "").toLowerCase())) {
             logger.info("auth db user updated: ", user.name);
 
             // return { data: { ...user, role: Role.ADMIN } };
@@ -220,7 +228,10 @@ export const auth = betterAuth({
         ADMIN,
         SUPER_ADMIN,
       },
-      adminUserIds: ["97xYFyzQ9JXQdDgNilbEwg77Nl4tXGLN"],
+      // P1.4 — ids admin pilotés par env, avec repli sûr sur la valeur commitée.
+      adminUserIds: process.env.ADMIN_USER_IDS?.split(",")
+        .map((s) => s.trim())
+        .filter(Boolean) ?? ["97xYFyzQ9JXQdDgNilbEwg77Nl4tXGLN"],
       impersonationSessionDuration: 60 * 60 * 24,
     }),
     twoFactor({

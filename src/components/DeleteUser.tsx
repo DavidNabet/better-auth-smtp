@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { z } from "zod";
 import { toast } from "sonner";
-import { ChangeEvent, FormEvent, useState, useTransition } from "react";
+import { ChangeEvent, SyntheticEvent, useState, useTransition } from "react";
 import type { User } from "better-auth";
 import { cn } from "@/lib/utils";
 import { authClient } from "@/lib/auth/auth.client";
@@ -46,7 +46,7 @@ export default function DeleteUser() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  function handleSubmit(e: SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
 
     const validatedFields = passwordSchema.safeParse(formData);
@@ -95,7 +95,7 @@ export default function DeleteUser() {
               Delete Account
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent className="sm:max-w-106.25">
             <DialogHeader>
               <DialogTitle>Confirm Account Deletion</DialogTitle>
               <DialogDescription>

@@ -201,7 +201,7 @@ export default function Notifications({
     if (!socket) return;
     console.log("Socket connected");
 
-    socket.on("message", (newNotif) => {
+    socket.on("message", (newNotif: TeamNotification) => {
       setNotifications((prev) => {
         // Evite les doublons: vérifié si la notif existe déjà
         const isDuplicate = prev?.some((n) => n.id === newNotif.id);
@@ -228,7 +228,7 @@ export default function Notifications({
       socket.off("message");
       socket.off("display_toast");
     };
-  }, [socket]);
+  }, [socket, setOpenDrawer]);
 
   const filteredNotifications = notifications.filter((notification) => {
     const matchesType =

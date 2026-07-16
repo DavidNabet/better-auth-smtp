@@ -2,9 +2,11 @@
 
 import { Mail, Trash2, Loader2, Plus, X, RefreshCw } from "lucide-react";
 import {
+  Suspense,
   useActionState,
+  useCallback,
   useEffect,
-  useLayoutEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -13,6 +15,12 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { ErrorMessages } from "@/app/_components/ErrorMessages";
+import {
+  Empty,
+  EmptyHeader,
+  EmptyTitle,
+  EmptyMedia,
+} from "@/components/ui/empty";
 import {
   Card,
   CardContent,
@@ -46,53 +54,40 @@ import {
 import { useParams } from "next/navigation";
 import { authClient } from "@/lib/auth/auth.client";
 import { useRouter } from "next/navigation";
-import { Invitation } from "@prisma/client";
-import { cn, formatRelativeTime, getInitials, formatDate } from "@/lib/utils";
+import {
+  cn,
+  formatRelativeTime,
+  getInitials,
+  formatDate,
+  capitalize,
+} from "@/lib/utils";
 import {
   createToastCallbacks,
   withCallbacks,
 } from "@/app/_components/ServerActionToast";
-import { inviteMember } from "@/lib/organization/organization.action";
-import { getInvitationsByOrgId } from "@/lib/organization/organization.utils";
+import {
+  inviteMember,
+  revalidateInvitations,
+} from "@/lib/organization/organization.action";
 
 import { toast } from "sonner";
-import { ActionState } from "@/lib/feedback/feedback.types";
-import { inviteSchema } from "@/lib/organization/organization.schema";
-import { getUsersByOrganizationId } from "@/lib/user/user.utils";
-import { User } from "@prisma/client";
 import { Checkbox } from "../ui/checkbox";
 import { ActionButton } from "@/lib/rbac/common/action-button";
 import InviteDialog from "./InviteDialog";
+import type { Invitation, User } from "@/lib/types";
+import { useVirtualizer } from "@tanstack/react-virtual";
+import LoadingIcon from "@/app/_components/LoadingIcon";
+import { router } from "better-auth/api";
+// import type { Invitation as Invite } from "@prisma/client";
 
 interface TeamInvitationsProps {
-  invitations: Awaited<ReturnType<typeof getInvitationsByOrgId>>;
-  users: Awaited<ReturnType<typeof getUsersByOrganizationId>>;
-}
-
-function getStatusBadge(status: Invitation["status"]) {
-  switch (status) {
-    case "pending":
-      return <Badge variant="secondary">Pending</Badge>;
-    case "accepted":
-      return <Badge variant="default">Accepted</Badge>;
-    case "canceled":
-      return (
-        <Badge variant="secondary" className="bg-orange-500 text-white">
-          Cancelled
-        </Badge>
-      );
-    case "rejected":
-      return (
-        <Badge variant="destructive" className="text-white">
-          Rejected
-        </Badge>
-      );
-  }
+  organizationId: string;
 }
 
 function formatTimeUntil(date: Date): string {
+  const d = new Date(date);
   const now = Date.now();
-  const diff = date.getTime() - now;
+  const diff = d.getTime() - now;
 
   if (diff <= 0) return "Expired";
 
@@ -105,42 +100,148 @@ function formatTimeUntil(date: Date): string {
   return "Less than an hour";
 }
 
-// TODO: Vérifie si un utilisateur existe dans la DB alors proposer l'invitation sinon créer un compte puis l'inviter
+// UPDATE (NON): Vérifie si un utilisateur existe dans la DB alors proposer l'invitation sinon créer un compte puis l'inviter
 export default function TeamInvitations({
-  invitations,
-  users,
+  organizationId,
 }: TeamInvitationsProps) {
-  const [orgId, setOrgId] = useState<string | undefined>("");
   const router = useRouter();
+  const [invitations, setInvitations] = useState<Invitation[]>([]);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const invitesRef = useRef<HTMLDivElement>(null);
+
+  async function fetchInvitations(cursor?: string, limit = 5) {
+    const params = new URLSearchParams({
+      limit: String(limit),
+    });
+    if (cursor) params.set("cursor", cursor);
+    const res = await fetch(
+      `/api/organizations/${organizationId}/invitations?${params}`,
+      {
+        next: { tags: [`invitations:${organizationId}`] },
+      },
+    );
+    if (!res.ok) throw new Error("Failed to fetch invitations");
+    return res.json() as Promise<{
+      invitations: Invitation[];
+      nextCursor: string | null;
+      total: number;
+    }>;
+  }
+
+  // Virtualizer - only renders visible items
+  const virtualizer = useVirtualizer({
+    count: invitations.length,
+    getScrollElement: () => invitesRef.current,
+    estimateSize: () => 130,
+    overscan: 5,
+  });
+
+  useEffect(() => {
+    if (!organizationId) return;
+    fetchInvitations().then(({ invitations: initial, nextCursor, total }) => {
+      setInvitations(initial);
+      setNextCursor(nextCursor);
+      setTotal(total);
+      setHasMore(!!nextCursor);
+    });
+  }, [organizationId]);
+
+  const loadMore = useCallback(async () => {
+    if (loading || !hasMore || !nextCursor) return;
+    setLoading(true);
+    try {
+      const {
+        invitations: newInvitations,
+        nextCursor: cursor,
+        total,
+      } = await fetchInvitations(nextCursor);
+      setInvitations((prev) => [...prev, ...newInvitations]);
+      setNextCursor(cursor);
+      setTotal(total);
+      setHasMore(!!cursor);
+    } catch (error) {
+      toast.error("Failed to load more invitations");
+    } finally {
+      setLoading(false);
+    }
+  }, [organizationId, loading, hasMore, nextCursor]);
+
+  // const refresh = useCallback(async () => {
+  //   setLoading(true);
+  //   try {
+  //     const data = await fetchInvitations();
+  //     setInvitations(data.invitations);
+  //     setNextCursor(data.nextCursor);
+  //     setTotal(data.total);
+  //     setHasMore(!!data.nextCursor);
+  //   } catch (error) {
+  //     console.error("Refresh went wrong: ", error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }, [organizationId]);
+
   const pendingInvitations = invitations.filter((i) => i.status === "pending");
+
   const acceptedInvitations = invitations.filter(
     (i) => i.status === "accepted",
   );
+
   const canceledInvitations = invitations.filter(
     (i) => i.status === "canceled",
   );
-  const rejectedInvitations = invitations.filter(
-    (i) => i.status === "rejected",
+
+  const getStatusVariant = useMemo(
+    () => (status: string) =>
+      status === "pending" || status === "canceled"
+        ? "secondary"
+        : status === "rejected"
+          ? "destructive"
+          : "default",
+    [],
   );
 
-  const params = useParams<{ slug: string }>();
+  const getStatusColor = useMemo(
+    () => (status: string) =>
+      status === "canceled"
+        ? "bg-orange-500 text-white"
+        : status === "rejected"
+          ? "text-white"
+          : "inherit",
+    [],
+  );
 
-  async function fetchOrganizationSlug() {
-    try {
-      const { data, error } = await authClient.organization.getFullOrganization(
-        {
-          query: {
-            organizationSlug: params.slug,
-          },
-        },
-      );
-      if (error) {
-        console.error(error.message);
-      }
-      setOrgId(data?.id);
-    } catch (error) {
-      console.error("getFullOrganization error: ", error);
+  const handleCancel = async (invitation: Invitation) => {
+    const res = await authClient.organization.cancelInvitation({
+      invitationId: invitation.id,
+    });
+    if (res.error) {
+      toast.error(res.error.message);
+    } else {
+      toast.success("Invitation canceled successfully!!!");
+      await refreshRevalidate(organizationId);
     }
+  };
+
+  const refreshRevalidate = async (organizationId: string) => {
+    await revalidateInvitations(organizationId);
+    router.refresh();
+  };
+
+  if (total === 0) {
+    return (
+      <Empty>
+        <EmptyHeader>
+          <EmptyMedia variant="icon">
+            <Mail className="size-6" />
+          </EmptyMedia>
+          <EmptyTitle>No Invitations found</EmptyTitle>
+        </EmptyHeader>
+      </Empty>
+    );
   }
 
   return (
@@ -160,106 +261,47 @@ export default function TeamInvitations({
               variant="outline"
               type="button"
               size="icon"
-              onClick={() => router.refresh()}
+              onClick={async () => await refreshRevalidate(organizationId)}
             >
               <RefreshCw className="size-4" />
             </Button>
-            <InviteDialog
-              title="Create Invitation"
-              action={fetchOrganizationSlug}
-            >
-              {orgId && (
-                <CreateInvitation organizationId={orgId} users={users} />
+            <InviteDialog title="Create Invitation">
+              {organizationId && (
+                <CreateInvitation organizationId={organizationId} />
               )}
             </InviteDialog>
           </div>
         </CardHeader>
         <CardContent>
-          {invitations.length === 0 ? (
-            <p className="text-muted-foreground text-sm">
-              Pas d'invitations, créez-en une maintenant !
-            </p>
-          ) : (
-            <div className="flex flex-col gap-4">
-              {invitations.map((invitation) => (
-                <div
-                  key={invitation.id}
-                  className="flex flex-col gap-3 rounded-lg border bg-card p-4"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex min-w-0 flex-1 flex-col gap-2">
-                      <div className="flex flex-wrap items-center gap-2">
-                        {invitation.email ? (
-                          <span className="font-medium text-sm">
-                            {invitation.email}
-                          </span>
-                        ) : (
-                          <span className="font-medium text-sm">
-                            Direct Link
-                          </span>
-                        )}
-                        {getStatusBadge(invitation.status)}
-                        <Badge variant="outline">{invitation.role}</Badge>
-                      </div>
-                      <div className="flex flex-wrap items-center gap-2 text-muted-foreground text-xs">
-                        <span>Invited by {invitation.user.name}</span>
-                        {invitation.expiresAt && (
-                          <>
-                            <span aria-hidden="true">•</span>
-                            <span>
-                              Expires in {formatTimeUntil(invitation.expiresAt)}
-                            </span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                    {invitation.status === "pending" && (
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            aria-label="More options"
-                            size="icon"
-                            type="button"
-                            variant="ghost"
-                          >
-                            <X className="size-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent
-                          align="end"
-                          collisionPadding={8}
-                          sideOffset={4}
-                        >
-                          <DropdownMenuItem>
-                            <RefreshCw className="size-4" />
-                            Resend
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            variant="destructive"
-                            onClick={async () => {
-                              const res =
-                                await authClient.organization.cancelInvitation({
-                                  invitationId: invitation.id,
-                                });
-                              if (res.error) {
-                                toast.error(res.error.message);
-                              } else {
-                                toast.success(
-                                  "Invitation canceled successfully!!!",
-                                );
-                              }
-                              router.refresh();
-                            }}
-                          >
-                            <Trash2 className="size-4" />
-                            Cancel
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    )}
-                  </div>
-                </div>
+          <div
+            ref={invitesRef}
+            className="flex flex-col gap-4"
+            onScroll={virtualizer.measure}
+          >
+            <div style={{ height: virtualizer.getTotalSize() }}>
+              {virtualizer.getVirtualItems().map((virtualRow) => (
+                <InvitationRow
+                  key={invitations[virtualRow.index].id}
+                  invitation={invitations[virtualRow.index]}
+                  getStatusVariant={getStatusVariant}
+                  getStatusColor={getStatusColor}
+                  onCancel={handleCancel}
+                />
               ))}
+            </div>
+          </div>
+          {hasMore && (
+            <div className="flex justify-center p-4">
+              <Button
+                variant="outline"
+                onClick={loadMore}
+                disabled={loading}
+                className="w-full max-w-xs"
+              >
+                {loading
+                  ? "Loading"
+                  : `Load more (${total - invitations.length})`}
+              </Button>
             </div>
           )}
         </CardContent>
@@ -268,14 +310,102 @@ export default function TeamInvitations({
   );
 }
 
+function InvitationRow({
+  invitation,
+  getStatusVariant,
+  getStatusColor,
+  onCancel,
+}: {
+  invitation: Invitation;
+  getStatusVariant: (status: string) => "default" | "secondary" | "destructive";
+  getStatusColor: (
+    status: string,
+  ) => "bg-orange-500 text-white" | "text-white" | "inherit";
+  onCancel: (i: Invitation) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-3 rounded-lg border bg-card p-4">
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex min-w-0 flex-1 flex-col gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            {invitation.email ? (
+              <span className="font-medium text-sm">{invitation.email}</span>
+            ) : (
+              <span className="font-medium text-sm">Direct Link</span>
+            )}
+            <Badge
+              variant={getStatusVariant(invitation.status)}
+              className={cn(getStatusColor(invitation.status))}
+            >
+              {capitalize(invitation.status)}
+            </Badge>
+            <Badge variant="outline">{invitation.role}</Badge>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 text-muted-foreground text-xs">
+            <span>Invited by {invitation.user.name}</span>
+            {invitation.expiresAt && (
+              <>
+                <span aria-hidden="true">•</span>
+                <span>Expires in {formatTimeUntil(invitation.expiresAt)}</span>
+              </>
+            )}
+          </div>
+        </div>
+        {invitation.status === "pending" && (
+          <InvitationActionsDropdown
+            invitation={invitation}
+            onCancel={onCancel}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
+function InvitationActionsDropdown({
+  invitation,
+  onCancel,
+}: {
+  invitation: Invitation;
+  onCancel: (i: Invitation) => void;
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          aria-label="More options"
+          size="icon"
+          type="button"
+          variant="ghost"
+        >
+          <X className="size-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" collisionPadding={8} sideOffset={4}>
+        <DropdownMenuItem>
+          <RefreshCw className="size-4" />
+          Resend
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          variant="destructive"
+          onClick={() => onCancel(invitation)}
+        >
+          <Trash2 className="size-4" />
+          Cancel
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 export function CreateInvitation({
   organizationId,
-  users,
 }: {
   organizationId?: string;
-  users: User[];
 }) {
   const formRef = useRef<HTMLFormElement>(null);
+  const [users, setUsers] = useState<User[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const toastCallbacks = createToastCallbacks({
     loading: "Envoyer une invitation...",
   });
@@ -291,6 +421,28 @@ export function CreateInvitation({
   );
 
   const [isChecked, setIsChecked] = useState<boolean>(true);
+
+  const fetchUsers = async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch(
+        `/api/organizations/${organizationId}/available-users`,
+        { cache: "no-cache" },
+      );
+      if (!res.ok) throw new Error("Failed to fetch available users");
+      const data = await res.json();
+      setUsers(data.users);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!organizationId) return;
+    fetchUsers();
+  }, [organizationId]);
 
   return (
     <form
@@ -315,18 +467,20 @@ export function CreateInvitation({
             </Label>
 
             {!isChecked ? (
-              <Select name="email">
-                <SelectTrigger className="mt-1 w-full">
-                  <SelectValue placeholder="Users in db" />
-                </SelectTrigger>
-                <SelectContent>
-                  {users.map((user) => (
-                    <SelectItem key={user.id} value={user.email}>
-                      {user.email}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Suspense fallback={<LoadingIcon />}>
+                <Select name="email">
+                  <SelectTrigger className="mt-1 w-full">
+                    <SelectValue placeholder="Users in db" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {users.map((user) => (
+                      <SelectItem key={user.id} value={user.email}>
+                        {user.email}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Suspense>
             ) : (
               <Input
                 name="email"

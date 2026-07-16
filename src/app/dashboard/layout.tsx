@@ -25,7 +25,7 @@ export default async function PrivateLayout({
     <main className="dark:bg-background bg-white">
       <SocketProvider userId={userId}>
         <Navbar />
-        <div className="max-w-screen-xl min-h-screen text-primary mx-auto py-10 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl min-h-screen text-primary mx-auto py-10 px-4 sm:px-6 lg:px-8">
           <Breadcrumbs>
             <Switcher />
           </Breadcrumbs>

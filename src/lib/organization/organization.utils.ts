@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import { getCurrentUser, getUserById } from "@/lib/user/user.utils";
+import { Invitation } from "@/lib/types";
 
 export const isAdminInOrg = async () => {
   try {
@@ -238,38 +239,44 @@ export async function getActiveMemberRole() {
 export async function filterTeamsByOrganization(organizationId: string) {
   const { currentUser } = await getCurrentUser();
   try {
-    const members = await db.member.findMany({
+    // Get organizations the current user belongs to
+    const memberships = await db.member.findMany({
       where: { userId: currentUser.id },
-      include: {
-        organization: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
+      select: {
+        organization: { select: { name: true } },
+        organizationId: true,
       },
     });
 
+    const userOrgIds = memberships.map((m) => m.organizationId);
+
+    // If user is not in this organization, return empty
+    if (!userOrgIds.includes(organizationId)) {
+      return [];
+    }
+
     const teams = await db.team.findMany({
       where: {
-        organizationId: {
-          in: members.map((m) => m.organizationId),
-          equals: organizationId,
-        },
-        AND: {
-          name: { notIn: members.map((m) => m.organization.name) },
-        },
+        organizationId,
+        name: { notIn: memberships.map((m) => m.organization.name) },
       },
-      include: {
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        logo: true,
+        description: true,
+        createdAt: true,
         organization: {
           select: {
             slug: true,
           },
         },
         teamMembers: {
-          include: {
+          select: {
             user: {
               select: {
+                id: true,
                 name: true,
                 role: true,
                 image: true,
@@ -288,78 +295,53 @@ export async function filterTeamsByOrganization(organizationId: string) {
   }
 }
 
-export async function filterMembersByTeam(teamId: string) {
-  try {
-    const teamMembers = await db.teamMember.findMany({
-      where: { teamId },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            image: true,
+export async function getTeamMembersWithOrgRole(teamId: string) {
+  // Single query: team members + their org role via join
+  return db.teamMember.findMany({
+    where: { teamId },
+    select: {
+      id: true,
+      userId: true,
+      createdAt: true,
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          image: true,
+          members: {
+            where: { role: { not: "member" } },
+            select: { role: true, organizationId: true },
           },
         },
-        team: {
-          select: {
-            organizationId: true,
-          },
-        },
       },
-    });
-    const organizationId = teamMembers[0]?.team.organizationId;
-
-    if (!organizationId) return [];
-
-    const organizationMembers = await db.member.findMany({
-      where: {
-        organizationId,
-        userId: {
-          in: teamMembers.map((member) => member.userId),
-        },
-      },
-      select: {
-        organizationId: true,
-        userId: true,
-        role: true,
-      },
-    });
-    const rolesMap = new Map(
-      organizationMembers.map((member) => [member.userId, member.role]),
-    );
-    return teamMembers.map((member) => ({
-      id: member.id,
-      userId: member.user.id,
-      name: member.user.name,
-      email: member.user.email,
-      image: member.user.image,
-      organizationId: member.team.organizationId,
-      role: rolesMap.get(member.userId) ?? "member",
-      createdAt: member.createdAt,
-      updatedAt: member.createdAt,
-    }));
-  } catch (error) {
-    console.error(error);
-    return [];
-  }
+      team: { select: { organizationId: true } },
+    },
+  });
 }
 
-export async function getTeamBySlug(teamSlug: string) {
-  try {
-    const organizationBySlug = await db.team.findFirst({
-      where: { slug: teamSlug },
-      include: {
-        apps: true,
-        organization: true,
-        teamMembers: true,
+export async function getTeamDetails(teamSlug: string) {
+  return await db.team.findFirst({
+    where: { slug: teamSlug },
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      logo: true,
+      description: true,
+      organization: { select: { id: true, name: true, slug: true } },
+      teamMembers: {
+        select: {
+          id: true,
+          userId: true,
+          createdAt: true,
+          user: {
+            select: { id: true, name: true, email: true, image: true },
+          },
+        },
       },
-    });
-    return organizationBySlug;
-  } catch (error) {
-    console.error(error);
-    return null;
-  }
+    },
+  });
 }
 
 // Don't create the same team name
@@ -450,4 +432,27 @@ export async function createDefaultTeams(
       error: (error as Error)?.message ?? String(error),
     } as const;
   }
+}
+
+export async function getInvitations(
+  organizationId: string,
+  cursor?: string,
+  limit = 5,
+) {
+  const params = new URLSearchParams({
+    limit: String(limit),
+  });
+  if (cursor) params.set("cursor", cursor);
+  const res = await fetch(
+    `${process.env.BETTER_AUTH_URL}/src/app/api/organizations/${organizationId}/invitations?${params}`,
+    {
+      next: { tags: [`invitations:${organizationId}`] },
+    },
+  );
+  if (!res.ok) throw new Error("Failed to fetch invitations");
+  return res.json() as Promise<{
+    invitations: Invitation[];
+    nextCursor: string | null;
+    total: number;
+  }>;
 }

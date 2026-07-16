@@ -1,6 +1,14 @@
 "use client";
 
-import { useEffect } from "react";
+import {
+  JSX,
+  ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   Card,
   CardContent,
@@ -47,7 +55,6 @@ import {
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
-import { filterTeamsByOrganization } from "@/lib/organization/organization.utils";
 import { useActionState } from "react";
 import {
   createToastCallbacks,
@@ -59,9 +66,14 @@ import { ErrorMessages } from "@/app/_components/ErrorMessages";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { authClient } from "@/lib/auth/auth.client";
+import type { Team } from "@/lib/types";
+import { useVirtualizer } from "@tanstack/react-virtual";
+import { hasClientOrgPermission } from "@/lib/permissions/permissions.utils";
+import { router } from "better-auth/api";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 interface TeamsProps {
-  teams: Awaited<ReturnType<typeof filterTeamsByOrganization>>;
   organizationId?: string;
 }
 
@@ -108,25 +120,84 @@ const tab = [
   },
 ];
 
-function getTeamIcon(name: string) {
-  switch (name) {
-    case "Admin":
-      return <Shield className="size-5 fill-amber-500 stroke-0" />;
-    case "Moderation":
-      return <MessageCircle className="size-5 fill-indigo-500 stroke-0" />;
-    default:
-      return (
-        <GalleryVerticalEnd className="size-5 fill-emerald-500 stroke-0" />
-      );
-  }
-}
-
 // FIXED: Ajouter une admin Team (roles: owner et admin) et une moderation Team (roles: owner, admin, member) à chaque création d'une organization par défaut
 
 // TODO: Paramétrer les permissions s'il s'agit d'une team Admin, on procède aux permissions lié à cet effet, également pour une team moderation
 
 // TODO: Ajouter coté client un sélecteur pour sélectionner des membres dans la team avec un Drawer
-export default function Teams({ teams, organizationId }: TeamsProps) {
+export default function Teams({ organizationId }: TeamsProps) {
+  const router = useRouter();
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [loading, setLoading] = useState(true);
+  const teamsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!organizationId) return;
+    fetchTeams();
+  }, [organizationId]);
+
+  const virtualizer = useVirtualizer({
+    count: teams.length,
+    getScrollElement: () => teamsRef.current,
+    estimateSize: () => 115,
+    overscan: 3,
+  });
+
+  const fetchTeams = async () => {
+    try {
+      const res = await fetch(`/api/organizations/${organizationId}/teams`);
+      if (!res.ok) throw new Error("Failed to fetch teams");
+      const data = await res.json();
+
+      setTeams(data.teams);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleRemove = async (team: Team) => {
+    const res = await authClient.organization.removeTeam({
+      teamId: team.id,
+      organizationId: team.organization.id,
+      fetchOptions: {
+        onError(context) {
+          if (context.response.status) {
+            hasClientOrgPermission("owner", "team", "delete");
+          }
+        },
+      },
+    });
+    if (res.error) {
+      toast.error(res.error.message);
+    } else {
+      toast.success("Team removed");
+      router.refresh();
+    }
+  };
+
+  const getTeamIcon = useMemo(
+    () => (name: string) => {
+      switch (name) {
+        case "Admin":
+          return Shield;
+        case "Moderation":
+          return MessageCircle;
+        default:
+          return GalleryVerticalEnd;
+      }
+    },
+    [],
+  );
+
+  const getTeamVariant = useMemo(
+    () => (name: string) =>
+      name === "Admin"
+        ? "fill-amber-500"
+        : name === "Moderation"
+          ? "fill-indigo-500"
+          : "fill-emerald-500",
+    [],
+  );
   return (
     <Card className={cn("w-full shadow-xs my-6")}>
       <CardHeader>
@@ -165,103 +236,131 @@ export default function Teams({ teams, organizationId }: TeamsProps) {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {teams.map((t) => {
-            const TeamIcon = getTeamIcon(t.name);
-            return (
-              <div
-                className="flex flex-col p-6 rounded-lg hover:border-primary transition-colors group border bg-card"
-                key={t.id}
-              >
-                <div className="flex justify-between items-start mb-6">
-                  <Button
-                    size="icon-lg"
-                    type="button"
-                    variant="outline"
-                    className="rounded-lg"
-                  >
-                    {TeamIcon}
-                  </Button>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        aria-label={`More options for ${t.name}`}
-                        size="icon-sm"
-                        type="button"
-                        variant="ghost"
-                      >
-                        <MoreVertical className="size-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                      align="end"
-                      collisionPadding={8}
-                      sideOffset={4}
-                    >
-                      <DropdownMenuItem asChild>
-                        <Link
-                          href={`/dashboard/orgs/${t.organization.slug}/teams/${t.name.toLowerCase()}-${t.id}`}
-                        >
-                          <Folder className="size-4" />
-                          Open
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem variant="destructive">
-                        <Trash2 className="size-4" /> Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-                <h3 className="font-bold text-lg mb-2">{t.name}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed mb-8 h-10 overflow-hidden line-clamp-2">
-                  {t.description}
-                </p>
-                <Separator />
-                <div className="mt-auto pt-6 flex flex-col gap-4">
-                  <div className="flex items-center justify-between">
-                    <>
-                      {t.teamMembers.length === 0 ? (
-                        <span
-                          className={cn(
-                            "rounded-full text-md bg-accent grid place-items-center size-6",
-                          )}
-                        >
-                          !
-                        </span>
-                      ) : (
-                        <AvatarGroup>
-                          {t.teamMembers.map((m) => (
-                            <Avatar key={m.id}>
-                              <AvatarImage
-                                src={m.user.image!}
-                                alt={m.user.name!}
-                              />
-                              <AvatarFallback>
-                                {getInitials(m.user.name as string)}
-                              </AvatarFallback>
-                            </Avatar>
-                          ))}
-                          {t.teamMembers.length > 3 && (
-                            <AvatarGroupCount className="bg-muted">
-                              +{t.teamMembers.length - 3}
-                            </AvatarGroupCount>
-                          )}
-                        </AvatarGroup>
-                      )}
-                    </>
-                    <span className="text-xs font-medium text-muted-foreground">
-                      {t.teamMembers.length} Member
-                      {t.teamMembers.length > 1 ? "s" : ""}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+        <div
+          ref={teamsRef}
+          className="grid md:grid-cols-2 xl:grid-cols-3 gap-6"
+          onScroll={virtualizer.measure}
+        >
+          {teams.map((virtualRow) => (
+            <TeamRow
+              key={virtualRow.id}
+              team={virtualRow}
+              getTeamIcon={getTeamIcon}
+              getTeamVariant={getTeamVariant}
+              onRemove={handleRemove}
+            />
+          ))}
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+function TeamActionsDropdown({
+  team,
+  onRemove,
+}: {
+  team: Team;
+  onRemove: (t: Team) => void;
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          aria-label={`More options for ${team.name}`}
+          size="icon-sm"
+          type="button"
+          variant="ghost"
+        >
+          <MoreVertical className="size-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" collisionPadding={8} sideOffset={4}>
+        <DropdownMenuItem asChild>
+          <Link
+            href={`/dashboard/orgs/${team.organization.slug}/teams/${team.name.toLowerCase()}-${team.id}`}
+          >
+            <Folder className="size-4" />
+            Open
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem variant="destructive" onClick={() => onRemove(team)}>
+          <Trash2 className="size-4" /> Delete
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+function TeamRow({
+  team: t,
+  getTeamIcon,
+  getTeamVariant,
+  onRemove,
+}: {
+  team: Team;
+  getTeamIcon: (name: string) => typeof GalleryVerticalEnd;
+  getTeamVariant: (
+    name: string,
+  ) => "fill-indigo-500" | "fill-amber-500" | "fill-emerald-500";
+  onRemove: (t: Team) => void;
+}) {
+  const TeamIcon = getTeamIcon(t.name);
+  return (
+    <div className="flex flex-col p-6 rounded-lg hover:border-primary transition-colors group border bg-card">
+      <div className="flex justify-between items-start mb-6">
+        <Button
+          size="icon-lg"
+          type="button"
+          variant="outline"
+          className="rounded-lg"
+        >
+          <TeamIcon className={cn("size-5 stroke-0", getTeamVariant(t.name))} />
+        </Button>
+        <TeamActionsDropdown team={t} onRemove={onRemove} />
+      </div>
+      <h3 className="font-bold text-lg mb-2">{t.name}</h3>
+      <p className="text-sm text-muted-foreground leading-relaxed mb-8 h-10 overflow-hidden line-clamp-2">
+        {t.description}
+      </p>
+      <Separator />
+      <div className="mt-auto pt-6 flex flex-col gap-4">
+        <div className="flex items-center justify-between">
+          <>
+            {t.teamMembers.length === 0 ? (
+              <span
+                className={cn(
+                  "rounded-full text-md bg-accent grid place-items-center size-6",
+                )}
+              >
+                !
+              </span>
+            ) : (
+              <AvatarGroup>
+                {t.teamMembers.map(({ user }) => (
+                  <Avatar key={user.id}>
+                    <AvatarImage src={user.image!} alt={user.name!} />
+                    <AvatarFallback>
+                      {getInitials(user.name as string)}
+                    </AvatarFallback>
+                  </Avatar>
+                ))}
+                {t.teamMembers.length > 3 && (
+                  <AvatarGroupCount className="bg-muted">
+                    +{t.teamMembers.length - 3}
+                  </AvatarGroupCount>
+                )}
+              </AvatarGroup>
+            )}
+          </>
+          <span className="text-xs font-medium text-muted-foreground">
+            {t.teamMembers.length} Member
+            {t.teamMembers.length > 1 ? "s" : ""}
+          </span>
+        </div>
+      </div>
+    </div>
   );
 }
 

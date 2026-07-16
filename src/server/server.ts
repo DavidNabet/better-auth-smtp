@@ -8,6 +8,9 @@ const port = parseInt(process.env.PORT || "3005", 10);
 const dev = process.env.NODE_ENV !== "production";
 const hostname = "localhost";
 
+// Socket.IO : la session est résolue côté handler via
+// auth.api.getSession({ headers: new Headers({ cookie: socket.request.headers.cookie }) })
+
 const app = next({ dev, hostname, port, turbopack: true });
 const handler = app.getRequestHandler();
 
@@ -19,7 +22,7 @@ app.prepare().then(() => {
 
   const io = new Server(httpServer, {
     cors: {
-      origin: "http://localhost:3000",
+      origin: process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3005",
       methods: ["GET", "POST"],
     },
   });

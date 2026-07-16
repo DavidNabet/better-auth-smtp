@@ -195,10 +195,10 @@ model Activity {
 }
 
 model RateLimit {
-  id          String  @id
-  key         String?
-  count       Int?
-  lastRequest BigInt?
+  id          String @id
+  key         String @unique
+  count       Int
+  lastRequest BigInt
 
   @@map("rateLimit")
 }

@@ -1,6 +1,5 @@
 import { Middleware } from "./chain";
 import { NextResponse } from "next/server";
-import { getSessionCookie } from "better-auth/cookies";
 import { betterFetch } from "@better-fetch/fetch";
 import { Session } from "@/lib/auth";
 
@@ -9,18 +8,10 @@ export const authMiddleware: Middleware = async (req, _event, next) => {
   const adminRoute = ["/dashboard/users/admin", "/dashboard/users/super_admin"];
   const root = ["/"];
 
-  // const roleRoutes: Record<RoleType, string[]> = {
-  //   SUPER_ADMIN: ["/dashboard", "/admin", "/settings"],
-  //   ADMIN: ["/dashboard", "/admin", "/settings"],
-  //   MEMBER: ["/dashboard", "/mod-tools"],
-  //   USER: ["/dashboard"],
-  // };
-
   const { nextUrl } = req;
   const isAuthRoute = routes.includes(nextUrl.pathname);
   const isAdminRoute = adminRoute.includes(nextUrl.pathname);
   const isRoot = root.includes(nextUrl.pathname);
-  const sessionCookie = getSessionCookie(req);
 
   const { data: session, error } = await betterFetch<Session>(
     "/api/auth/get-session",
@@ -32,9 +23,9 @@ export const authMiddleware: Middleware = async (req, _event, next) => {
     },
   );
 
-  const haveAccess = session || sessionCookie;
-
-  console.log("sessionCookie: ", sessionCookie?.split(".")[0]);
+  // P1.3 — présence d'un cookie != session valide.
+  // Un cookie expiré/invalide ne satisfait plus le garde.
+  const haveAccess = !!session;
 
   if (isRoot) {
     console.log("root");

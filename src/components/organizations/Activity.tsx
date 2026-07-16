@@ -245,7 +245,7 @@ export default function TeamActivityFeed({
             )}
             {showFilters && (
               <Select onValueChange={setTypeFilter} value={typeFilter}>
-                <SelectTrigger className="w-full md:w-[180px]">
+                <SelectTrigger className="w-full md:w-45">
                   <SelectValue placeholder="All Types" />
                 </SelectTrigger>
                 <SelectContent>

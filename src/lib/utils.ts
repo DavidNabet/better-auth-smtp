@@ -62,12 +62,12 @@ export function formatYesterdayDate(date: Date): string {
 }
 
 export function formatDate(date: Date): string {
+  const dateIso = new Date(date);
   return new Intl.DateTimeFormat("fr-FR", {
-    month: "long",
+    month: "short",
     day: "numeric",
-    weekday: "long",
     year: "numeric",
-  }).format(date);
+  }).format(dateIso);
 }
 
 export function formatTime(date: Date): string {

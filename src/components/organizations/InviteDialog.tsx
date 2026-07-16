@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Dialog,
   DialogTrigger,
@@ -9,27 +11,19 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { ActionButton } from "@/lib/rbac/common/action-button";
+
 import { Plus } from "lucide-react";
 
 interface InviteDialogProps {
-  action: () => void;
   title: string;
   children: React.ReactNode;
 }
 
-export default function InviteDialog({
-  action,
-  title,
-  children,
-}: InviteDialogProps) {
+export default function InviteDialog({ title, children }: InviteDialogProps) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <ActionButton
-          action={"ban"}
-          className="w-full shrink-0 md:w-auto"
-          onClick={action}
-        >
+        <ActionButton action={"ban"} className="w-full shrink-0 md:w-auto">
           <Plus className="size-4" />
           {title}
         </ActionButton>

@@ -33,9 +33,9 @@ export const SocketProvider = ({ children, userId }: Props) => {
   const {
     data: s,
     isPending,
-    error,
+    error: sessionError,
     isRefetching,
-    refetch,
+    refetch: refetchSession,
   } = getCurrentClientSession();
 
   // const [notificationsEnabled, setNotificationsEnabled] =
@@ -45,16 +45,13 @@ export const SocketProvider = ({ children, userId }: Props) => {
   // évite les refetch en boucle infinie
   const hasAttemptedRefetchRef = useRef(false);
 
+  // TODO: Mettre en place dans le socketInstance, le session token
   useEffect(() => {
     if (!s) return;
     async function handleInit() {
       if (!socketInstance.connected) {
-        socketInstance.auth = {
-          userId,
-        };
+        socketInstance.connect();
       }
-
-      socketInstance.connect();
       setSocket(socketInstance);
 
       return () => {
@@ -73,17 +70,22 @@ export const SocketProvider = ({ children, userId }: Props) => {
         });
         console.log(`Requête de join pour room tenant:${s?.session.userId}`);
         hasAttemptedRefetchRef.current = false;
-      } else if (socket && !s && error && !hasAttemptedRefetchRef.current) {
+      } else if (
+        socket &&
+        !s &&
+        sessionError &&
+        !hasAttemptedRefetchRef.current
+      ) {
         console.warn(
           "Session invalide ou manquante. Tentative de refetch la session",
         );
         hasAttemptedRefetchRef.current = true;
-        refetch();
+        refetchSession();
       }
     }
 
     handleJoinRoom();
-  }, [socket, s?.session.userId, error, isRefetching, refetch]);
+  }, [socket, s?.session.userId, sessionError, refetchSession]);
 
   // Fetch pending notifications for the user
   useEffect(() => {
@@ -110,7 +112,7 @@ export const SocketProvider = ({ children, userId }: Props) => {
                 "Erreur 401: session invalide. Tentative de refetch de la session...",
               );
               hasAttemptedRefetchRef.current = true;
-              refetch();
+              refetchSession();
             }
           });
       }
@@ -118,7 +120,7 @@ export const SocketProvider = ({ children, userId }: Props) => {
     if (!!s?.user.notificationStatus) {
       handlePendingNotifications();
     }
-  }, [s?.user.id, socket, isPending, isRefetching, refetch]);
+  }, [s?.user.id, socket, isPending, refetchSession]);
 
   async function fetchPendingNotifications(
     userId: string,

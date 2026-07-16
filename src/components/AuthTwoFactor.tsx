@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, FC, FormEvent } from "react";
+import { useState, useTransition, FC, SyntheticEvent } from "react";
 import { useRouter } from "next/navigation";
 import { requestOTP } from "@/lib/auth/auth.service";
 import { TwoFactorSchema, twoFactorSchema } from "@/lib/auth/auth.schema";
@@ -49,7 +49,7 @@ const AuthTwoFactor: FC = () => {
     }
   };
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
     setSuccess("");
@@ -109,7 +109,7 @@ const AuthTwoFactor: FC = () => {
             <InputOTPGroup>
               {Array.from({ length: 6 }).map((_, i) => (
                 <InputOTPSlot
-                  className="w-12 leading-[75px] text-[32px] bg-input text-center uppercase text-foreground mb-[25px] rounded-sm border-none focus:outline-hidden"
+                  className="w-12 leading-18.75 text-[32px] bg-input text-center uppercase text-foreground mb-6.25 rounded-sm border-none focus:outline-hidden"
                   key={i}
                   index={i}
                 />

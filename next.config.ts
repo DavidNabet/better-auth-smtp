@@ -3,7 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   /* config options here */
   images: {
-    dangerouslyAllowSVG: true,
+    dangerouslyAllowSVG: false,
     remotePatterns: [
       {
         protocol: "https",
@@ -35,6 +35,16 @@ const nextConfig: NextConfig = {
   },
   transpilePackages: ["prettier"],
   // serverExternalPackages: ["@prisma/client"],
+  // async webpack(config, { dev }) {
+  //   if (dev) {
+  //     config.devtool = "eval";
+  //   }
+  //   config.cache = {
+  //     type: "filesystem",
+  //   };
+
+  //   return config;
+  // },
   async headers() {
     return [
       {

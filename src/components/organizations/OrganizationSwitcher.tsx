@@ -49,7 +49,7 @@ export function OrganizationSwitcher({
         (handleChangeOrganization(val), router.push(`/dashboard/orgs/${val}`));
       }}
     >
-      <SelectTrigger className="w-[180px] selectLink">
+      <SelectTrigger className="w-45 selectLink">
         <SelectValue placeholder="Select an organization" />
       </SelectTrigger>
       <SelectContent className="flex flex-col gap-2">
