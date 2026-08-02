@@ -32,9 +32,12 @@ export async function getApps() {
 
 export async function createAppData(data: CreateAppSchema) {
   const { name, slug, description, logo, organizationId } = data;
+  if (!organizationId) {
+    throw new APIError("BAD_REQUEST", { message: "Organization not found" });
+  }
   const organization = await getOrganizationById(organizationId);
   if (!organization) {
-    throw new APIError("BAD_REQUEST", { message: "Organization not found" });
+    throw new APIError("BAD_REQUEST", { message: "Organization not exist" });
   }
   if (slug === organization.slug) {
     throw new APIError("NOT_ACCEPTABLE", { message: "Slug already exists" });

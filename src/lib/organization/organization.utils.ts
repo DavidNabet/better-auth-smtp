@@ -94,19 +94,14 @@ export async function getOrganizationBySlug(slug: string) {
     return null;
   }
 }
-export async function getOrganizationById(id: string) {
+export async function getOrganizationById(organizationId: string) {
   try {
-    const organizationById = await db.organization.findUnique({
-      where: { id },
-      include: {
-        members: {
-          include: {
-            user: true,
-          },
-        },
+    return await db.organization.findUnique({
+      where: { id: organizationId },
+      select: {
+        slug: true,
       },
     });
-    return organizationById;
   } catch (error) {
     console.error(error);
     return null;

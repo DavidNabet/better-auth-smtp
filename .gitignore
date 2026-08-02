@@ -13,6 +13,7 @@
 .qodo
 .vscode
 .claude
+.agents
 ARCHITECTURE_REVIEW.*
 
 # testing

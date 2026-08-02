@@ -27,7 +27,7 @@ export async function UsersTable() {
       <TableCaption>Nombre de users: {users.length}</TableCaption>
       <TableHeader>
         <TableRow>
-          <TableHead className="w-[100px]">Name</TableHead>
+          <TableHead className="w-25">Name</TableHead>
           <TableHead>Email</TableHead>
           <TableHead>Role</TableHead>
           <TableHead className="text-right">Two Factor</TableHead>
@@ -36,7 +36,7 @@ export async function UsersTable() {
       <TableBody>
         {users?.length > 0 ? (
           users.map((user) => (
-            <TableRow key={user.name}>
+            <TableRow key={user.id}>
               <TableCell className="font-medium">{user.name}</TableCell>
               <TableCell>{user.email}</TableCell>
               <TableCell>{user.role}</TableCell>
@@ -65,11 +65,11 @@ export async function LogDisplay() {
   return (
     <ul className="divide-y">
       {logs.length > 0 ? (
-        logs.map((log, i) => {
+        logs.map((log) => {
           return (
             <li
-              className="hover:bg-accent/50 flex items-center gap-3 rounded-lg border p-3 has-[[aria-checked=true]]:border-blue-600 has-[[aria-checked=true]]:bg-blue-50 dark:has-[[aria-checked=true]]:border-blue-900 dark:has-[[aria-checked=true]]:bg-blue-950 justify-between"
-              key={i}
+              className="hover:bg-accent/50 flex items-center gap-3 rounded-lg border p-3 has-aria-checked:border-blue-600 has-aria-checked:bg-blue-50 dark:has-aria-checked:border-blue-900 dark:has-aria-checked:bg-blue-950 justify-between"
+              key={log.action}
             >
               <h3>{log.action}</h3>
 

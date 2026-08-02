@@ -20,6 +20,16 @@ import Link from "next/link";
 
 type CardProps = ComponentProps<typeof Card>;
 
+// Static classNames object - defined at module scope to avoid recreation on every render
+// This prevents breaking memoization of child components that receive these class names
+const cardButtonClassNames = {
+  icon: {
+    default:
+      "[&_svg]:!size-6 h-12 w-12 rounded-lg bg-teal-500 text-white shadow-lg md:h-14 md:w-14 md:rounded-xl",
+    secondary: "flex size-8 items-center justify-center rounded-lg bg-muted",
+  },
+};
+
 interface ICard {
   title: string;
   description?: string;
@@ -73,26 +83,15 @@ export function CardButton({
   actions,
   ...props
 }: ICard & Partial<ICardLink> & CardProps) {
-  const classNames = {
-    icon: {
-      default:
-        "[&_svg]:!size-6 h-12 w-12 rounded-lg bg-teal-500 text-white shadow-lg md:h-14 md:w-14 md:rounded-xl",
-      secondary: "flex size-8 items-center justify-center rounded-lg bg-muted",
-    },
-  };
   return (
     <Card className={cn("p-6 border-4 border-teal-500", className)} {...props}>
-      <div
-        className={cn("flex gap-2", boxed && "items-center justify-between")}
-      >
+      <div className={cn("flex gap-2", boxed && "items-center justify-between")}>
         <div className="flex items-center gap-2">
           {icon && (
             <Button
               variant="secondary"
               size="icon"
-              className={
-                boxed ? classNames.icon.secondary : classNames.icon.default
-              }
+              className={boxed ? cardButtonClassNames.icon.secondary : cardButtonClassNames.icon.default}
             >
               {icon}
             </Button>

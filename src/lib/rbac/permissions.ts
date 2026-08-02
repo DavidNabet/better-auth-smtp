@@ -35,89 +35,10 @@ function buildAllRoleStatements() {
 
 // Export a convenient prebuilt list for consumers that just need the values.
 // Keeping the builder function allows tests or callers to rebuild if needed.
-export const allRoleStatements = buildAllRoleStatements()[0];
+export const allRoleStatements = buildAllRoleStatements();
 
-// Narrow type representing one aggregated statement; combined with string tokens
-// to allow business-friendly identifiers (e.g., "apps-list").
-export type AnyStatement = typeof allRoleStatements;
-// type AnyStatementKey = Uppercase<AnyStatement>
+export type AnyStatement = (typeof allRoleStatements)[number];
 
-// export type PermissionsRecord = Record<AnyStatementKey, AnyStatement[number]>;
-
-/**
- * buildRoleStatementsMap
- *
- * Build an immutable mapping Role -> (statements | strings)[] in the requested
- * style. Each role array is composed by spreading known statement groups from
- * user/organization modules and adding business-readable string tokens.
- *
- * Why
- * - Replaces enum-based Permission mapping with concrete statements and
- *   readable identifiers closer to your policy language.
- * - Centralizes composition and enforces immutability to prevent runtime
- *   mutations.
- */
-function buildRoleStatementsMap(): Readonly<
-  Record<Role, ReadonlyArray<AnyStatement | string>>
-> {
-  return {
-    [Role.SUPER_ADMIN]: Object.freeze([
-      ...orgStatements.organization,
-      ...orgStatements.member,
-      ...roleStatements.user,
-      ...roleStatements.comments,
-      ...roleStatements.session,
-      ...roleStatements.apps,
-      "view-topic",
-    ]),
-
-    [Role.OWNER]: Object.freeze([
-      ...orgStatements.organization,
-      ...orgStatements.member,
-      ...orgStatements.invitation,
-      ...roleStatements.apps,
-      ...roleStatements.topics,
-      ...roleStatements.comments,
-      "ban",
-      "list",
-      "set-password",
-      "update",
-    ]),
-
-    [Role.ADMIN]: Object.freeze([
-      ...roleStatements.comments,
-      ...orgStatements.invitation,
-      ...orgStatements.member,
-      "ban",
-      "set-password",
-      "update",
-      // "member-update",
-      // "member-delete",
-      // "member-update-name",
-      "apps-list",
-      "view-topic",
-    ]),
-
-    [Role.MEMBER]: Object.freeze([
-      "set-password",
-      "update",
-      "create-comment",
-      "toggle-hide",
-      "apps-list",
-      "view-topic",
-      "update-name",
-    ]),
-
-    [Role.USER]: Object.freeze([
-      "set-password",
-      "update",
-      "create-topic",
-      "create-comment",
-      "apps-list",
-      "view-topic",
-    ]),
-  } as const;
-}
-
-// Export a frozen, ready-to-use map.
-export const ROLE_PERMISSIONS = Object.freeze(buildRoleStatementsMap());
+// Suppression de la table personnalisée ROLE_PERMISSIONS - faire du `ac` de better-auth
+// la source unique de vérité pour l'autorisation.
+// Cela permet d'unifier tous les mécanismes d'autorisation sous le même système.

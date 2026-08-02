@@ -14,6 +14,20 @@ export async function GET(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  // Vérification d'autorisation côté serveur via better-auth ac
+  const { success } = await auth.api.hasPermission({
+    headers: await headers(),
+    body: {
+      permissions: {
+        member: ["create"],
+      },
+    },
+  });
+
+  if (!success) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   // P1.2 — IDOR : un user authentifié mais non membre ne doit pas lister les membres.
   const isMember = await db.member.findFirst({
     where: { organizationId: orgId, userId: session.user.id },
@@ -24,7 +38,10 @@ export async function GET(
 
   const { searchParams } = new URL(req.url);
   const cursor = searchParams.get("cursor");
-  const limit = Math.max(1, Math.min(Number(searchParams.get("limit")) || 50, 100));
+  const limit = Math.max(
+    1,
+    Math.min(Number(searchParams.get("limit")) || 50, 100),
+  );
 
   const members = await db.member.findMany({
     where: { organizationId: orgId },

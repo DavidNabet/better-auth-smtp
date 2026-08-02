@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogTrigger,
@@ -10,9 +11,11 @@ import {
   DialogFooter,
   DialogClose,
 } from "@/components/ui/dialog";
-import { ActionButton } from "@/lib/rbac/common/action-button";
+import { authClient } from "@/lib/auth/auth.client";
+import { useAuth } from "@/hooks/use-auth";
 
 import { Plus } from "lucide-react";
+import { Button } from "../ui/button";
 
 interface InviteDialogProps {
   title: string;
@@ -20,13 +23,32 @@ interface InviteDialogProps {
 }
 
 export default function InviteDialog({ title, children }: InviteDialogProps) {
+  const { session } = useAuth();
+  const [canInvite, setCanInvite] = useState(false);
+
+  useEffect(() => {
+    if (!session) {
+      setCanInvite(false);
+      return;
+    }
+    authClient.organization
+      .hasPermission({
+        permissions: { invitation: ["create"] },
+      })
+      .then((result) => {
+        setCanInvite(!result.error && result.data.success !== false);
+      })
+      .catch(() => {
+        setCanInvite(false);
+      });
+  }, [session]);
+
+  if (!session) return null;
+  if (!canInvite) return null;
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <ActionButton action={"ban"} className="w-full shrink-0 md:w-auto">
-          <Plus className="size-4" />
-          {title}
-        </ActionButton>
+        <Button>Invite Member</Button>
       </DialogTrigger>
       <DialogContent className="md:max-w-md">
         <DialogHeader>

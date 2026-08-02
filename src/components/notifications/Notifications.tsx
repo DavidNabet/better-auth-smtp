@@ -314,7 +314,7 @@ export default function Notifications({
             {showFilters && (
               <div className="flex flex-wrap gap-2">
                 <Select onValueChange={setTypeFilter} value={typeFilter}>
-                  <SelectTrigger className="w-full md:w-[140px]">
+                  <SelectTrigger className="w-full md:w-35">
                     <SelectValue placeholder="All types" />
                   </SelectTrigger>
                   <SelectContent>
@@ -329,7 +329,7 @@ export default function Notifications({
                   </SelectContent>
                 </Select>
                 <Select onValueChange={setStatusFilter} value={statusFilter}>
-                  <SelectTrigger className="w-full md:w-[140px]">
+                  <SelectTrigger className="w-full md:w-35">
                     <SelectValue placeholder="All statuses" />
                   </SelectTrigger>
                   <SelectContent>

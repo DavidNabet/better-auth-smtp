@@ -10,7 +10,6 @@ interface ActionButtonProps {
   children: ReactNode;
   onClick?: () => void;
   variant?: "default" | "secondary" | "outline" | "ghost";
-  resourceOwnerId?: string;
 }
 
 export function ActionButton({
@@ -19,10 +18,9 @@ export function ActionButton({
   onClick,
   variant = "default",
   children,
-  resourceOwnerId,
 }: ActionButtonProps) {
   return (
-    <ActionGuard action={action} resourceOwnerId={resourceOwnerId}>
+    <ActionGuard action={action}>
       <Button
         className={className}
         type="button"

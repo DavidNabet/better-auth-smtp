@@ -13,6 +13,20 @@ export async function GET(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  // Vérification d'autorisation côté serveur via better-auth ac
+  const { success } = await auth.api.hasPermission({
+    headers: await headers(),
+    body: {
+      permissions: {
+        team: ["create"],
+      },
+    },
+  });
+
+  if (!success) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   // P1.2 — IDOR : résoudre l'org de la team, 404 si introuvable, 403 si non membre.
   const team = await db.team.findUnique({
     where: { id: teamId },

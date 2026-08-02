@@ -89,10 +89,11 @@ export const SocketProvider = ({ children, userId }: Props) => {
 
   // Fetch pending notifications for the user
   useEffect(() => {
+    const abortController = new AbortController();
     async function handlePendingNotifications() {
       if (s?.user.id && socket && !hasFetchedPendingRef.current && !isPending) {
         hasFetchedPendingRef.current = true;
-        fetchPendingNotifications(s.user.id)
+        fetchPendingNotifications(s.user.id, abortController.signal)
           .then((pendingNotifications: Notification[]) => {
             if (pendingNotifications.length > 0) {
               console.log("Pending notifications:", pendingNotifications);
@@ -103,6 +104,11 @@ export const SocketProvider = ({ children, userId }: Props) => {
             }
           })
           .catch((err) => {
+            if (err.name === "AbortError") {
+              console.log("Fetch des notifications annulé (composant démonté)");
+              return;
+            }
+
             console.error(
               "Erreur lors de la récupération des notifs pending:",
               err,
@@ -120,16 +126,19 @@ export const SocketProvider = ({ children, userId }: Props) => {
     if (!!s?.user.notificationStatus) {
       handlePendingNotifications();
     }
+
+    return () => {
+      abortController.abort();
+    };
   }, [s?.user.id, socket, isPending, refetchSession]);
 
   async function fetchPendingNotifications(
     userId: string,
+    signal?: AbortSignal,
   ): Promise<Notification[]> {
     const response = await fetch(
       `/api/notifications?userId=${userId}&status=pending`,
-      {
-        next: { revalidate: 300 },
-      },
+      { signal },
     );
 
     if (!response.ok) {

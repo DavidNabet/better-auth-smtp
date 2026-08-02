@@ -5,7 +5,8 @@ import { getNotAdminUsers } from "@/lib/user/user.utils";
 import { DataTable } from "@/components/Table/DataTable";
 import { usersColumns } from "@/components/Table/column";
 import { LogTable } from "@/components/Table/Tables";
-import { useActionsServer } from "@/lib/rbac/common/action-guard";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 
 export const dynamicParams = false;
 export const dynamic = "auto";
@@ -13,7 +14,16 @@ export const dynamic = "auto";
 
 export default async function ManageUsers() {
   const users = await getNotAdminUsers();
-  const { canPerform } = await useActionsServer();
+
+  // Vérification d'autorisation côté serveur via better-auth ac
+  const { success: canList } = await auth.api.userHasPermission({
+    headers: await headers(),
+    body: {
+      permissions: {
+        user: ["list"],
+      },
+    },
+  });
 
   // const allLogs = await allModerationsLogs()!;
   // TODO: add an error in the query if the role is changed and is not the same as the current role with useEffect() in the Header (error bar)
@@ -31,7 +41,7 @@ export default async function ManageUsers() {
                   Manage all users
                 </p>
               </div>
-              {canPerform("list") && (
+              {canList && (
                 <DataTable
                   columns={usersColumns}
                   data={users!}

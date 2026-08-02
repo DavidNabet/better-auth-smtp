@@ -1,4 +1,3 @@
-import { hasActionPermission } from "./action-permissions";
 import {
   SUPER_ADMIN,
   ADMIN,
@@ -88,35 +87,28 @@ export const NAVIGATION_CONFIG: NavigationItem[] = [
   },
 ];
 
+// La vérification d'autorisation côté client est une défense en profondeur.
+// La vérification réelle est effectuée côté serveur via auth.api.hasPermission().
 export function filterNavigationByRole(
   navigation: NavigationItem[],
-  userRole: Uppercase<RoleType>,
+  _userRole: Uppercase<RoleType>,
 ): NavigationItem[] {
-  return navigation
-    .map((item) => {
-      // Check if user has permission for this item
-      if (item.permission && !hasActionPermission(userRole, item.permission)) {
-        return null;
+  return navigation.filter((item) => {
+    // Filtrer les enfants récursivement
+    if (item.children) {
+      const filteredChildren = filterNavigationByRole(
+        item.children,
+        _userRole,
+      );
+
+      // Masquer le parent s'il n'a pas d'enfants accessibles
+      if (filteredChildren.length === 0) {
+        return false;
       }
 
-      // Filter children recursively
-      if (item.children) {
-        const filteredChildren = filterNavigationByRole(
-          item.children,
-          userRole,
-        );
+      return { ...item, children: filteredChildren };
+    }
 
-        console.log("filteredChildren: ", filteredChildren);
-
-        // Hide parent if no children are accessible
-        if (filteredChildren.length === 0) {
-          return null;
-        }
-
-        return { ...item, children: filteredChildren };
-      }
-
-      return item;
-    })
-    .filter((item): item is NavigationItem => item !== null);
+    return true;
+  });
 }

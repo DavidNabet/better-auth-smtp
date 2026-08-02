@@ -72,7 +72,6 @@ import {
 
 import { toast } from "sonner";
 import { Checkbox } from "../ui/checkbox";
-import { ActionButton } from "@/lib/rbac/common/action-button";
 import InviteDialog from "./InviteDialog";
 import type { Invitation, User } from "@/lib/types";
 import { useVirtualizer } from "@tanstack/react-virtual";
@@ -106,13 +105,21 @@ export default function TeamInvitations({
 }: TeamInvitationsProps) {
   const router = useRouter();
   const [invitations, setInvitations] = useState<Invitation[]>([]);
-  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const nextCursorRef = useRef<string | null>(null);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const invitesRef = useRef<HTMLDivElement>(null);
 
-  async function fetchInvitations(cursor?: string, limit = 5) {
+  async function fetchInvitations({
+    cursor,
+    limit = 5,
+    signal,
+  }: {
+    cursor?: string;
+    limit: number;
+    signal?: AbortSignal;
+  }) {
     const params = new URLSearchParams({
       limit: String(limit),
     });
@@ -121,6 +128,7 @@ export default function TeamInvitations({
       `/api/organizations/${organizationId}/invitations?${params}`,
       {
         next: { tags: [`invitations:${organizationId}`] },
+        signal,
       },
     );
     if (!res.ok) throw new Error("Failed to fetch invitations");
@@ -136,30 +144,54 @@ export default function TeamInvitations({
     count: invitations.length,
     getScrollElement: () => invitesRef.current,
     estimateSize: () => 130,
-    overscan: 5,
+    directDomUpdates: true,
   });
 
   useEffect(() => {
     if (!organizationId) return;
-    fetchInvitations().then(({ invitations: initial, nextCursor, total }) => {
-      setInvitations(initial);
-      setNextCursor(nextCursor);
-      setTotal(total);
-      setHasMore(!!nextCursor);
-    });
+    const abortController = new AbortController();
+    let isMounted = true;
+    async function fetchInvitationsEffect() {
+      try {
+        const {
+          invitations: initial,
+          nextCursor,
+          total,
+        } = await fetchInvitations({
+          signal: abortController.signal,
+          limit: 5,
+        });
+        if (!isMounted) return;
+        setInvitations(initial);
+        nextCursorRef.current = nextCursor;
+        setTotal(total);
+        setHasMore(!!nextCursor);
+      } catch (error: any) {
+        if (error.name === "AbortError") {
+          console.log("Fetch des invitations annulé (composant démonté)");
+          return;
+        }
+        throw new Error("Error useEffect fetchInvitations", error);
+      }
+    }
+    fetchInvitationsEffect();
+    return () => {
+      isMounted = false;
+      abortController.abort();
+    };
   }, [organizationId]);
 
   const loadMore = useCallback(async () => {
-    if (loading || !hasMore || !nextCursor) return;
+    if (loading || !hasMore || !nextCursorRef.current) return;
     setLoading(true);
     try {
       const {
         invitations: newInvitations,
         nextCursor: cursor,
         total,
-      } = await fetchInvitations(nextCursor);
+      } = await fetchInvitations({ cursor: nextCursorRef.current, limit: 5 });
       setInvitations((prev) => [...prev, ...newInvitations]);
-      setNextCursor(cursor);
+      nextCursorRef.current = cursor;
       setTotal(total);
       setHasMore(!!cursor);
     } catch (error) {
@@ -167,7 +199,7 @@ export default function TeamInvitations({
     } finally {
       setLoading(false);
     }
-  }, [organizationId, loading, hasMore, nextCursor]);
+  }, [organizationId, loading, hasMore]);
 
   // const refresh = useCallback(async () => {
   //   setLoading(true);
@@ -278,7 +310,7 @@ export default function TeamInvitations({
             className="flex flex-col gap-4"
             onScroll={virtualizer.measure}
           >
-            <div style={{ height: virtualizer.getTotalSize() }}>
+            <div ref={virtualizer.containerRef}>
               {virtualizer.getVirtualItems().map((virtualRow) => (
                 <InvitationRow
                   key={invitations[virtualRow.index].id}
@@ -324,7 +356,7 @@ function InvitationRow({
   onCancel: (i: Invitation) => void;
 }) {
   return (
-    <div className="flex flex-col gap-3 rounded-lg border bg-card p-4">
+    <div className="flex flex-col gap-3 rounded-lg border bg-card p-4 my-4">
       <div className="flex items-start justify-between gap-4">
         <div className="flex min-w-0 flex-1 flex-col gap-2">
           <div className="flex flex-wrap items-center gap-2">
@@ -405,7 +437,7 @@ export function CreateInvitation({
 }) {
   const formRef = useRef<HTMLFormElement>(null);
   const [users, setUsers] = useState<User[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const isLoadingRef = useRef(true);
   const toastCallbacks = createToastCallbacks({
     loading: "Envoyer une invitation...",
   });
@@ -423,7 +455,7 @@ export function CreateInvitation({
   const [isChecked, setIsChecked] = useState<boolean>(true);
 
   const fetchUsers = async () => {
-    setIsLoading(true);
+    isLoadingRef.current = true;
     try {
       const res = await fetch(
         `/api/organizations/${organizationId}/available-users`,
@@ -435,7 +467,7 @@ export function CreateInvitation({
     } catch (error) {
       console.log(error);
     } finally {
-      setIsLoading(false);
+      isLoadingRef.current = false;
     }
   };
 

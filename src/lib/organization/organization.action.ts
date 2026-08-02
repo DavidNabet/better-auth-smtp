@@ -34,7 +34,7 @@ export async function inviteMember(
   // const { session } = await getCurrentUser();
 
   try {
-    if (!hasServerOrgPermission("invitation", "create")) {
+    if (!(await hasServerOrgPermission("invitation", "create"))) {
       return toActionState(
         "You don't have permission to perform this action",
         "ERROR",
@@ -55,7 +55,7 @@ export async function inviteMember(
       console.log(error.message, error.body?.code);
       const errorCode = error.body?.code as ErrorTypes;
       switch (errorCode) {
-        case errorCode:
+        case "YOU_ARE_NOT_ALLOWED_TO_INVITE_USERS_TO_THIS_ORGANIZATION":
           return toActionState(error.message, "ERROR");
         default:
           return toActionState("Something went wrong.", "ERROR");
@@ -82,10 +82,10 @@ export async function createTeam(
 
   const { name, organizationId, description } = validatedFields.data;
 
-  const { session } = await getCurrentUser();
+  await getCurrentUser();
 
   try {
-    if (!hasServerOrgPermission("team", "create")) {
+    if (!(await hasServerOrgPermission("team", "create"))) {
       return toActionState(
         "You don't have permission to perform this action",
         "ERROR",
@@ -106,7 +106,7 @@ export async function createTeam(
       console.log(error.message, error.body?.code);
       const errorCode = error.body?.code as ErrorTypes;
       switch (errorCode) {
-        case errorCode:
+        case "TEAM_NOT_FOUND":
           return toActionState(error.message, "ERROR");
         default:
           return toActionState("Something went wrong.", "ERROR");
@@ -121,3 +121,27 @@ export async function createTeam(
 export async function revalidateInvitations(organizationId: string) {
   revalidateTag(`invitations:${organizationId}`);
 }
+
+export const createInvitation = async (
+  organizationId: string,
+  email: string,
+  role: "member" | "owner" | "admin",
+): Promise<any> => {
+  await auth.api.hasPermission({
+    headers: await head(),
+    body: {
+      organizationId,
+      permissions: { invitation: ["create"] },
+    },
+  });
+
+  return auth.api.createInvitation({
+    body: {
+      email,
+      role,
+      organizationId,
+      resend: true,
+    },
+    headers: await head(),
+  });
+};

@@ -1,3 +1,12 @@
+// Role
+export enum Role {
+  USER = "user",
+  MEMBER = "member",
+  ADMIN = "admin",
+  OWNER = "owner",
+  SUPER_ADMIN = "super_admin",
+}
+
 // Member
 export type Member = {
   id: string;
