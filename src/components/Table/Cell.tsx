@@ -11,7 +11,6 @@ import {
   useState,
   MouseEvent,
   SyntheticEvent,
-  FormEvent,
   useRef,
   DialogHTMLAttributes,
 } from "react";
@@ -127,7 +126,7 @@ const SelectCell = ({
       </Label>
       <Select onValueChange={onChange} value={initialValue} required>
         <SelectTrigger
-          className="**:data-[slot=select-value]:block **:data-[slot-select-value]:truncate"
+          className="**:data-[slot=select-value]:block **:data-slot-select-value:truncate"
           size="sm"
           id={`${row.original.id}-role`}
         >
@@ -259,7 +258,7 @@ export const EditCell = ({ row, table }: CellContext<User, any>) => {
           } else {
     */
 
-  const removeRow = async (e: FormEvent<HTMLFormElement>) => {
+  const removeRow = async (e: SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsDeleting(true);
     try {

@@ -12,10 +12,9 @@ import {
 import {
   useState,
   useEffect,
-  FormEvent,
   useActionState,
   startTransition,
-  ChangeEvent,
+  SyntheticEvent,
 } from "react";
 import { Switch } from "@/components/ui/switch";
 import { authClient } from "@/lib/auth/auth.client";
@@ -96,7 +95,7 @@ export default function NotificationsSettings() {
   //   setFormData((prev) => ({ ...prev, [key]: value }));
   // };
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     startTransition(async () => {
       try {

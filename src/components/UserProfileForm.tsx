@@ -16,7 +16,13 @@ import { Label } from "@/components/ui/label";
 import { updateProfile } from "@/lib/user/user.actions";
 import AvatarUpload, { AvatarContext } from "@/components/AvatarUpload";
 import Alert from "@/app/_components/Alert";
-import { useActionState, useState, startTransition } from "react";
+import {
+  useActionState,
+  useState,
+  startTransition,
+  SyntheticEvent,
+  ChangeEvent,
+} from "react";
 import {
   updateProfileSchema,
   UpdateProfileSchema,
@@ -65,7 +71,7 @@ export default function UserProfileForm({ session }: Props) {
     },
   });
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     const validateFields = updateProfileSchema.safeParse(formData);
@@ -96,7 +102,7 @@ export default function UserProfileForm({ session }: Props) {
     });
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };

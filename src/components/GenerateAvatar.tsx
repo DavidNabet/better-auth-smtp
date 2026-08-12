@@ -5,7 +5,7 @@ import { Session } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { UpdateProfileSchema } from "@/lib/user/user.schema";
 import { faker } from "@faker-js/faker";
-import { ChangeEvent, useRef, useState, MouseEvent, FormEvent } from "react";
+import { useRef, useState, MouseEvent } from "react";
 import { Input } from "./ui/input";
 
 interface GenerateAvatarProps {

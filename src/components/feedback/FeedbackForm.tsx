@@ -55,12 +55,12 @@ export default function FeedbackForm({ apps }: { apps: App[] }) {
     errorMessage: {},
   });
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     startTransition(async () => {
       try {
@@ -176,7 +176,7 @@ export default function FeedbackForm({ apps }: { apps: App[] }) {
               variant="default"
               className={cn(
                 "w-full bg-teal-600 hover:bg-teal-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600 cursor-pointer",
-                pending && "cursor-not-allowed bg-metal"
+                pending && "cursor-not-allowed bg-metal",
               )}
               disabled={pending}
             >
@@ -202,7 +202,7 @@ function Square({
       aria-hidden="true"
       className={cn(
         "flex size-5 items-center justify-center rounded bg-muted font-medium text-muted-foreground text-xs",
-        className
+        className,
       )}
       data-square
     >

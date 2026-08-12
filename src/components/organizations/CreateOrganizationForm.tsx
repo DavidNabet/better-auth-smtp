@@ -3,7 +3,7 @@
 import { authClient } from "@/lib/auth/auth.client";
 import { z } from "zod";
 import { Loader2 } from "lucide-react";
-import { useState, useTransition, ChangeEvent, FormEvent } from "react";
+import { useState, useTransition, ChangeEvent, SyntheticEvent } from "react";
 import { DialogFooter } from "../ui/dialog";
 import { ErrorMessages } from "@/app/_components/ErrorMessages";
 import { toast } from "sonner";
@@ -39,7 +39,7 @@ export function CreateOrganizationForm() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     const validateFields = formSchema.safeParse(formData);

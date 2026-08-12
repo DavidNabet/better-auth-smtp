@@ -6,6 +6,7 @@ import {
   useActionState,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -74,7 +75,11 @@ import { toast } from "sonner";
 import { Checkbox } from "../ui/checkbox";
 import InviteDialog from "./InviteDialog";
 import type { Invitation, User } from "@/lib/types";
-import { useVirtualizer } from "@tanstack/react-virtual";
+import {
+  useVirtualizer,
+  VirtualItem,
+  Virtualizer,
+} from "@tanstack/react-virtual";
 import LoadingIcon from "@/app/_components/LoadingIcon";
 import { router } from "better-auth/api";
 // import type { Invitation as Invite } from "@prisma/client";
@@ -127,7 +132,7 @@ export default function TeamInvitations({
     const res = await fetch(
       `/api/organizations/${organizationId}/invitations?${params}`,
       {
-        next: { tags: [`invitations:${organizationId}`] },
+        next: { tags: [`invitations`] },
         signal,
       },
     );
@@ -143,7 +148,8 @@ export default function TeamInvitations({
   const virtualizer = useVirtualizer({
     count: invitations.length,
     getScrollElement: () => invitesRef.current,
-    estimateSize: () => 130,
+    estimateSize: () => 80,
+    overscan: 6,
     directDomUpdates: true,
   });
 
@@ -201,21 +207,6 @@ export default function TeamInvitations({
     }
   }, [organizationId, loading, hasMore]);
 
-  // const refresh = useCallback(async () => {
-  //   setLoading(true);
-  //   try {
-  //     const data = await fetchInvitations();
-  //     setInvitations(data.invitations);
-  //     setNextCursor(data.nextCursor);
-  //     setTotal(data.total);
-  //     setHasMore(!!data.nextCursor);
-  //   } catch (error) {
-  //     console.error("Refresh went wrong: ", error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // }, [organizationId]);
-
   const pendingInvitations = invitations.filter((i) => i.status === "pending");
 
   const acceptedInvitations = invitations.filter(
@@ -254,12 +245,12 @@ export default function TeamInvitations({
       toast.error(res.error.message);
     } else {
       toast.success("Invitation canceled successfully!!!");
-      await refreshRevalidate(organizationId);
+      await refreshRevalidate();
     }
   };
 
-  const refreshRevalidate = async (organizationId: string) => {
-    await revalidateInvitations(organizationId);
+  const refreshRevalidate = async () => {
+    await revalidateInvitations();
     router.refresh();
   };
 
@@ -293,7 +284,7 @@ export default function TeamInvitations({
               variant="outline"
               type="button"
               size="icon"
-              onClick={async () => await refreshRevalidate(organizationId)}
+              onClick={refreshRevalidate}
             >
               <RefreshCw className="size-4" />
             </Button>
@@ -305,12 +296,13 @@ export default function TeamInvitations({
           </div>
         </CardHeader>
         <CardContent>
-          <div
-            ref={invitesRef}
-            className="flex flex-col gap-4"
-            onScroll={virtualizer.measure}
-          >
-            <div ref={virtualizer.containerRef}>
+          <div ref={invitesRef} className="flex flex-col gap-4 overflow-y-auto">
+            <div
+              ref={virtualizer.containerRef}
+              style={{
+                position: "relative",
+              }}
+            >
               {virtualizer.getVirtualItems().map((virtualRow) => (
                 <InvitationRow
                   key={invitations[virtualRow.index].id}
@@ -318,6 +310,8 @@ export default function TeamInvitations({
                   getStatusVariant={getStatusVariant}
                   getStatusColor={getStatusColor}
                   onCancel={handleCancel}
+                  virtualRow={virtualRow}
+                  rowVirtualizer={virtualizer}
                 />
               ))}
             </div>
@@ -347,6 +341,8 @@ function InvitationRow({
   getStatusVariant,
   getStatusColor,
   onCancel,
+  virtualRow,
+  rowVirtualizer,
 }: {
   invitation: Invitation;
   getStatusVariant: (status: string) => "default" | "secondary" | "destructive";
@@ -354,11 +350,19 @@ function InvitationRow({
     status: string,
   ) => "bg-orange-500 text-white" | "text-white" | "inherit";
   onCancel: (i: Invitation) => void;
+  virtualRow: VirtualItem;
+  rowVirtualizer: Virtualizer<HTMLDivElement, Element>;
 }) {
   return (
-    <div className="flex flex-col gap-3 rounded-lg border bg-card p-4 my-4">
+    <div
+      className="flex flex-col gap-3 rounded-lg border bg-card my-4 p-4"
+      ref={rowVirtualizer.measureElement}
+      style={{
+        height: `${virtualRow.size}px`,
+      }}
+    >
       <div className="flex items-start justify-between gap-4">
-        <div className="flex min-w-0 flex-1 flex-col gap-2">
+        <div className={`flex min-w-0 flex-1 flex-col gap-2`}>
           <div className="flex flex-wrap items-center gap-2">
             {invitation.email ? (
               <span className="font-medium text-sm">{invitation.email}</span>

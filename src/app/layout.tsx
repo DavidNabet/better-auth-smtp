@@ -9,6 +9,7 @@ import { Toaster } from "@/components/ui/sonner";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  fallback: ["system-ui"],
 });
 
 export const metadata: Metadata = {

@@ -64,6 +64,8 @@ export async function inviteMember(
     throw error;
   }
 
+  revalidateTag(`invitations`);
+
   //   revalidatePath("/dashboard/apps");
 
   return toActionState("Invitation sent to member", "SUCCESS");
@@ -118,8 +120,8 @@ export async function createTeam(
   return toActionState("Team created successfully!!!", "SUCCESS");
 }
 
-export async function revalidateInvitations(organizationId: string) {
-  revalidateTag(`invitations:${organizationId}`);
+export async function revalidateInvitations() {
+  revalidateTag(`invitations`);
 }
 
 export const createInvitation = async (

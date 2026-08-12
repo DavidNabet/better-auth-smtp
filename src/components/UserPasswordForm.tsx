@@ -5,7 +5,7 @@ import {
   useActionState,
   startTransition,
   ChangeEvent,
-  FormEvent,
+  SyntheticEvent,
 } from "react";
 import {
   Dialog,
@@ -60,7 +60,7 @@ export default function UserPasswordForm() {
     },
   });
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     const validateFields = updatePasswordSchema.safeParse(formData);
@@ -163,7 +163,7 @@ export default function UserPasswordForm() {
           </div>
           <div className="col-span-6">
             <Label
-              className="hover:bg-accent/50 flex items-start gap-3 rounded-lg border p-3 has-[[aria-checked=true]]:border-blue-600 has-[[aria-checked=true]]:bg-blue-50 dark:has-[[aria-checked=true]]:border-blue-900 dark:has-[[aria-checked=true]]:bg-blue-950"
+              className="hover:bg-accent/50 flex items-start gap-3 rounded-lg border p-3 has-aria-checked:border-blue-600 has-aria-checked:bg-blue-50 dark:has-aria-checked:border-blue-900 dark:has-aria-checked:bg-blue-950"
               htmlFor="revokeOtherSessions"
             >
               <Checkbox
