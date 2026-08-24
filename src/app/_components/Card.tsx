@@ -4,16 +4,9 @@ import {
   CardAction,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Accordion,
-  AccordionTrigger,
-  AccordionContent,
-  AccordionItem,
-} from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -56,7 +49,7 @@ export function CardInner({
   ...props
 }: ICard & CardProps) {
   return (
-    <Card className={cn("mt-8", className, boxed && "md:w-[380px]")} {...props}>
+    <Card className={cn("mt-8", className, boxed && "md:w-95")} {...props}>
       <CardHeader>
         <CardTitle>{title}</CardTitle>
         {description && (
@@ -85,13 +78,19 @@ export function CardButton({
 }: ICard & Partial<ICardLink> & CardProps) {
   return (
     <Card className={cn("p-6 border-4 border-teal-500", className)} {...props}>
-      <div className={cn("flex gap-2", boxed && "items-center justify-between")}>
+      <div
+        className={cn("flex gap-2", boxed && "items-center justify-between")}
+      >
         <div className="flex items-center gap-2">
           {icon && (
             <Button
               variant="secondary"
               size="icon"
-              className={boxed ? cardButtonClassNames.icon.secondary : cardButtonClassNames.icon.default}
+              className={
+                boxed
+                  ? cardButtonClassNames.icon.secondary
+                  : cardButtonClassNames.icon.default
+              }
             >
               {icon}
             </Button>

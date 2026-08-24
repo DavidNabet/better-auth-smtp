@@ -13,13 +13,7 @@ interface NavLinkProps {
   children?: React.ReactNode;
 }
 
-export const NavLink = ({
-  href,
-  name,
-  className,
-  icon,
-  children,
-}: NavLinkProps) => {
+export const NavLink = ({ href, name, className, children }: NavLinkProps) => {
   const segment = usePathname();
   const isActive = segment === href;
   const classNames =

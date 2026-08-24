@@ -60,7 +60,7 @@ const useHideComment = () => {
         toastCallbacks.onEnd?.(result);
       },
     }),
-    null
+    null,
   );
 };
 const useDeleteComment = () => {
@@ -69,9 +69,9 @@ const useDeleteComment = () => {
       deleteComment,
       createToastCallbacks({
         loading: "En cours...",
-      })
+      }),
     ),
-    null
+    null,
   );
 };
 
@@ -90,7 +90,7 @@ export function CommentForm({ feedbackId }: { feedbackId: string }) {
         setContent("");
       },
     }),
-    null
+    null,
   );
 
   return (
@@ -106,7 +106,7 @@ export function CommentForm({ feedbackId }: { feedbackId: string }) {
           name="content"
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          className="border-accent focus:border-primary min-h-[100px] resize-none"
+          className="border-accent focus:border-primary min-h-25 resize-none"
         />
         <ErrorMessages errors={state?.errorMessage?.content ?? null} />
         <div className="flex justify-end">
@@ -115,7 +115,7 @@ export function CommentForm({ feedbackId }: { feedbackId: string }) {
             variant="default"
             className={cn(
               "gap-2 cursor-pointer",
-              pending && "cursor-not-allowed bg-metal"
+              pending && "cursor-not-allowed bg-metal",
             )}
             disabled={pending}
           >
@@ -154,7 +154,7 @@ function ReplyComment({
         setIsReplying(false);
       },
     }),
-    null
+    null,
   );
   return (
     <div>
@@ -164,7 +164,7 @@ function ReplyComment({
           size="sm"
           className={cn(
             "text-accent-foreground hover:text-primary",
-            disabled && "bg-metal cursor-not-allowed"
+            disabled && "bg-metal cursor-not-allowed",
           )}
           disabled={disabled}
           onClick={() => setIsReplying(true)}
@@ -193,7 +193,7 @@ function ReplyComment({
             variant="default"
             className={cn(
               "gap-2 cursor-pointer",
-              pending && "cursor-not-allowed bg-metal"
+              pending && "cursor-not-allowed bg-metal",
             )}
             disabled={pending}
           >
@@ -227,15 +227,17 @@ export function CommentItem({
         <div className="bg-card border-primary/10 dark:border-accent hover:bg-accent rounded-xl border p-6 transition-colors flex-1">
           <div className="flex items-start space-x-4">
             <>
-              <Avatar className="h-10 w-10">
-                <AvatarImage
-                  src={comment?.user?.image!}
-                  alt={comment?.user?.name!}
-                />
-                <AvatarFallback className="text-white">
-                  {comment?.user?.name?.charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
+              {comment.user.name && comment.user.image && (
+                <Avatar className="h-10 w-10">
+                  <AvatarImage
+                    src={comment?.user.image}
+                    alt={comment?.user.name}
+                  />
+                  <AvatarFallback className="text-white">
+                    {comment?.user?.name?.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+              )}
               <div className="flex-1 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2 gap-2">
@@ -259,7 +261,7 @@ export function CommentItem({
                 <p
                   className={cn(
                     "text-accent-foreground leading-relaxed",
-                    comment.isHidden ? "text-sm italic text-gray-400" : ""
+                    comment.isHidden ? "text-sm italic text-gray-400" : "",
                   )}
                 >
                   {comment.isHidden

@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Prisma } from "@prisma/client";
-import { DefaultArgs } from "@prisma/client/runtime/library";
 
 interface BlogHeaderProps {
   category: string;

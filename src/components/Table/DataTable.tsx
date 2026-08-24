@@ -91,7 +91,7 @@ export function DataTable<TData>({ columns, data, id }: DataTableProps<TData>) {
               };
             }
             return row;
-          })
+          }),
         );
       },
       editedRows,
@@ -101,14 +101,14 @@ export function DataTable<TData>({ columns, data, id }: DataTableProps<TData>) {
         if (revert) {
           setInitialData((prev) =>
             prev.map((row, idx) =>
-              idx === rowIndex ? originalData[rowIndex] : row
-            )
+              idx === rowIndex ? originalData[rowIndex] : row,
+            ),
           );
         } else {
           setOriginalData((prev) =>
             prev.map((row, idx) =>
-              idx === rowIndex ? initialData[rowIndex] : row
-            )
+              idx === rowIndex ? initialData[rowIndex] : row,
+            ),
           );
         }
       },
@@ -143,7 +143,7 @@ export function DataTable<TData>({ columns, data, id }: DataTableProps<TData>) {
               .filter(
                 (column) =>
                   typeof column.accessorFn !== "undefined" &&
-                  column.getCanHide()
+                  column.getCanHide(),
               )
               .map((column) => {
                 return (
@@ -187,7 +187,7 @@ export function DataTable<TData>({ columns, data, id }: DataTableProps<TData>) {
                         >
                           {flexRender(
                             header.column.columnDef.header,
-                            header.getContext()
+                            header.getContext(),
                           )}
                           {direction && <span>{sort_indicator}</span>}
                         </div>
@@ -212,7 +212,7 @@ export function DataTable<TData>({ columns, data, id }: DataTableProps<TData>) {
                     <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext()
+                        cell.getContext(),
                       )}
                     </TableCell>
                   ))}

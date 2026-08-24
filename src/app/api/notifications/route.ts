@@ -1,6 +1,4 @@
-import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { getCurrentServerSession } from "@/lib/session/server";
 import { db } from "@/db";
 

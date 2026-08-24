@@ -23,12 +23,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Suspense } from "react";
 import { CreateAppForm } from "@/components/apps/CreateAppForm";
-import {
-  getActiveOrganization,
-  getOrganizations,
-} from "@/lib/organization/organization.utils";
+import { getOrganizations } from "@/lib/organization/organization.utils";
 import LoadingIcon from "@/app/_components/LoadingIcon";
-import Wrapper from "@/app/_components/Wrapper";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { getApps } from "@/lib/app/app.utils";

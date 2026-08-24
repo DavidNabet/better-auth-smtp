@@ -15,7 +15,7 @@
 .claude
 .agents
 ARCHITECTURE_REVIEW.*
-CONTEXT.*
+RECOMMANDATION.*
 
 # testing
 /coverage

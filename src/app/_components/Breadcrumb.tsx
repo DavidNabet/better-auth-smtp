@@ -52,7 +52,7 @@ export default function Breadcrumbs({ children }: { children?: ReactNode }) {
       <BreadcrumbList>
         {pathNames.map((link, idx) => {
           // const isActive = pathNames.length === idx + 1;
-          let itemLink =
+          const itemLink =
             link.charAt(0).toUpperCase() + link.slice(1, link.length);
 
           // Use a stable key based on the path segment instead of array index

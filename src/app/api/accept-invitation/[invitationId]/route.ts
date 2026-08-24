@@ -1,5 +1,5 @@
 import { headers } from "next/headers";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { APIError } from "better-auth";
 
@@ -10,7 +10,7 @@ export async function GET(
   const { invitationId } = await params;
 
   try {
-    const data = await auth.api.acceptInvitation({
+    await auth.api.acceptInvitation({
       body: {
         invitationId,
       },

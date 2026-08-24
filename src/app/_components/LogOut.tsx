@@ -1,10 +1,8 @@
 "use client";
 
-import { useAuth } from "@/hooks/use-auth";
 import { useTransition } from "react";
 import { authClient } from "@/lib/auth/auth.client";
 import { useRouter } from "next/navigation";
-import { SubmitButton } from "./SubmitButton";
 import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 
