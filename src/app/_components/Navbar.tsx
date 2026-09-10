@@ -24,10 +24,10 @@ import Notifications, {
 } from "@/components/notifications/Notifications";
 
 export default async function Navbar() {
-  const { userRole } = await getCurrentServerSession();
+  const data = await getCurrentServerSession();
   const nav = filterNavigationByRole(
     NAVIGATION_CONFIG,
-    userRole as Uppercase<RoleType>,
+    data?.user.role as Uppercase<RoleType>,
   );
   console.log(nav);
 
@@ -52,9 +52,9 @@ export default async function Navbar() {
                   {item.label}
                 </NavLink>
               ))}
-              {userRole !== "USER" &&
+              {data?.user.role !== "USER" &&
                 adminRoute
-                  .filter((route) => route.name === userRole)
+                  .filter((route) => route.name === data?.user.role)
                   .map((item) => (
                     <NavLink key={item.name} {...item}>
                       Me

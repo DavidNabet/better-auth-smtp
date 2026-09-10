@@ -27,12 +27,6 @@ import {
 } from "@/lib/organization/organization.utils";
 import { NextResponse } from "next/server";
 
-export type Session = typeof auth.$Infer.Session;
-export type User = typeof auth.$Infer.Session.user;
-export type Member = typeof auth.$Infer.Member;
-export type Organizations = typeof auth.$Infer.Organization;
-export type Invitation = typeof auth.$Infer.Invitation;
-
 export const auth = betterAuth({
   database: prismaAdapter(db, {
     provider: "postgresql",
@@ -181,11 +175,20 @@ export const auth = betterAuth({
             logger.info("auth db user updated: ", user.name);
 
             // return { data: { ...user, role: Role.ADMIN } };
-            await db.user.update({
-              where: { id: user.id },
-              data: {
-                role: Role.SUPER_ADMIN,
+            // await db.user.update({
+            //   where: { id: user.id },
+            //   data: {
+            //     role: Role.SUPER_ADMIN,
+            //   },
+            // });
+            await auth.api.adminUpdateUser({
+              body: {
+                userId: user.id,
+                data: {
+                  role: Role.SUPER_ADMIN,
+                },
               },
+              headers: await headers(),
             });
           }
         },
@@ -268,17 +271,23 @@ export const auth = betterAuth({
         }) => {
           console.log("after Accept Invitation: ", user.email);
           if (user.role === Role.USER) {
-            await db.user.update({
-              where: { id: user.id },
-              data: {
-                role: Role.MEMBER,
+            await auth.api.adminUpdateUser({
+              body: {
+                userId: user.id,
+                data: {
+                  role: Role.MEMBER,
+                },
               },
+              headers: await headers(),
             });
+            // await db.user.update({
+            //   where: { id: user.id },
+            //   data: {
+            //     role: Role.MEMBER,
+            //   },
+            // });
           }
           // logout user after accepting invitation to update session with new role and permissions
-          await auth.api.signOut({
-            headers: await headers(),
-          });
         },
         afterCancelInvitation: async ({
           invitation,
@@ -318,19 +327,36 @@ export const auth = betterAuth({
             `✅ UpdateMemberRole: ${user.email} role => ${member.role}`,
           );
           if (previousRole === "member" && user.role === Role.MEMBER) {
-            await db.user.update({
-              where: { id: user.id },
-              data: {
-                role: Role.ADMIN,
+            await auth.api.adminUpdateUser({
+              body: {
+                userId: user.id,
+                data: {
+                  role: Role.ADMIN,
+                },
               },
             });
+            // await db.user.update({
+            //   where: { id: user.id },
+            //   data: {
+            //     role: Role.ADMIN,
+            //   },
+            // });
           } else if (previousRole === "admin" && user.role === Role.ADMIN) {
-            await db.user.update({
-              where: { id: user.id },
-              data: {
-                role: Role.MEMBER,
+            await auth.api.adminUpdateUser({
+              body: {
+                userId: user.id,
+                data: {
+                  role: Role.MEMBER,
+                },
               },
+              headers: await headers(),
             });
+            // await db.user.update({
+            //   where: { id: user.id },
+            //   data: {
+            //     role: Role.MEMBER,
+            //   },
+            // });
           }
         },
       },
@@ -412,3 +438,9 @@ export const auth = betterAuth({
     // }),
   ],
 });
+
+export type Session = typeof auth.$Infer.Session;
+export type User = typeof auth.$Infer.Session.user;
+export type Member = typeof auth.$Infer.Member;
+export type Organizations = typeof auth.$Infer.Organization;
+export type Invitation = typeof auth.$Infer.Invitation;

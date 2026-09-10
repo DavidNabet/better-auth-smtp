@@ -15,6 +15,13 @@ export const inviteSchema = z.object({
   organizationId: z.string().min(1, "Org Id is required").optional(),
 });
 
+export const createOrganizationSchema = z.object({
+  organizationId: z.string().min(1, "Org Id is required").optional(),
+  name: z.string().trim().min(1, "Le nom de l'organization est requis"),
+  slug: z.string().trim(),
+  logo: z.string().nullable().optional(),
+});
+
 export const createTeamSchema = z.object({
   organizationId: z.string().min(1, "Org Id is required"),
   name: z.string().trim().min(1, "Le nom de la team est requis"),

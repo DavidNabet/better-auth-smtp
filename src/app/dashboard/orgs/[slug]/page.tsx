@@ -1,7 +1,11 @@
 import Wrapper from "@/app/_components/Wrapper";
 // import TeamInvitations from "@/components/organizations/TeamInvitations";
-import { getOrganizationBySlug } from "@/lib/organization/organization.utils";
+import {
+  getOrganizationBySlug,
+  getOrganizations,
+} from "@/lib/organization/organization.utils";
 import { getCurrentUser } from "@/lib/user/user.utils";
+import { unstable_cache } from "next/cache";
 import { Metadata } from "next/types";
 import { Suspense } from "react";
 import LoadingIcon from "@/app/_components/LoadingIcon";
@@ -16,25 +20,53 @@ export const metadata: Metadata = {
 const TeamInvitations = dynamic(
   () => import("@/components/organizations/TeamInvitations"),
 );
+
+// Cache avec tag explicite pour invalidation ciblée
+const getCachedOrganization = unstable_cache(
+  getOrganizationBySlug,
+  ["organization-by-slug"],
+  {
+    tags: ["organization"],
+    revalidate: 60, // 1 min, ou plus long selon besoins
+  },
+);
+
+const getCachedUserOrgs = unstable_cache(
+  getOrganizations,
+  ["user-organizations"],
+  { tags: ["organizations"], revalidate: 300 },
+);
+
 export default async function OrganizationPage(
   props: PageProps<"/dashboard/orgs/[slug]">,
 ) {
   const { slug } = await props.params;
 
-  const { currentUser } = await getCurrentUser();
-  const organization = await getOrganizationBySlug(slug);
-
   // /dashboard/org/[orgSlug]/apps/[appSlug]/teams/[teamSlug]-[id]
 
-  // const [invitations, users] = await Promise.all([
-  //   getInvitationsByOrgId(organization?.id || ""),
-  //   getUsersByOrganizationId(organization?.id || ""),
-  // ]);
+  const [organization, currentUser] = await Promise.all([
+    getOrganizationBySlug(slug),
+    getCurrentUser().then((r) => r.currentUser),
+  ]);
 
-  // ⚠ TODO: Créer un SKILL.md où je recense toutes les règles (/caveman + GPT) pour améliorer le code et l'afficher côté Shell (Contexte, etc...) + Eviter le surplus de tokens
+  const isMember = organization?.members.some(
+    (m) => m.userId === currentUser.id,
+  );
 
   // Côté serveur -> revalidateTag, revalidatePath fonctionne avec un fetch et use_cache
   // Côté client -> après une mutation, utiliser react-query pour invalider les résultats
+
+  if (!organization) {
+    return (
+      <div className="container py-12 text-center">
+        Organization introuvable
+      </div>
+    );
+  }
+
+  if (!isMember) {
+    return <div className="container py-12 text-center">Accès refusé</div>;
+  }
 
   return (
     <Wrapper>

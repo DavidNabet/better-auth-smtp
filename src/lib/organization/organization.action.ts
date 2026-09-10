@@ -8,6 +8,7 @@ import {
   createTeamSchema,
   InviteSchema,
   inviteSchema,
+  createOrganizationSchema,
 } from "@/lib/organization/organization.schema";
 import { ActionState } from "../feedback/feedback.types";
 import { toAction, toActionState } from "../feedback/feedback.utils";
@@ -15,9 +16,22 @@ import { getCurrentUser } from "../user/user.utils";
 import { hasServerOrgPermission } from "../permissions/permissions.actions";
 import { APIError } from "better-auth/api";
 import { ErrorTypes } from "../user/user.actions";
-import z from "zod/v4";
 
 // TODO: Faire un check côté DB de l'OrgId, s'il est invalide, on peut quand même lire les informations lié à l'organization (les membres, etc...)
+
+export async function createOrganization(data: { name: string; slug: string }) {
+  const session = await auth.api.getSession({ headers: await head() });
+  if (!session) throw new Error("Non authentifié");
+
+  const org = await auth.api.createOrganization({
+    body: { ...data, userId: session.user.id },
+    headers: await head(),
+  });
+
+  revalidateTag("organizations");
+  revalidateTag("organization"); // pour getCachedOrganization
+  return org;
+}
 
 export async function inviteMember(
   formState: ActionState,
@@ -50,6 +64,9 @@ export async function inviteMember(
       headers: await head(),
     });
     console.log("invitation: ", invitation);
+    revalidateTag(`invalidations:${organizationId}`);
+    revalidateTag("organization");
+    return toActionState("Invitation sent to member", "SUCCESS");
   } catch (error) {
     if (error instanceof APIError) {
       console.log(error.message, error.body?.code);
@@ -62,13 +79,9 @@ export async function inviteMember(
       }
     }
     throw error;
+    return toActionState("Something went wrong.", "ERROR");
   }
-
-  revalidateTag(`invitations`);
-
   //   revalidatePath("/dashboard/apps");
-
-  return toActionState("Invitation sent to member", "SUCCESS");
 }
 
 export async function createTeam(
@@ -123,27 +136,3 @@ export async function createTeam(
 export async function revalidateInvitations() {
   revalidateTag(`invitations`);
 }
-
-export const createInvitation = async (
-  organizationId: string,
-  email: string,
-  role: "member" | "owner" | "admin",
-): Promise<any> => {
-  await auth.api.hasPermission({
-    headers: await head(),
-    body: {
-      organizationId,
-      permissions: { invitation: ["create"] },
-    },
-  });
-
-  return auth.api.createInvitation({
-    body: {
-      email,
-      role,
-      organizationId,
-      resend: true,
-    },
-    headers: await head(),
-  });
-};

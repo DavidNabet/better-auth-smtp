@@ -6,7 +6,6 @@ import {
   useActionState,
   useCallback,
   useEffect,
-  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -81,7 +80,8 @@ import {
   Virtualizer,
 } from "@tanstack/react-virtual";
 import LoadingIcon from "@/app/_components/LoadingIcon";
-import { router } from "better-auth/api";
+// import { useMutation, useQueryClient } from "@tanstack/react-query";
+// import { queryKeys } from "@/lib/query/keys";
 // import type { Invitation as Invite } from "@prisma/client";
 
 interface TeamInvitationsProps {
@@ -105,6 +105,9 @@ function formatTimeUntil(date: Date): string {
 }
 
 // UPDATE (NON): Vérifie si un utilisateur existe dans la DB alors proposer l'invitation sinon créer un compte puis l'inviter
+// TODO: Remplacer les useState filtres, search et pagination par un useInfiniteQuery
+// Le client est géré par react-query + invalidateQueries pour invalider les données du dom
+// Le serveur est géré par les server actions et revalidateTag pour invalider le cache
 export default function TeamInvitations({
   organizationId,
 }: TeamInvitationsProps) {
@@ -237,21 +240,27 @@ export default function TeamInvitations({
     [],
   );
 
+  const refreshInvitations = useCallback(async () => {
+    const result = await fetchInvitations({
+      limit: 5,
+    });
+
+    setInvitations(result.invitations);
+    nextCursorRef.current = result.nextCursor;
+    setTotal(result.total);
+    setHasMore(!!result.nextCursor);
+  }, [organizationId]);
+
   const handleCancel = async (invitation: Invitation) => {
     const res = await authClient.organization.cancelInvitation({
       invitationId: invitation.id,
     });
     if (res.error) {
       toast.error(res.error.message);
-    } else {
-      toast.success("Invitation canceled successfully!!!");
-      await refreshRevalidate();
+      return;
     }
-  };
-
-  const refreshRevalidate = async () => {
-    await revalidateInvitations();
-    router.refresh();
+    toast.success("Invitation canceled successfully!!!");
+    await refreshInvitations();
   };
 
   if (total === 0) {
@@ -280,17 +289,20 @@ export default function TeamInvitations({
                 {canceledInvitations.length} cancelled
               </CardDescription>
             </div>
-            <Button
+            {/* <Button
               variant="outline"
               type="button"
               size="icon"
-              onClick={refreshRevalidate}
+              onClick={refreshInvitations}
             >
               <RefreshCw className="size-4" />
-            </Button>
+            </Button> */}
             <InviteDialog title="Create Invitation">
               {organizationId && (
-                <CreateInvitation organizationId={organizationId} />
+                <CreateInvitation
+                  organizationId={organizationId}
+                  onSuccess={refreshInvitations}
+                />
               )}
             </InviteDialog>
           </div>
@@ -436,8 +448,10 @@ function InvitationActionsDropdown({
 
 export function CreateInvitation({
   organizationId,
+  onSuccess,
 }: {
   organizationId?: string;
+  onSuccess?: () => void;
 }) {
   const formRef = useRef<HTMLFormElement>(null);
   const [users, setUsers] = useState<User[]>([]);
@@ -451,6 +465,8 @@ export function CreateInvitation({
       onSuccess(result) {
         toastCallbacks.onSuccess?.(result);
         formRef.current?.reset();
+
+        onSuccess?.();
       },
     }),
     null,

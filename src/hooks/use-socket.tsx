@@ -10,8 +10,8 @@ import {
   useState,
 } from "react";
 import { Socket } from "socket.io-client";
-import { getCurrentClientSession } from "@/lib/session/client";
 import { socketInstance } from "@/lib/socket";
+import { authClient } from "@/lib/auth/auth.client";
 
 interface SocketContextType {
   socket: Socket | null;
@@ -36,7 +36,7 @@ export const SocketProvider = ({ children, userId }: Props) => {
     error: sessionError,
     isRefetching,
     refetch: refetchSession,
-  } = getCurrentClientSession();
+  } = authClient.useSession();
 
   // const [notificationsEnabled, setNotificationsEnabled] =
   //   useState(notificationsStatus);

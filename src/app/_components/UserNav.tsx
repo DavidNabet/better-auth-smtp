@@ -15,7 +15,7 @@ import { menu } from "@/components/routes";
 import { getCurrentServerSession } from "@/lib/session/server";
 
 export async function UserNav() {
-  const { userEmail, userName, userImage } = await getCurrentServerSession();
+  const data = await getCurrentServerSession();
 
   return (
     <DropdownMenu>
@@ -25,11 +25,11 @@ export async function UserNav() {
           className="relative size-9.5 rounded-full focus:ring-offset-neutral-300 focus:ring-offset-2 "
         >
           <Avatar className="size-9.5">
-            {userImage ? (
-              <AvatarImage src={userImage} className="object-cover" />
+            {data?.user.image ? (
+              <AvatarImage src={data?.user.image} className="object-cover" />
             ) : (
               <AvatarFallback className="dark:bg-neutral-100 bg-neutral-700 text-accent text-md">
-                {userName.slice(0, 2).toUpperCase()}
+                {data?.user.name.slice(0, 2).toUpperCase()}
               </AvatarFallback>
             )}
           </Avatar>
@@ -38,9 +38,11 @@ export async function UserNav() {
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{userName}</p>
+            <p className="text-sm font-medium leading-none">
+              {data?.user.name}
+            </p>
             <p className="text-xs leading-none text-muted-foreground">
-              {userEmail}
+              {data?.user.email}
             </p>
           </div>
         </DropdownMenuLabel>

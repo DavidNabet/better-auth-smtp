@@ -9,7 +9,6 @@ import {
 } from "react";
 import { authClient } from "@/lib/auth/auth.client";
 import { useRouter } from "next/navigation";
-import { getCurrentClientSession } from "@/lib/session/client";
 // import { Session } from "@/lib/auth";
 import { APIError } from "better-auth/api";
 import {
@@ -18,61 +17,54 @@ import {
 } from "@/lib/permissions/permissions.utils";
 import { Role } from "@prisma/client";
 import { auth, Member } from "@/lib/auth";
+import { useQuery } from "@tanstack/react-query";
+import { clientQueryOptions } from "@/lib/query/options";
 
 type SessionServer = typeof auth.$Infer.Session & {
   member: Member;
 };
 
-function sessionDto(data: SessionServer | null) {
-  return {
-    sessionId: data?.session.id,
-    userId: data?.user.id!,
-    email: data?.user.email!,
-    name: data?.user.name!,
-    role: data?.user.role!,
-    image: data?.user.image,
-    token: data?.session.token!,
-    expiresAt: data?.session.expiresAt!,
-    activeOrgId: data?.session.activeOrganizationId,
-    isRoleOrg: data?.member?.role ?? 1,
-  };
-}
-
-type SessionUser = Awaited<ReturnType<typeof sessionDto>>;
+type SessionUser = {
+  sessionId: string;
+  userId: string;
+  email: string;
+  name: string;
+  role: string;
+  image?: string;
+  token: string;
+  expiresAt: Date;
+  activeOrgId?: string;
+  isRoleOrg?: string;
+};
 
 interface AuthContextType {
   session?: SessionUser;
-  // isAdmin: boolean;
-  logOut: () => void;
-  verifySession: () => void;
-  verifySessionInOrganization: () => void;
+  logOut: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(
   undefined,
 );
-// type UserRole = (typeof auth.$Infer.Session)["user"];
 
 export function useAuthState() {
-  const [s, setSession] = useState<SessionUser | undefined>(undefined);
-  // const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const router = useRouter();
 
-  useEffect(() => {
-    (async function run() {
-      const { data } = await authClient.getSession();
-      const filteredData = sessionDto(data as SessionServer);
-      setSession(filteredData);
-      console.log("session provider: ", data);
-
-      return () => {
-        setSession(undefined);
-      };
-    })();
-  }, []);
+  const {
+    data: result,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: clientQueryOptions.session().queryKey,
+    queryFn: () => {
+      const { data, error } = authClient.useSession();
+      if (error) throw error;
+      return data;
+    },
+  });
 
   // verify if user has member role
-  useEffect(() => {
+  /*useEffect(() => {
     let mounted = true;
     if (!s?.activeOrgId) return;
     (async () => {
@@ -90,46 +82,12 @@ export function useAuthState() {
     return () => {
       mounted = false;
     };
-  }, [s?.activeOrgId]);
-  /*useEffect(() => {
-    // Role
-    if (!s) return;
-    async function run() {
-      const permission = hasClientPermission(
-        s?.role as Exclude<Role, "OWNER">,
-        "user",
-        "delete",
-      );
-      if (!permission) {
-        throw new APIError("BAD_REQUEST", {
-          message: "You don't actually have the correct role",
-        });
-      }
-      setIsAdmin(permission);
-    }
-    if (s.role === Role.SUPER_ADMIN) {
-      run();
-    }
-  }, [s?.sessionId]);*/
+  }, [s?.activeOrgId]);*/
 
   async function logOut() {
-    const { data, error } = await authClient.revokeSession({
-      token: s?.token!,
-    });
-    console.log("logout: ", data, error);
-    setSession(undefined);
-  }
-
-  async function verifySessionAndSave() {
-    const { data, isPending, error } = authClient.useSession();
-    if (!error && !isPending) {
-      // userRole: data?.user?.role,
-      const filteredData = sessionDto(data as SessionServer);
-      setSession(filteredData);
-    } else {
-      router.refresh();
-      router.push("/auth/signin");
-    }
+    if (!result?.session.token) return;
+    await authClient.revokeSession({ token: result.session.token });
+    refetch(); // invalider et refetch
   }
 
   /**
@@ -138,26 +96,26 @@ export function useAuthState() {
    * par l'API, met à jour la session uniquement si le rôle diffère de celui
    * déjà stocké (évite des mises à jour inutiles).
    */
-  async function verifyUserInOrganization() {
-    if (!s?.isRoleOrg) return;
-    const { data, error } = await authClient.organization.getActiveMemberRole();
-    if (error || !data) return false;
-    console.log("verifyRole: ", data);
+  // async function verifyUserInOrganization() {
+  //   if (!s?.isRoleOrg) return;
+  //   const { data, error } = await authClient.organization.getActiveMemberRole();
+  //   if (error || !data) return false;
+  //   console.log("verifyRole: ", data);
 
-    const newRole = data.role;
+  //   const newRole = data.role;
 
-    setSession({
-      ...s,
-      isRoleOrg: newRole,
-    });
-  }
+  //   setSession({
+  //     ...s,
+  //     isRoleOrg: newRole,
+  //   });
+  // }
 
   return {
-    session: s,
-    // isAdmin,
+    session: result as SessionUser | undefined,
+    isLoading,
+    error,
     logOut,
-    verifySession: verifySessionAndSave,
-    verifySessionInOrganization: verifyUserInOrganization,
+    verifySession: refetch,
   };
 }
 

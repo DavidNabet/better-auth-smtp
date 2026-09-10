@@ -2,11 +2,10 @@ import LoadingIcon from "@/app/_components/LoadingIcon";
 import Wrapper from "@/app/_components/Wrapper";
 import { Suspense } from "react";
 import { CardInner } from "@/app/_components/Card";
-import { UsersTable, LogDisplay } from "@/components/Table/Tables";
+import { UsersTable } from "@/components/Table/Tables";
 import { GenerateUsers } from "@/components/GenerateUsers";
 import { getCurrentServerSession } from "@/lib/session/server";
 import Link from "next/link";
-import { useAuthState } from "@/hooks/use-auth";
 
 /** TODO : Plateforme de feedback / idées collaboratives
 Title: The Best MVP
@@ -32,25 +31,27 @@ Système plateforme intermédiaire style MALT beaucoup plus tard.
 
 // ⚠ Créer un upvote avec des commentaires pour les utilisateurs, les moderateurs pourront ban les users qui ont été odieux ou insultant. Les commentaires peuvent être likés par les users.
 export default async function Dashboard() {
-  const { userEmail, userName, userRole, userId } =
-    await getCurrentServerSession();
+  const data = await getCurrentServerSession();
 
-  if (!userRole) {
+  if (!data?.user.role) {
     return null;
   }
 
   // TODO: Appeler un fetch("/api/socket") pour appeler la dernière notif pour accepter ou refuser l'invitation
 
   return (
-    <Wrapper title={`Welcome ${userName}`}>
+    <Wrapper title={`Welcome ${data?.user.name}`}>
       <p>Content</p>
       <span>
-        {userEmail
-          ? userEmail.replace(/^[^@]+/, "*".repeat(userEmail.indexOf("@")))
+        {data?.user.email
+          ? data?.user.email.replace(
+              /^[^@]+/,
+              "*".repeat(data?.user.email.indexOf("@")),
+            )
           : null}
       </span>
       <div className="grid grid-cols-1 gap-8 md:grid-cols-8 md:place-items-stretch">
-        {userRole === "ADMIN" || userRole === "SUPER_ADMIN" ? (
+        {data?.user.role === "ADMIN" || data?.user.role === "SUPER_ADMIN" ? (
           <>
             <section className="col-span-6 md:col-span-3">
               <Suspense fallback={<LoadingIcon />}>
@@ -58,7 +59,7 @@ export default async function Dashboard() {
                   title="Créer des utilisateurs ?"
                   description="Générer des utlisateurs"
                 >
-                  <GenerateUsers userId={userId.slice(2, 6)} />
+                  <GenerateUsers userId={data?.user.id.slice(2, 6)} />
                 </CardInner>
               </Suspense>
             </section>
@@ -69,7 +70,7 @@ export default async function Dashboard() {
                   description="Nombre de users inscrits"
                   actions={
                     <Link
-                      href={`/dashboard/users/${userRole?.toLowerCase()}`}
+                      href={`/dashboard/users/${data?.user.role.toLowerCase()}`}
                       className="text-primary text-sm underline"
                     >
                       Voir plus
@@ -82,7 +83,7 @@ export default async function Dashboard() {
             </section>
           </>
         ) : (
-          userRole !== "USER" && (
+          data?.user.role !== "USER" && (
             <div className="col-span-6">
               <Suspense fallback={<LoadingIcon />}>
                 <CardInner
@@ -90,7 +91,7 @@ export default async function Dashboard() {
                   description="Nombre de users inscrits"
                   actions={
                     <Link
-                      href={`/dashboard/users/${userRole?.toLowerCase()}`}
+                      href={`/dashboard/users/${data?.user.role.toLowerCase()}`}
                       className="text-primary text-sm underline"
                     >
                       Voir plus

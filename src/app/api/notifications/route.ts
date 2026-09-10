@@ -4,8 +4,8 @@ import { db } from "@/db";
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await getCurrentServerSession();
-    if (!session.userId) {
+    const data = await getCurrentServerSession();
+    if (!data?.user.id) {
       return NextResponse.json(
         { error: "Utilisateur non authentifié" },
         { status: 401 },
@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
         { status: 400 },
       );
     }
-    if (userId !== session.userId) {
+    if (userId !== data?.user.id) {
       return NextResponse.json(
         { error: "Accès refusé: userId ne correspond pas à la session" },
         { status: 403 },

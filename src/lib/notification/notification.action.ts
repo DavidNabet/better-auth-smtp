@@ -1,9 +1,6 @@
 "use server";
 
-import { ActionState } from "@/lib/feedback/feedback.types";
-import { toAction, toActionState } from "@/lib/feedback/feedback.utils";
 import { notificationSettingSchema } from "@/lib/notification/notification.schema";
-import { headers as head } from "next/headers";
 import { db } from "@/db";
 import { ErrorTypes } from "../user/user.actions";
 import { APIError } from "better-auth/api";
@@ -11,8 +8,6 @@ import { revalidatePath } from "next/cache";
 import { hasServerPermission } from "../permissions/permissions.actions";
 import { FormState } from "../user/user.types";
 import { flattenError } from "zod";
-import { auth } from "../auth";
-import { getCurrentServerSession } from "../session/server";
 
 export async function updateNotificationSetting(
   formState: FormState,
