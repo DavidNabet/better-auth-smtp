@@ -65,9 +65,10 @@ export default function AuthSignUp() {
         name: formData.name,
         email: formData.email,
         password: formData.password,
+
         fetchOptions: {
           onError(ctx) {
-            console.log(ctx.error);
+            console.log(ctx.error.message);
             if (ctx.error.status === 403) {
               setError("Please verify your email address");
             }

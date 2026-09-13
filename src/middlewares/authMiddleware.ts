@@ -2,6 +2,7 @@ import { Middleware } from "./chain";
 import { NextResponse } from "next/server";
 import { betterFetch } from "@better-fetch/fetch";
 import { Session } from "@/lib/auth";
+import { getSessionCookie } from "better-auth/cookies";
 
 export const authMiddleware: Middleware = async (req, _event, next) => {
   const routes = ["/auth/signin", "/auth/signup", "/auth/two-factor"];
@@ -12,11 +13,12 @@ export const authMiddleware: Middleware = async (req, _event, next) => {
   const isAuthRoute = routes.includes(nextUrl.pathname);
   const isAdminRoute = adminRoute.includes(nextUrl.pathname);
   const isRoot = root.includes(nextUrl.pathname);
+  const sessionCookie = getSessionCookie(req);
 
   const { data: session, error } = await betterFetch<Session>(
     "/api/auth/get-session",
     {
-      baseURL: process.env.NEXT_PUBLIC_APP_URL,
+      baseURL: req.nextUrl.origin,
       headers: {
         cookie: req.headers.get("cookie") || "",
       },
@@ -25,7 +27,9 @@ export const authMiddleware: Middleware = async (req, _event, next) => {
 
   // P1.3 — présence d'un cookie != session valide.
   // Un cookie expiré/invalide ne satisfait plus le garde.
-  const haveAccess = !!session;
+  const haveAccess = !!sessionCookie;
+
+  console.log("sessionCookie: ", sessionCookie?.split(".")[0]);
 
   if (isRoot) {
     console.log("root");

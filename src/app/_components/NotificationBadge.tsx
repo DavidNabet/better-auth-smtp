@@ -11,7 +11,7 @@ export default function NotificationBadge({
       {children}
       <Badge
         variant="secondary"
-        className="absolute -end-2.5 -top-2.5 h-5 min-w-5 rounded-full px-1 tabular-nums"
+        className="absolute -inset-e-2.5 -top-2.5 h-5 min-w-5 rounded-full px-1 tabular-nums"
       >
         {num}
       </Badge>

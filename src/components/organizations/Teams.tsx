@@ -169,10 +169,10 @@ export default function Teams({ organizationId }: TeamsProps) {
     });
     if (res.error) {
       toast.error(res.error.message);
-    } else {
-      toast.success("Team removed");
-      router.refresh();
+      return;
     }
+    toast.success("Team removed");
+    router.refresh();
   };
 
   const getTeamIcon = useMemo(

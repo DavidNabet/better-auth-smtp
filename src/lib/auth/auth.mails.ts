@@ -10,7 +10,6 @@ const passwordForm = process.env.EMAIL_PASSWORD ?? "";
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
-  host: "smtp.gmail.com",
   auth: {
     user: emailFrom,
     pass: passwordForm,

@@ -3,7 +3,6 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Geist } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/hooks/use-auth";
-import { SocketProvider } from "@/hooks/use-socket";
 import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({

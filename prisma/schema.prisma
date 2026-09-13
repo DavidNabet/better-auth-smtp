@@ -16,36 +16,34 @@ enum Role {
 }
 
 model User {
-  id            String       @id @default(cuid())
-  email         String       @unique
-  name          String?      @unique
-  emailVerified Boolean
-  image         String?
-  createdAt     DateTime
-  updatedAt     DateTime
-  sessions      Session[]
-  accounts      Account[]
-  members       Member[]
-  invitations   Invitation[]
-  teamMembers   TeamMember[]
-
-  role       Role      @default(USER)
-  banned     Boolean?
-  banReason  String?
-  banExpires DateTime?
-
-  // relations
-  feedbacks      Feedback[]
-  votes          Vote[]
-  comments       Comment[]
-  likes          Like[]
-  moderationLogs ModerationLog[]
-
-  twoFactorEnabled   Boolean        @default(false)
-  notificationStatus Boolean        @default(false)
+  id                 String          @id @default(cuid())
+  email              String
+  name               String?         @unique
+  emailVerified      Boolean
+  image              String?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  twoFactorEnabled   Boolean?        @default(false)
+  notificationStatus Boolean         @default(false)
+  role               Role            @default(USER)
+  banned             Boolean?        @default(false)
+  banReason          String?
+  banExpires         DateTime?
+  sessions           Session[]
+  accounts           Account[]
+  members            Member[]
+  invitations        Invitation[]
+  teamMembers        TeamMember[]
   twofactors         TwoFactor[]
   notifications      Notification[]
+  // relations
+  feedbacks          Feedback[]
+  votes              Vote[]
+  comments           Comment[]
+  likes              Like[]
+  moderationLogs     ModerationLog[]
 
+  @@unique([email])
   @@map("user")
 }
 
@@ -62,8 +60,8 @@ model Account {
   refreshTokenExpiresAt DateTime?
   scope                 String?
   password              String?
-  createdAt             DateTime
-  updatedAt             DateTime
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
 
   @@index([userId])
   @@map("account")
@@ -73,8 +71,8 @@ model Session {
   id        String   @id
   expiresAt DateTime
   token     String
-  createdAt DateTime
-  updatedAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   ipAddress String?
   userAgent String?
   userId    String
@@ -91,24 +89,29 @@ model Session {
 }
 
 model Verification {
-  id         String    @id
+  id         String   @id
   identifier String
   value      String
   expiresAt  DateTime
-  createdAt  DateTime?
-  updatedAt  DateTime?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   @@index([identifier])
   @@map("verification")
 }
 
 model TwoFactor {
-  id          String @id
-  secret      String
-  backupCodes String
-  userId      String
-  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                      String    @id
+  secret                  String
+  backupCodes             String
+  userId                  String
+  user                    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  verified                Boolean?  @default(true)
+  failedVerificationCount Int?      @default(0)
+  lockedUntil             DateTime?
 
+  @@index([secret])
+  @@index([userId])
   @@map("twoFactor")
 }
 
@@ -137,24 +140,27 @@ model Member {
   role           String       @default("member")
   createdAt      DateTime
 
+  @@index([organizationId])
+  @@index([userId])
   @@map("member")
 }
 
 model Invitation {
-  id             String         @id @default(cuid())
+  id             String       @id @default(cuid())
   organizationId String
-  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   email          String
   role           String?
-  status         String         @default("pending")
+  status         String       @default("pending")
   expiresAt      DateTime
   inviterId      String
-  user           User           @relation(fields: [inviterId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [inviterId], references: [id], onDelete: Cascade)
   teamId         String?
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-  notifications  Notification[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 
+  @@index([organizationId])
+  @@index([email])
   @@map("invitation")
 }
 
@@ -164,21 +170,31 @@ model Team {
   organizationId String
   description    String?
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  memberCount    Int          @default(0)
   slug           String?
   logo           String?
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
   teamMembers    TeamMember[]
   apps           App[]
+
+  @@index([organizationId])
+  @@map("team")
 }
 
 model TeamMember {
-  id        String   @id @default(cuid())
-  teamId    String
-  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  createdAt DateTime @default(now())
+  id            String    @id @default(cuid())
+  teamId        String
+  team          Team      @relation(fields: [teamId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  membershipKey String?
+  createdAt     DateTime? @default(now())
+
+  @@unique([membershipKey])
+  @@index([teamId])
+  @@index([userId])
+  @@map("teamMember")
 }
 
 model Activity {
@@ -192,14 +208,17 @@ model Activity {
   metadata       Json?
   createdAt      DateTime @default(now())
   // organization   Organization @relation(fields: [organizationId], references: [id])
+
+  @@map("activity")
 }
 
 model RateLimit {
   id          String @id
-  key         String @unique
+  key         String
   count       Int
   lastRequest BigInt
 
+  @@unique([key])
   @@map("rateLimit")
 }
 
@@ -226,22 +245,38 @@ model ModerationLog {
 }
 
 model Notification {
-  id           String      @id @default(cuid())
-  type         String
-  title        String
-  message      String
-  read         Boolean     @default(false)
-  status       String?     @default("pending")
-  link         String?
-  expiresAt    DateTime
-  userId       String?
-  invitationId String?
-  user         User?       @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  invitation   Invitation? @relation(fields: [invitationId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  createdAt    DateTime    @default(now())
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organizationId String?
+  type           String
+  title          String
+  body           String?
+  href           String?
+  data           Json?
+  read           Boolean  @default(false)
+  createdAt      DateTime
 
   @@map("notification")
 }
+
+// model Notification {
+//   id           String      @id @default(cuid())
+//   type         String
+//   title        String
+//   message      String
+//   read         Boolean     @default(false)
+//   status       String?     @default("pending")
+//   link         String?
+//   expiresAt    DateTime
+//   userId       String?
+//   invitationId String?
+//   user         User?       @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+//   invitation   Invitation? @relation(fields: [invitationId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+//   createdAt    DateTime    @default(now())
+
+//   @@map("notification")
+// }
 
 model App {
   id          String   @id @default(cuid())
@@ -282,6 +317,8 @@ model Feedback {
   comments  Comment[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+
+  @@map("feedback")
 }
 
 enum FeedbackStatus {
@@ -309,6 +346,7 @@ model Vote {
   createdAt DateTime @default(now())
 
   @@unique([userId, feedbackId]) // Un seul vote (UP ou DOWN) par user/feedback
+  @@map("vote")
 }
 
 model Comment {
@@ -331,6 +369,8 @@ model Comment {
 
   likes         Like[]
   ModerationLog ModerationLog[]
+
+  @@map("comment")
 }
 
 model Like {
@@ -346,4 +386,5 @@ model Like {
   commentId String
 
   @@unique([userId, commentId]) // Un seul like par user/comment
+  @@map("like")
 }

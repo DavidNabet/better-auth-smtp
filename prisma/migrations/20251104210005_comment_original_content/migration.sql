@@ -5,42 +5,42 @@
 
 */
 -- DropForeignKey
-ALTER TABLE "public"."Comment" DROP CONSTRAINT "Comment_feedbackId_fkey";
+ALTER TABLE "public"."comment" DROP CONSTRAINT "comment_feedbackId_fkey";
 
 -- DropForeignKey
-ALTER TABLE "public"."Comment" DROP CONSTRAINT "Comment_userId_fkey";
+ALTER TABLE "public"."comment" DROP CONSTRAINT "comment_userId_fkey";
 
 -- DropForeignKey
-ALTER TABLE "public"."Like" DROP CONSTRAINT "Like_commentId_fkey";
+ALTER TABLE "public"."like" DROP CONSTRAINT "like_commentId_fkey";
 
 -- DropForeignKey
-ALTER TABLE "public"."Like" DROP CONSTRAINT "Like_userId_fkey";
+ALTER TABLE "public"."like" DROP CONSTRAINT "like_userId_fkey";
 
 -- DropForeignKey
-ALTER TABLE "public"."Vote" DROP CONSTRAINT "Vote_feedbackId_fkey";
+ALTER TABLE "public"."vote" DROP CONSTRAINT "vote_feedbackId_fkey";
 
 -- DropForeignKey
-ALTER TABLE "public"."Vote" DROP CONSTRAINT "Vote_userId_fkey";
+ALTER TABLE "public"."vote" DROP CONSTRAINT "vote_userId_fkey";
 
 -- AlterTable
-ALTER TABLE "Comment" ADD COLUMN     "isHidden" BOOLEAN NOT NULL DEFAULT false,
+ALTER TABLE "comment" ADD COLUMN     "isHidden" BOOLEAN NOT NULL DEFAULT false,
 ADD COLUMN     "originalContent" TEXT,
 ADD COLUMN     "updatedAt" TIMESTAMP(3) NOT NULL;
 
 -- AddForeignKey
-ALTER TABLE "Vote" ADD CONSTRAINT "Vote_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "vote" ADD CONSTRAINT "vote_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Vote" ADD CONSTRAINT "Vote_feedbackId_fkey" FOREIGN KEY ("feedbackId") REFERENCES "Feedback"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "vote" ADD CONSTRAINT "vote_feedbackId_fkey" FOREIGN KEY ("feedbackId") REFERENCES "feedback"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Comment" ADD CONSTRAINT "Comment_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "comment" ADD CONSTRAINT "comment_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Comment" ADD CONSTRAINT "Comment_feedbackId_fkey" FOREIGN KEY ("feedbackId") REFERENCES "Feedback"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "comment" ADD CONSTRAINT "comment_feedbackId_fkey" FOREIGN KEY ("feedbackId") REFERENCES "feedback"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Like" ADD CONSTRAINT "Like_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "like" ADD CONSTRAINT "like_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Like" ADD CONSTRAINT "Like_commentId_fkey" FOREIGN KEY ("commentId") REFERENCES "Comment"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "like" ADD CONSTRAINT "like_commentId_fkey" FOREIGN KEY ("commentId") REFERENCES "comment"("id") ON DELETE CASCADE ON UPDATE CASCADE;

@@ -16,6 +16,7 @@ import {
   admin as adm,
   member,
 } from "../organization/organization.service";
+import { inboxClient } from "better-inbox/client";
 
 // Access role from server in the client
 export const authClient = createAuthClient({
@@ -51,6 +52,7 @@ export const authClient = createAuthClient({
       },
       schema: inferOrgAdditionalFields<typeof auth>(),
     }),
+    inboxClient(),
   ],
   fetchOptions: {
     onError: async (context) => {

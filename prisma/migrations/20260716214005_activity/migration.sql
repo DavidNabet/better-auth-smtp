@@ -13,7 +13,7 @@ ALTER COLUMN "count" SET NOT NULL,
 ALTER COLUMN "lastRequest" SET NOT NULL;
 
 -- CreateTable
-CREATE TABLE "Activity" (
+CREATE TABLE "activity" (
     "id" TEXT NOT NULL,
     "organizationId" TEXT NOT NULL,
     "teamId" TEXT,
@@ -24,7 +24,7 @@ CREATE TABLE "Activity" (
     "metadata" JSONB,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "Activity_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "activity_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex

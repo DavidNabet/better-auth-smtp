@@ -5,6 +5,7 @@ import { nextCookies } from "better-auth/next-js";
 import { db } from "@/db";
 import { headers } from "next/headers";
 import { admin, twoFactor, username, organization } from "better-auth/plugins";
+import { inbox } from "better-inbox";
 import {
   sendMagicLinkforLogin,
   sendOTPforLogin,
@@ -32,17 +33,10 @@ export const auth = betterAuth({
     provider: "postgresql",
   }),
   baseURL: process.env.BETTER_AUTH_URL ?? "",
-  emailAndPassword: {
-    enabled: true,
-    requireEmailVerification: true,
-    autoSignIn: false,
-  },
   emailVerification: {
-    sendOnSignUp: true,
-    autoSignInAfterVerification: true,
-    expiresIn: 3600,
-    sendOnSignIn: true,
-
+    beforeEmailVerification: async (user, req) => {
+      logger.info("Request before verification", user.email);
+    },
     sendVerificationEmail: async ({ user, url }) => {
       console.info("Verification email sent to", user.email);
       await sendMagicLinkforLogin(user.name, user.email, url);
@@ -53,11 +47,20 @@ export const auth = betterAuth({
         `${user.email} has successfully verified their email address!`,
       );
     },
+    sendOnSignUp: true,
+    autoSignInAfterVerification: true,
+    expiresIn: 3600,
+    sendOnSignIn: true,
     // afterEmailVerification: async (user, request) => {
     //   console.log(
     //     `${user.email} has successfully verified their email address!`
     //   );
     // },
+  },
+  emailAndPassword: {
+    enabled: true,
+    requireEmailVerification: true,
+    autoSignIn: false,
   },
   logger: {
     disabled: false,
@@ -175,21 +178,21 @@ export const auth = betterAuth({
             logger.info("auth db user updated: ", user.name);
 
             // return { data: { ...user, role: Role.ADMIN } };
-            // await db.user.update({
-            //   where: { id: user.id },
-            //   data: {
-            //     role: Role.SUPER_ADMIN,
-            //   },
-            // });
-            await auth.api.adminUpdateUser({
-              body: {
-                userId: user.id,
-                data: {
-                  role: Role.SUPER_ADMIN,
-                },
+            await db.user.update({
+              where: { id: user.id },
+              data: {
+                role: Role.SUPER_ADMIN,
               },
-              headers: await headers(),
             });
+            // await auth.api.adminUpdateUser({
+            //   body: {
+            //     userId: user.id,
+            //     data: {
+            //       role: Role.SUPER_ADMIN,
+            //     },
+            //   },
+            //   headers: await headers(),
+            // });
           }
         },
       },
@@ -232,9 +235,9 @@ export const auth = betterAuth({
         SUPER_ADMIN,
       },
       // P1.4 — ids admin pilotés par env, avec repli sûr sur la valeur commitée.
-      adminUserIds: process.env.ADMIN_USER_IDS?.split(",")
-        .map((s) => s.trim())
-        .filter(Boolean) ?? ["97xYFyzQ9JXQdDgNilbEwg77Nl4tXGLN"],
+      // adminUserIds: process.env.ADMIN_USER_IDS?.split(",")
+      //   .map((s) => s.trim())
+      //   .filter(Boolean),
       impersonationSessionDuration: 60 * 60 * 24,
     }),
     twoFactor({
@@ -379,24 +382,14 @@ export const auth = betterAuth({
           inviteLink,
         );
 
-        await db.notification.create({
-          data: {
-            type: "invitation_pending",
+        await auth.api.notify({
+          body: {
             title: "Invitation en attente",
-            message: `Vous avez une invitation à rejoindre ${data.organization.name}`,
-            read: false,
-            user: {
-              connect: {
-                email: data.email,
-              },
-            },
-            invitation: {
-              connect: {
-                id: data.id,
-              },
-            },
-            expiresAt: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // expire in 3 days
-            status: "pending",
+            type: "invitation.pending",
+            organizationId: data.organization.id,
+            userId: data.inviter.id,
+            body: `Vous avez une invitation à rejoindre ${data.organization.name}`,
+            href: `/dashboard/orgs/${data.organization.slug}`,
           },
         });
       },
@@ -430,6 +423,7 @@ export const auth = betterAuth({
       },
     }),
     nextCookies(),
+    inbox(),
     // multiSession(),
     // magicLink({
     //   sendMagicLink: async ({ email, url, token }) => {

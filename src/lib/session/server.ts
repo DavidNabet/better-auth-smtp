@@ -4,15 +4,13 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { unstable_cache as cache } from "next/cache";
 
-export const getCurrentServerSession = cache(
-  async () => {
-    return await auth.api.getSession({
-      headers: await headers(),
-    });
-  },
-  ["auth-session"],
-  { tags: ["auth-session"], revalidate: 60 },
-);
+export const getCurrentServerSession = async () => {
+  return await auth.api.getSession({
+    headers: await headers(),
+  });
+};
+// ["auth-session"],
+// { tags: ["auth-session"], revalidate: 60 },
 
 // return {
 //     userId: session?.user.id!,

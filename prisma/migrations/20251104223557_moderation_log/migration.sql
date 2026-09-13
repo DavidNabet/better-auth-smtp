@@ -17,4 +17,4 @@ CREATE TABLE "moderationLog" (
 ALTER TABLE "moderationLog" ADD CONSTRAINT "moderationLog_moderatorId_fkey" FOREIGN KEY ("moderatorId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "moderationLog" ADD CONSTRAINT "moderationLog_commentId_fkey" FOREIGN KEY ("commentId") REFERENCES "Comment"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "moderationLog" ADD CONSTRAINT "moderationLog_commentId_fkey" FOREIGN KEY ("commentId") REFERENCES "comment"("id") ON DELETE CASCADE ON UPDATE CASCADE;
