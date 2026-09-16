@@ -10,12 +10,10 @@ import {
 import { authClient } from "@/lib/auth/auth.client";
 import { useRouter } from "next/navigation";
 // import { Session } from "@/lib/auth";
-import { APIError } from "better-auth/api";
-import {
-  hasClientPermission,
-  RoleType,
-} from "@/lib/permissions/permissions.utils";
-import { Role } from "@prisma/client";
+// import {
+//   hasClientPermission,
+//   RoleType,
+// } from "@/lib/permissions/permissions.utils";
 import { auth, Member } from "@/lib/auth";
 
 type SessionServer = typeof auth.$Infer.Session & {

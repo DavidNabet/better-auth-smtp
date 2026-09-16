@@ -14,14 +14,14 @@ export const GenerateUsers = ({ userId }: { userId: string }) => {
     loading: "En cours...",
   });
 
-  const [formState, formAction, pending] = useActionState(
+  const [, formAction, pending] = useActionState(
     withCallbacks(createUsers, {
       ...toastCallbacks,
       onSuccess(result) {
         toastCallbacks.onSuccess?.(result);
       },
     }),
-    null
+    null,
   );
   // const { pending } = useFormStatus();
 

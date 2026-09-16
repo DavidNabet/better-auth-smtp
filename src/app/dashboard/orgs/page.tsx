@@ -47,7 +47,9 @@ export default async function Organizations() {
                 <EmptyMedia variant="icon">
                   <FolderCode />
                 </EmptyMedia>
-                <EmptyTitle>You don't have any organizations yet !</EmptyTitle>
+                <EmptyTitle>
+                  You don&apos;t have any organizations yet !
+                </EmptyTitle>
                 <EmptyDescription>
                   You can create 3 organizations max.
                 </EmptyDescription>

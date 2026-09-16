@@ -1,25 +1,11 @@
-import {
-  SUPER_ADMIN,
-  ADMIN,
-  MEMBER,
-  USER,
-  statements,
-  ac,
-} from "../user/user.service";
 import { RoleType } from "../permissions/permissions.utils";
 import { AnyStatement } from "./permissions";
-
-const comments = [...statements.comments];
-const user = [...statements.user];
-const session = [...statements.session];
-
-const al = [...comments, ...user, ...session];
 
 export interface NavigationItem {
   id: string;
   label: string;
   href: string;
-  icon?: any;
+  icon?: string;
   permission?: AnyStatement;
   children?: NavigationItem[];
   badge?: string;
@@ -96,10 +82,7 @@ export function filterNavigationByRole(
   return navigation.filter((item) => {
     // Filtrer les enfants récursivement
     if (item.children) {
-      const filteredChildren = filterNavigationByRole(
-        item.children,
-        _userRole,
-      );
+      const filteredChildren = filterNavigationByRole(item.children, _userRole);
 
       // Masquer le parent s'il n'a pas d'enfants accessibles
       if (filteredChildren.length === 0) {

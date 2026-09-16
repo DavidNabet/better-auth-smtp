@@ -7,7 +7,6 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogFooter,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -21,12 +20,12 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { createFeedback } from "@/lib/feedback/feedback.action";
-import { cn, decodeSlug } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 import { ReactNode, startTransition, useActionState, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CreateFeedback } from "@/lib/feedback/feedback.schema";
-import { wait } from "@/lib/auth/auth.utils";
+import { wait } from "@/lib/utils";
 import { ErrorMessages } from "@/app/_components/ErrorMessages";
 import { toast } from "sonner";
 import { App } from "@prisma/client";

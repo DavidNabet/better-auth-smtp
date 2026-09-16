@@ -1,4 +1,3 @@
-import { Role } from "@prisma/client";
 import { statements as roleStatements } from "../user/user.service";
 import { statement as orgStatements } from "../organization/organization.service";
 

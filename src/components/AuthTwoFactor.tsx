@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, FC, SyntheticEvent } from "react";
+import { useState, FC, SyntheticEvent } from "react";
 import { useRouter } from "next/navigation";
 import { requestOTP } from "@/lib/auth/auth.service";
 import { TwoFactorSchema, twoFactorSchema } from "@/lib/auth/auth.schema";
@@ -11,7 +11,7 @@ import { z } from "zod";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "./ui/input-otp";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
 import Link from "next/link";
-import { authClient, authServer } from "@/lib/auth/auth.client";
+import { authClient } from "@/lib/auth/auth.client";
 import { cn } from "@/lib/utils";
 import { FieldErrors } from "@/lib/feedback/feedback.types";
 

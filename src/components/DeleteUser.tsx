@@ -2,7 +2,6 @@
 
 import {
   Dialog,
-  DialogClose,
   DialogDescription,
   DialogContent,
   DialogFooter,
@@ -16,7 +15,6 @@ import { Button } from "@/components/ui/button";
 import { z } from "zod";
 import { toast } from "sonner";
 import { ChangeEvent, SyntheticEvent, useState, useTransition } from "react";
-import type { User } from "better-auth";
 import { cn } from "@/lib/utils";
 import { authClient } from "@/lib/auth/auth.client";
 import { useRouter } from "next/navigation";
@@ -24,10 +22,6 @@ import { Loader2, Trash2 } from "lucide-react";
 import { passwordSchema, PasswordSchema } from "@/lib/auth/auth.schema";
 import { FieldErrors } from "@/lib/feedback/feedback.types";
 import { ErrorMessages } from "@/app/_components/ErrorMessages";
-
-interface DeleteUserProps {
-  user: User | null;
-}
 
 export default function DeleteUser() {
   const router = useRouter();

@@ -3,13 +3,11 @@
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { db } from "@/db";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -28,7 +26,7 @@ const AccordionRow = ({ row, defaultOpen = false }: AccordionRowProps) => {
       <TableRow
         className={cn(
           "grid grid-cols-[40px_100px_150px_120px_130px_110px]",
-          isOpen && "border-b-0 bg-muted/40"
+          isOpen && "border-b-0 bg-muted/40",
         )}
       >
         <TableCell className="p-0">
@@ -37,7 +35,7 @@ const AccordionRow = ({ row, defaultOpen = false }: AccordionRowProps) => {
             className={cn(
               "h-full w-full rounded-none p-3 text-muted-foreground transition-colors",
               hasChildren && "hover:bg-transparent hover:text-foreground",
-              !hasChildren && "cursor-default opacity-30"
+              !hasChildren && "cursor-default opacity-30",
             )}
             disabled={!hasChildren}
             onClick={() => setIsOpen(!isOpen)}
@@ -67,7 +65,7 @@ const AccordionRow = ({ row, defaultOpen = false }: AccordionRowProps) => {
             <div
               className={cn(
                 "overflow-hidden transition-all duration-300 ease-in-out",
-                isOpen ? "max-h-[2000px] opacity-100" : "max-h-0 opacity-0"
+                isOpen ? "max-h-[2000px] opacity-100" : "max-h-0 opacity-0",
               )}
             >
               <div className="w-full border-border border-b bg-muted/20">

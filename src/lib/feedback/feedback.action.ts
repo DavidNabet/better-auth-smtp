@@ -18,9 +18,9 @@ import {
   toAction,
   toActionState,
 } from "./feedback.utils";
-import type { ActionState, State } from "./feedback.types";
+import type { ActionState } from "./feedback.types";
 import type { FormState } from "@/lib/user/user.types";
-import { decodeSlug, slugify } from "@/lib/utils";
+import { slugify } from "@/lib/utils";
 import { hasServerPermission } from "@/lib/permissions/permissions.actions";
 import { getUserIdByEmail } from "@/lib/user/user.utils";
 import { getAppBySlug } from "../app/app.utils";

@@ -3,7 +3,6 @@
 import {
   Activity,
   Bot,
-  FileText,
   MessageSquare,
   Search,
   UserPlus,

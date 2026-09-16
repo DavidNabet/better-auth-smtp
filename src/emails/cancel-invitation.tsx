@@ -1,16 +1,10 @@
 import {
   Body,
-  Button,
-  Column,
   Container,
   Head,
   Heading,
-  Hr,
   Html,
-  Img,
-  Link,
   Preview,
-  Row,
   Section,
   Text,
 } from "react-email";
@@ -89,32 +83,10 @@ const paragraph = {
   lineHeight: "26px",
 };
 
-const smallParagraph = {
-  fontStyle: "italic",
-  color: "#666",
-  fontSize: "12px",
-  lineHeight: "18px",
-};
-
 const footer = {
   color: "#8898aa",
   fontSize: "12px",
   marginLeft: "4px",
-};
-
-const button = {
-  display: "block",
-  textAlign: "center" as const,
-  padding: "14px 20px",
-  borderRadius: "8px",
-  width: "300px",
-  margin: "0 auto",
-  fontWeight: 600,
-  fontSize: "16px",
-  border: "1px solid",
-  color: "#fff",
-  backgroundColor: "salmon",
-  textDecoration: "none",
 };
 
 const sectionInfo = {

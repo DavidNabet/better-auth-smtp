@@ -31,7 +31,7 @@ async function getTeamsData(name: string) {
 export default async function TeamDetails(
   props: PageProps<"/dashboard/orgs/[slug]/teams/[slugTeamId]">,
 ) {
-  const { slugTeamId, slug } = await props.params;
+  const { slugTeamId } = await props.params;
   const name = slugTeamId.split("-")[0];
   const { currentUser } = await getCurrentUser();
 
@@ -39,12 +39,14 @@ export default async function TeamDetails(
 
   console.log("TeamDetails MemberCount: ", memberCount);
 
+  if (!team || !memberCount) return;
+
   return (
     <Wrapper>
       <div className={cn("flex w-full flex-col gap-6 my-6")}>
         <TeamHeader
-          logo={team?.logo!}
-          teamName={team?.name!}
+          logo={team.logo!}
+          teamName={team.name!}
           memberCount={memberCount.length}
         />
       </div>
@@ -52,7 +54,7 @@ export default async function TeamDetails(
         <div>
           <Suspense fallback={<LoadingIcon />}>
             <MemberListSection
-              teamId={team?.id!}
+              teamId={team.id!}
               currentUserId={currentUser.id}
               memberCount={memberCount.length}
             />

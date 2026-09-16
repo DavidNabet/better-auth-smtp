@@ -2,15 +2,12 @@
 
 import {
   Crown,
-  Mail,
   Shield,
   User,
   Users,
   UserCheck,
-  Loader2,
   MoreVertical,
   Trash2,
-  RefreshCw,
 } from "lucide-react";
 import { useMemo, useState, useRef, useCallback, useEffect } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
@@ -42,7 +39,7 @@ import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth/auth.client";
 import { toast } from "sonner";
 import { formatDate, formatRelativeTime } from "@/lib/utils";
-import { cn, getInitials } from "@/lib/utils";
+import { getInitials } from "@/lib/utils";
 import { hasClientOrgPermission } from "@/lib/permissions/permissions.utils";
 import { type Member } from "@/lib/types";
 
@@ -117,7 +114,7 @@ export default function MemberList({
     } finally {
       setLoading(false);
     }
-  }, [teamId, loading, hasMore, nextCursor]);
+  }, [teamId, loading, hasMore, nextCursor, fetcher]);
 
   // Inital load
   useEffect(() => {
@@ -127,7 +124,7 @@ export default function MemberList({
       setTotal(total);
       setHasMore(!!nextCursor);
     });
-  }, [teamId]);
+  }, [teamId, fetcher]);
 
   const getRoleIcon = useMemo(
     () => (role: string) => {

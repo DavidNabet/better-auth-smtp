@@ -9,7 +9,6 @@ export const metadata: Metadata = {
 export default async function NotFound() {
   const headersList = await headers();
   const domain = headersList.get("host");
-  const referer = headersList.get("Referer");
 
   return (
     <div className="grid h-screen place-content-center bg-white px-4">

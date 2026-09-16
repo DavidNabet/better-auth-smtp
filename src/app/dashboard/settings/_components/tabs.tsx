@@ -9,8 +9,7 @@ import {
 import { Tabs, TabsContent, TabsTrigger, TabsList } from "@/components/ui/tabs";
 import { Shield, Lock, User, Key, Send } from "lucide-react";
 import UserProfileForm from "@/components/UserProfileForm";
-import { auth, Session } from "@/lib/auth";
-import { headers } from "next/headers";
+import { Session } from "@/lib/auth";
 import { CardButton } from "@/app/_components/Card";
 import LoadingIcon from "@/app/_components/LoadingIcon";
 import UserPasswordForm from "@/components/UserPasswordForm";

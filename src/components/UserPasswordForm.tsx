@@ -47,13 +47,7 @@ export default function UserPasswordForm() {
     newPasswordConfirm: [""],
     revokeOtherSessions: [""],
   });
-  const [
-    {
-      message: { error, success },
-    },
-    formAction,
-    pending,
-  ] = useActionState(updateUserPassword, {
+  const [, formAction, pending] = useActionState(updateUserPassword, {
     message: {
       error: "",
       success: "",

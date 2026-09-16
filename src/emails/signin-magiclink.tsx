@@ -1,7 +1,5 @@
 import {
   Html,
-  Img,
-  Link,
   Section,
   Text,
   Head,

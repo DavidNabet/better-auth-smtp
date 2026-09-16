@@ -9,16 +9,10 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-  DialogClose,
 } from "@/components/ui/dialog";
-import { useRouter } from "next/navigation";
 import Alert from "@/app/_components/Alert";
 import { ErrorMessages } from "@/app/_components/ErrorMessages";
-import {
-  passwordSchema,
-  PasswordSchema,
-  PasswordSchemaErrors,
-} from "@/lib/auth/auth.schema";
+import { passwordSchema, PasswordSchema } from "@/lib/auth/auth.schema";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { authClient } from "@/lib/auth/auth.client";
@@ -31,7 +25,6 @@ import { FieldErrors } from "@/lib/feedback/feedback.types";
 
 export default function EnableTwoFactor() {
   const { data } = authClient.useSession();
-  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [success, setSuccess] = useState("");
   const [formData, setFormData] = useState<PasswordSchema>({

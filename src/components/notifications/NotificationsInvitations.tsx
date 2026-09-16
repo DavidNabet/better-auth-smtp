@@ -4,7 +4,6 @@ import { MailWarningIcon } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
-  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
@@ -12,10 +11,10 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
 import { ReactNode } from "react";
 import { authClient } from "@/lib/auth/auth.client";
 import { toast } from "sonner";
+import { APIError } from "better-auth/api";
 
 interface NotificationsInvitationsProps {
   children: ReactNode;
@@ -36,9 +35,12 @@ export function NotificationsInvitations({
         return;
       }
       toast.success("Invitation accepted");
-    } catch (error: any) {
-      console.error("Erreur lors de l'acceptation: ", error);
+    } catch (error: unknown) {
+      if (error instanceof APIError) {
+        console.error("Erreur lors de l'acceptation: ", error.message);
+      }
       toast.error("Erreur lors de l'acceptation de l'invitation");
+      throw error;
     }
   }
 
@@ -52,9 +54,13 @@ export function NotificationsInvitations({
         return;
       }
       toast.success("Invitation rejected");
-    } catch (error: any) {
-      console.error("Erreur lors du rejet: ", error);
+    } catch (error: unknown) {
+      if (error instanceof APIError) {
+        console.error("Erreur lors du rejet: ", error.message);
+      }
+
       toast.error("Erreur lors du rejet de l'invitation");
+      throw error;
     }
   }
 

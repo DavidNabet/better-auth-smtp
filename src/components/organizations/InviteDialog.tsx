@@ -8,13 +8,10 @@ import {
   DialogDescription,
   DialogTitle,
   DialogContent,
-  DialogFooter,
-  DialogClose,
 } from "@/components/ui/dialog";
 import { authClient } from "@/lib/auth/auth.client";
 import { useAuth } from "@/hooks/use-auth";
 
-import { Plus } from "lucide-react";
 import { Button } from "../ui/button";
 
 interface InviteDialogProps {

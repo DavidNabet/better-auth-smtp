@@ -1,9 +1,6 @@
 "use server";
 
-import { auth } from "@/lib/auth";
-import { db } from "@/db";
 import { revalidatePath } from "next/cache";
-import { headers as head } from "next/headers";
 import { createAppSchema } from "./app.schema";
 import { ActionState } from "../feedback/feedback.types";
 import { toAction, toActionState } from "../feedback/feedback.utils";

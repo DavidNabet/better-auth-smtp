@@ -1,6 +1,6 @@
 "use client";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Session } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { UpdateProfileSchema } from "@/lib/user/user.schema";
@@ -41,7 +41,7 @@ export default function GenerateAvatar({
         ) : !!session?.user.image ? (
           <>
             <AvatarImage
-              src={session?.user.image!}
+              src={session.user.image!}
               alt="avatar"
               className="object-cover"
             />

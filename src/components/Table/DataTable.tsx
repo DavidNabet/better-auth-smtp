@@ -14,7 +14,6 @@ import type {
   SortingState,
   ColumnDef,
   VisibilityState,
-  Row,
   ColumnFiltersState,
   RowData,
 } from "@tanstack/react-table";
@@ -24,7 +23,6 @@ import {
   TableBody,
   TableCaption,
   TableCell,
-  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
@@ -37,7 +35,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 
-import { useState, useEffect, SetStateAction, Dispatch } from "react";
+import { useState, SetStateAction, Dispatch } from "react";
 import { useAuthState } from "@/hooks/use-auth";
 
 declare module "@tanstack/react-table" {

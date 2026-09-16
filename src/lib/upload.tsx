@@ -16,8 +16,8 @@ export const uploadFile = async (file: File) => {
       url: `${process.env.BETTER_AUTH_URL}/uploads/${file.name}`,
       message: null,
     };
-  } catch (error: any) {
-    if (error.name === "AbortError") {
+  } catch (error) {
+    if (error instanceof DOMException) {
       console.log("Operation aborted");
     }
 

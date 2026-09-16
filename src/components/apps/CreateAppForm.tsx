@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { App, Organization } from "@prisma/client";
+import { Organization } from "@prisma/client";
 import { ErrorMessages } from "@/app/_components/ErrorMessages";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,7 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { DialogFooter } from "@/components/ui/dialog";
 import { Loader2 } from "lucide-react";
-import AvatarUpload, { AvatarContext } from "@/components/AvatarUpload";
+import AvatarUpload from "@/components/AvatarUpload";
 import {
   createToastCallbacks,
   withCallbacks,
@@ -40,7 +40,7 @@ export function CreateAppForm({ organizations }: CreateAppFormProps) {
         toastCallbacks.onSuccess?.(result);
       },
     }),
-    null
+    null,
   );
 
   return (

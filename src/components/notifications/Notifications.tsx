@@ -9,27 +9,19 @@ import {
   X,
 } from "lucide-react";
 import { useState, useEffect } from "react";
-import { cn, getInitials, formatRelativeTime, formatDate } from "@/lib/utils";
+import { cn, getInitials, formatRelativeTime } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
-  DrawerClose,
   DrawerContent,
   DrawerDescription,
-  DrawerFooter,
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,12 +29,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Empty,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@/components/ui/empty";
+import { Empty, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import {
   Select,
   SelectContent,
@@ -54,12 +41,10 @@ import { Separator } from "@/components/ui/separator";
 import { useSocket } from "@/hooks/use-socket";
 import { toast } from "sonner";
 import { NotificationsInvitations } from "./NotificationsInvitations";
-import { Notification } from "@prisma/client";
 import {
   getNotificationsByUserId,
   onMarkAsRead,
 } from "@/lib/notification/notification.utils";
-import { unstable_noStore } from "next/cache";
 
 // unstable_noStore();
 
@@ -430,7 +415,7 @@ export default function Notifications({
                           <DropdownMenuContent align="end">
                             {notification.type === "invitation_pending" && (
                               <NotificationsInvitations
-                                invitationId={notification?.invitationId!}
+                                invitationId={notification.invitationId!}
                               >
                                 <DropdownMenuItem
                                   onSelect={(e) => e.preventDefault()}

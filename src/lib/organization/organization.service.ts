@@ -1,8 +1,5 @@
 import { createAccessControl } from "better-auth/plugins/access";
-import {
-  defaultStatements,
-  adminAc,
-} from "better-auth/plugins/organization/access";
+import { defaultStatements } from "better-auth/plugins/organization/access";
 
 // Si une de ces actions est absente, les rôles qui ne la possèdent pas ne pourront pas exécuter les méthodes correspondantes (auth.organization.update, auth.organization.inviteMember, etc.) : elles seront considérées comme non autorisées.
 

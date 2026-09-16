@@ -1,14 +1,11 @@
 import {
   Html,
-  Img,
-  Link,
   Section,
   Text,
   Head,
   Heading,
   Container,
   Body,
-  Button,
   Preview,
 } from "react-email";
 import * as React from "react";

@@ -29,13 +29,13 @@ export default async function FeedbackDetails({
     <section className="bg-background min-h-screen">
       <div className="mx-auto max-w-4xl px-6 py-12">
         <Header
-          category={details.feedback?.subject!}
-          title={details.feedback?.title!}
-          author={details.feedback?.author!}
-          publishedDate={details.feedback?.createdAt.toLocaleDateString()!}
+          category={details.feedback.subject!}
+          title={details.feedback.title!}
+          author={details.feedback.author!}
+          publishedDate={details.feedback.createdAt.toLocaleDateString()!}
         />
         <div className="mt-16">
-          <Content content={[details.feedback?.description!]} />
+          <Content content={[details.feedback.description!]} />
         </div>
         <div className="mt-16">
           <CommentTree feedbackId={details.feedback.id} />
@@ -59,7 +59,7 @@ async function CommentTree({ feedbackId }: { feedbackId: string }) {
 
         {/* Comment List */}
         <ul className="space-y-6">
-          {roots.map((comment, idx) => {
+          {roots.map((comment) => {
             return (
               <CommentItem
                 key={comment.id}

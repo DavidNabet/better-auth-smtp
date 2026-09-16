@@ -1,5 +1,5 @@
 import { AvatarSession } from "@/components/AvatarUpload";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar } from "@/components/ui/avatar";
 import { Session } from "@/lib/auth";
 
 export default function SettingHeader({ session }: { session: Session }) {

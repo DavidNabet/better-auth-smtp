@@ -45,16 +45,17 @@ export function OrganizationSwitcher({
   return (
     <Select
       value={activeOrganization?.slug}
-      onValueChange={(val) => {
-        (handleChangeOrganization(val), router.push(`/dashboard/orgs/${val}`));
-      }}
+      onValueChange={(val) => (
+        handleChangeOrganization(val),
+        router.push(`/dashboard/orgs/${val}`)
+      )}
     >
       <SelectTrigger className="w-45 selectLink">
         <SelectValue placeholder="Select an organization" />
       </SelectTrigger>
       <SelectContent className="flex flex-col gap-2">
         {orgs.map((org) => (
-          <SelectItem key={org.name} value={org?.slug!}>
+          <SelectItem key={org.name} value={org.slug!}>
             {org.name}
           </SelectItem>
         ))}

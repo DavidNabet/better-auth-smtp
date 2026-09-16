@@ -13,33 +13,31 @@ interface BlogHeaderProps {
   publishedDate: string;
 }
 
-export default function Header({
-  category,
-  title,
-  author,
-  publishedDate,
-}: BlogHeaderProps) {
+export default function Header(props: BlogHeaderProps) {
+  if (!props) return;
   return (
     <header className="space-y-6">
-      <Badge variant="outline">{category}</Badge>
+      <Badge variant="outline">{props.category}</Badge>
 
       <h1 className="text-foreground text-4xl leading-15 font-bold tracking-tight md:text-4xl lg:text-5xl">
-        {title}
+        {props.title}
       </h1>
 
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center space-x-4">
           <Avatar className="h-12 w-12">
             <AvatarImage
-              src={author?.image!}
-              alt={author?.name!}
+              src={props.author.image!}
+              alt={props.author.name!}
               className="object-cover"
             />
-            <AvatarFallback>{author?.name?.charAt(0)}</AvatarFallback>
+            <AvatarFallback>{props.author?.name?.charAt(0)}</AvatarFallback>
           </Avatar>
           <div>
-            <p className="font-medium">by {author?.name}</p>
-            <p className="text-muted-foreground text-sm">{publishedDate}</p>
+            <p className="font-medium">by {props.author.name}</p>
+            <p className="text-muted-foreground text-sm">
+              {props.publishedDate}
+            </p>
           </div>
         </div>
 

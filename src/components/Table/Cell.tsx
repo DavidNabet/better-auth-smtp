@@ -1,23 +1,8 @@
-import {
-  CellContext,
-  Row,
-  Column,
-  ColumnMeta,
-  TableMeta,
-} from "@tanstack/react-table";
-import {
-  ChangeEvent,
-  useEffect,
-  useState,
-  MouseEvent,
-  SyntheticEvent,
-  useRef,
-  DialogHTMLAttributes,
-} from "react";
+import { CellContext, Row, ColumnMeta } from "@tanstack/react-table";
+import { useEffect, useState, MouseEvent, SyntheticEvent, useRef } from "react";
 import type { Role, User } from "@prisma/client";
-import { deleteUser, updateProfile, updateUser } from "@/lib/user/user.actions";
+import { deleteUser, updateUser } from "@/lib/user/user.actions";
 import { useAuthState } from "@/hooks/use-auth";
-import { authClient } from "@/lib/auth/auth.client";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,8 +25,6 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { DialogCloseProps, DialogTriggerProps } from "@radix-ui/react-dialog";
-import { RoleType } from "@/lib/permissions/permissions.utils";
 
 export type Option = {
   label: string;
@@ -166,7 +149,7 @@ export const EditCell = ({ row, table }: CellContext<User, any>) => {
       try {
         const currentRowData = table.getRow(row.id).original;
 
-        if (!currentRowData?.id)
+        if (!currentRowData.id)
           console.log("No changes detected, skipping update");
 
         const updateData = {

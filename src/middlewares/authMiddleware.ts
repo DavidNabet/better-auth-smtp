@@ -15,15 +15,12 @@ export const authMiddleware: Middleware = async (req, _event, next) => {
   const isRoot = root.includes(nextUrl.pathname);
   const sessionCookie = getSessionCookie(req);
 
-  const { data: session, error } = await betterFetch<Session>(
-    "/api/auth/get-session",
-    {
-      baseURL: req.nextUrl.origin,
-      headers: {
-        cookie: req.headers.get("cookie") || "",
-      },
+  await betterFetch<Session>("/api/auth/get-session", {
+    baseURL: req.nextUrl.origin,
+    headers: {
+      cookie: req.headers.get("cookie") || "",
     },
-  );
+  });
 
   // P1.3 — présence d'un cookie != session valide.
   // Un cookie expiré/invalide ne satisfait plus le garde.

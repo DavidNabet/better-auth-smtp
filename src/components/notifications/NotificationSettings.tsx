@@ -5,13 +5,11 @@ import {
   CardHeader,
   CardTitle,
   CardDescription,
-  CardContent,
   CardFooter,
   CardAction,
 } from "@/components/ui/card";
 import {
   useState,
-  useEffect,
   useActionState,
   startTransition,
   SyntheticEvent,
@@ -19,40 +17,25 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { authClient } from "@/lib/auth/auth.client";
 import { cn } from "@/lib/utils";
-import { z } from "zod";
-import { FieldErrors } from "@/lib/feedback/feedback.types";
 import Alert from "@/app/_components/Alert";
-import { auth } from "@/lib/auth";
-import { notificationSettingSchema } from "@/lib/notification/notification.schema";
 import { updateNotificationSetting } from "@/lib/notification/notification.action";
-import { wait } from "@/lib/auth/auth.utils";
-import { ErrorMessages } from "@/app/_components/ErrorMessages";
+import { wait } from "@/lib/utils";
 import { Button } from "../ui/button";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { useSocket } from "@/hooks/use-socket";
 import { Label } from "../ui/label";
-
-type NotificationSetting = z.infer<typeof notificationSettingSchema>;
 
 export default function NotificationsSettings() {
   const { data, refetch } = authClient.useSession();
-  // const [isUserId, setIsUserId] = useState(data?.user.id ?? "");
   const [isEnabled, setIsEnabled] = useState(
     data?.user.notificationStatus ?? false,
   );
 
-  const { userId, socket } = useSocket();
-
-  // const [formData, setFormData] = useState<NotificationSetting>({
-  //   userId: "",
-  //   notificationStatus: false,
-  // });
+  // const { userId, socket } = useSocket();
 
   const [
     {
       message: { success, error },
-      errorMessage,
     },
     formAction,
     pending,
@@ -72,28 +55,21 @@ export default function NotificationsSettings() {
    * Subscribe notifications
    */
 
-  useEffect(() => {
-    if (!socket || !socket.connected) return;
+  // useEffect(() => {
+  //   if (!socket || !socket.connected) return;
 
-    refetch();
-    if (isEnabled) {
-      socket.emit("notifications:subscribe");
-    } else {
-      socket.emit("notifications:unsubscribe");
-    }
+  //   refetch();
+  //   if (isEnabled) {
+  //     socket.emit("notifications:subscribe");
+  //   } else {
+  //     socket.emit("notifications:unsubscribe");
+  //   }
 
-    return () => {
-      socket.off("notifications:subscribe");
-      socket.off("notifications:unsubscribe");
-    };
-  }, [isEnabled, socket, refetch]);
-
-  // const handleChange = <K extends keyof NotificationSetting>(
-  //   key: K,
-  //   value: NotificationSetting[K],
-  // ) => {
-  //   setFormData((prev) => ({ ...prev, [key]: value }));
-  // };
+  //   return () => {
+  //     socket.off("notifications:subscribe");
+  //     socket.off("notifications:unsubscribe");
+  //   };
+  // }, [isEnabled, socket, refetch]);
 
   const handleSubmit = (e: SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -132,11 +108,7 @@ export default function NotificationsSettings() {
             Enable or Disable system notifications
           </CardDescription>
           <CardAction className="my-2">
-            <input
-              type="hidden"
-              name="userId"
-              value={data?.user.id ?? userId}
-            />
+            <input type="hidden" name="userId" value={data?.user.id} />
 
             <div className="flex items-center gap-2">
               <Switch

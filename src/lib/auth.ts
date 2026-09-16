@@ -4,7 +4,7 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
 import { db } from "@/db";
 import { headers } from "next/headers";
-import { admin, twoFactor, username, organization } from "better-auth/plugins";
+import { admin, twoFactor, organization } from "better-auth/plugins";
 import { inbox } from "better-inbox";
 import {
   sendMagicLinkforLogin,
@@ -20,13 +20,11 @@ import {
   owner,
   admin as adm,
 } from "./organization/organization.service";
-import { getUserByEmail } from "@/lib/user/user.utils";
 import {
   createDefaultTeams,
   findTeamByName,
   getActiveOrganization,
 } from "@/lib/organization/organization.utils";
-import { NextResponse } from "next/server";
 
 export const auth = betterAuth({
   database: prismaAdapter(db, {

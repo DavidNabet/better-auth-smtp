@@ -1,6 +1,6 @@
 "use client";
 
-import { Mail, Trash2, Loader2, Plus, X, RefreshCw } from "lucide-react";
+import { Mail, Trash2, Loader2, X, RefreshCw } from "lucide-react";
 import {
   Suspense,
   useActionState,
@@ -41,34 +41,14 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import {
-  Dialog,
-  DialogTrigger,
-  DialogHeader,
-  DialogDescription,
-  DialogTitle,
-  DialogContent,
-  DialogFooter,
-  DialogClose,
-} from "@/components/ui/dialog";
-import { useParams } from "next/navigation";
+import { DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { authClient } from "@/lib/auth/auth.client";
-import { useRouter } from "next/navigation";
-import {
-  cn,
-  formatRelativeTime,
-  getInitials,
-  formatDate,
-  capitalize,
-} from "@/lib/utils";
+import { cn, capitalize } from "@/lib/utils";
 import {
   createToastCallbacks,
   withCallbacks,
 } from "@/app/_components/ServerActionToast";
-import {
-  inviteMember,
-  revalidateInvitations,
-} from "@/lib/organization/organization.action";
+import { inviteMember } from "@/lib/organization/organization.action";
 
 import { toast } from "sonner";
 import { Checkbox } from "../ui/checkbox";
@@ -111,7 +91,6 @@ function formatTimeUntil(date: Date): string {
 export default function TeamInvitations({
   organizationId,
 }: TeamInvitationsProps) {
-  const router = useRouter();
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const nextCursorRef = useRef<string | null>(null);
   const [total, setTotal] = useState(0);
@@ -175,12 +154,12 @@ export default function TeamInvitations({
         nextCursorRef.current = nextCursor;
         setTotal(total);
         setHasMore(!!nextCursor);
-      } catch (error: any) {
-        if (error.name === "AbortError") {
+      } catch (error) {
+        if (error instanceof DOMException) {
           console.log("Fetch des invitations annulé (composant démonté)");
           return;
         }
-        throw new Error("Error useEffect fetchInvitations", error);
+        throw new Error("Error useEffect fetchInvitations");
       }
     }
     fetchInvitationsEffect();
@@ -203,12 +182,12 @@ export default function TeamInvitations({
       nextCursorRef.current = cursor;
       setTotal(total);
       setHasMore(!!cursor);
-    } catch (error) {
+    } catch {
       toast.error("Failed to load more invitations");
     } finally {
       setLoading(false);
     }
-  }, [organizationId, loading, hasMore]);
+  }, [organizationId, loading, hasMore, fetchInvitations]);
 
   const pendingInvitations = invitations.filter((i) => i.status === "pending");
 
@@ -249,7 +228,7 @@ export default function TeamInvitations({
     nextCursorRef.current = result.nextCursor;
     setTotal(result.total);
     setHasMore(!!result.nextCursor);
-  }, [organizationId]);
+  }, [fetchInvitations]);
 
   const handleCancel = async (invitation: Invitation) => {
     const res = await authClient.organization.cancelInvitation({

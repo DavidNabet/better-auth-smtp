@@ -1,4 +1,3 @@
-import { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowUpRightIcon, Star } from "lucide-react";
 import Link from "next/link";

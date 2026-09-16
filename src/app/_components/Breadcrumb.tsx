@@ -35,6 +35,7 @@ export default function Breadcrumbs({ children }: { children?: ReactNode }) {
         });
         setIsOwner(result);
       } catch (error) {
+        console.log("Something gone wrong ", error);
         setIsOwner(false);
       }
     }

@@ -6,7 +6,7 @@ type ActivityTypeEvent =
   | "app_updated"
   | "settings_updated";
 
-type ActivityEvent = {
+export type ActivityEvent = {
   id: string;
   type: ActivityTypeEvent;
   actor: {

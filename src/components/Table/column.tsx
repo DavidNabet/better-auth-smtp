@@ -5,13 +5,6 @@ import type { User } from "@prisma/client";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
 import { CheckCircle, Loader } from "lucide-react";
 import { Option, EditCell, TableCell } from "@/components/Table/Cell";
 

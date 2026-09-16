@@ -30,7 +30,7 @@ export function ActionGuard({
           permissions: { [action]: [] },
         });
         setCanPerform(!error && data.success !== false);
-      } catch (error) {
+      } catch {
         setCanPerform(false);
       }
     }

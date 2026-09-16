@@ -1,7 +1,7 @@
 "use client";
 
 import { Session } from "@/lib/auth";
-import { Loader2, UserCircleIcon } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { updateProfile } from "@/lib/user/user.actions";
-import AvatarUpload, { AvatarContext } from "@/components/AvatarUpload";
+import AvatarUpload from "@/components/AvatarUpload";
 import Alert from "@/app/_components/Alert";
 import {
   useActionState,
@@ -30,11 +30,10 @@ import {
 import { ErrorMessages } from "@/app/_components/ErrorMessages";
 import GenerateAvatar from "./GenerateAvatar";
 import { useRouter } from "next/navigation";
-import { wait } from "@/lib/auth/auth.utils";
+import { wait } from "@/lib/utils";
 import { Role } from "@prisma/client";
-import { RoleType } from "@/lib/permissions/permissions.utils";
 import { FieldErrors } from "@/lib/feedback/feedback.types";
-import { flattenError, TypeOf } from "zod";
+import { flattenError } from "zod";
 
 type Props = {
   session: Session;
@@ -162,8 +161,8 @@ export default function UserProfileForm({ session }: Props) {
           type="text"
           id="Name"
           name="name"
-          placeholder={session?.user?.name}
-          defaultValue={session?.user.name || formData.name}
+          placeholder={session.user.name}
+          defaultValue={session.user.name || formData.name}
           onChange={handleChange}
           className="mt-1 w-full"
         />
@@ -176,7 +175,7 @@ export default function UserProfileForm({ session }: Props) {
 
         <Select
           name="role"
-          defaultValue={session?.user.role || formData.role}
+          defaultValue={session.user.role || formData.role}
           // defaultValue={session?.user.role}
           onValueChange={(value: Exclude<Role, "OWNER">) =>
             setFormData((prev) => ({
@@ -184,13 +183,13 @@ export default function UserProfileForm({ session }: Props) {
               role: value,
             }))
           }
-          disabled={session?.user.role !== "SUPER_ADMIN"}
+          disabled={session.user.role !== "SUPER_ADMIN"}
         >
           <SelectTrigger id="Role" className="mt-1 w-full">
-            <SelectValue aria-label={session?.user.role!} />
+            <SelectValue aria-label={session.user.role!} />
           </SelectTrigger>
           <SelectContent
-            className={`${session?.user.role !== "SUPER_ADMIN" && "disabled:cursor-pointer"}`}
+            className={`${session.user.role !== "SUPER_ADMIN" && "disabled:cursor-pointer"}`}
           >
             <SelectItem value="SUPER_ADMIN">SUPER_ADMIN</SelectItem>
             <SelectItem value="ADMIN">ADMIN</SelectItem>
@@ -208,7 +207,7 @@ export default function UserProfileForm({ session }: Props) {
           type="email"
           id="Email"
           placeholder="johndoe@example.com"
-          defaultValue={session?.user.email ?? "johndoe@example.com"}
+          defaultValue={session.user.email ?? "johndoe@example.com"}
           className="mt-1 w-full disabled:cursor-not-allowed!"
           disabled
         />

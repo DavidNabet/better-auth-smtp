@@ -1,17 +1,13 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
 import {
   Card,
-  CardContent,
   CardDescription,
   CardHeader,
-  CardFooter,
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronUp, Heart, MessageCircleMore } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ChevronDown, ChevronUp, MessageCircleMore } from "lucide-react";
 import { VoteProvider, useVotes } from "@/hooks/use-vote";
 import Link from "next/link";
 import { slugify } from "@/lib/utils";
@@ -69,7 +65,7 @@ export function FeedbackList({
                       {f.title}
                     </span>
                     <CardDescription>{f.description}</CardDescription>
-                    <div className="absolute end-3.5 top-0">
+                    <div className="absolute inset-e-3.5 top-0">
                       <NotificationBadge num={f.comments.length}>
                         <MessageCircleMore className="size-5 text-accent-foreground/20" />
                       </NotificationBadge>

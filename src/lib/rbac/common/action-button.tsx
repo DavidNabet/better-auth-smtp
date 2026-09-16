@@ -1,8 +1,7 @@
-import { ButtonHTMLAttributes, ClassAttributes, ReactNode } from "react";
+import { ReactNode } from "react";
 import { AnyStatement } from "../permissions";
 import { ActionGuard } from "./action-guard";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { VariantProps } from "class-variance-authority";
+import { Button } from "@/components/ui/button";
 
 interface ActionButtonProps {
   className: string;

@@ -10,7 +10,7 @@ export const routeMiddleware: Middleware = async (req, _event, next) => {
   const path = req.nextUrl.pathname;
 
   // Session validée côté serveur (betterFetch vers /api/auth/get-session).
-  const { data: session, error } = await betterFetch<Session>(
+  const { data: session } = await betterFetch<Session>(
     "/api/auth/get-session",
     {
       baseURL: process.env.NEXT_PUBLIC_APP_URL,

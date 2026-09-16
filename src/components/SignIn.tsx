@@ -152,7 +152,7 @@ export default function AuthSignIn() {
         </Button>
 
         <div className="text-sm text-gray-500 dark:text-muted-foreground">
-          <p>You don't have an account?</p>
+          <p>You don&apos;t have an account?</p>
           <Link
             href="/auth/signup"
             className="text-gray-700 dark:text-muted-foreground/60 underline"

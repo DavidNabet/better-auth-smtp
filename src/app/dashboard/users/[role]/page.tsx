@@ -21,7 +21,6 @@ export default async function UserRolePage({
 }) {
   const users = await getNotAdminUsers();
   const { role } = await params;
-  const userRole = users?.filter((r) => r.role === role.toUpperCase());
 
   // const allLogs = await allModerationsLogs()!;
   // TODO: add an error in the query if the role is changed and is not the same as the current role with useEffect() in the Header (error bar)

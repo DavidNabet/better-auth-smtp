@@ -10,17 +10,18 @@ interface Props {
   app: Awaited<ReturnType<typeof getAppBySlug>>;
 }
 export default function AppHeader({ app }: Props) {
+  if (!app) return;
   return (
     <Card className="p-0">
       <CardContent className="p-6">
         <div className="flex flex-col items-center">
           <Avatar className="size-20">
-            {app?.logo && <AvatarImage src={app?.logo} alt="App logo" />}
-            <AvatarFallback>{getInitials(app?.name!)}</AvatarFallback>
+            {app.logo && <AvatarImage src={app.logo} alt="App logo" />}
+            <AvatarFallback>{getInitials(app.name!)}</AvatarFallback>
           </Avatar>
-          <h2 className="mt-4 text-lg font-semibold">{app?.name}</h2>
+          <h2 className="mt-4 text-lg font-semibold">{app.name}</h2>
           <Badge className="mt-2" variant="secondary">
-            {app?.slug}
+            {app.slug}
           </Badge>
         </div>
         <div className="mt-6 space-y-4">
@@ -29,13 +30,13 @@ export default function AppHeader({ app }: Props) {
             <span>{app?.createdAt.toLocaleDateString()}</span>
           </div>
 
-          {app?.feedbacks && app.feedbacks.length > 0 && (
+          {app.feedbacks && app.feedbacks.length > 0 && (
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Feedbacks</span>
-              <span>{app?.feedbacks.length}</span>
+              <span>{app.feedbacks.length}</span>
             </div>
           )}
-          {app?.organization && (
+          {app.organization && (
             <>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Created by</span>

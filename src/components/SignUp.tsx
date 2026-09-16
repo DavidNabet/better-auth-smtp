@@ -1,7 +1,6 @@
 "use client";
 import { ChangeEvent, useState, useTransition } from "react";
 import { authClient } from "@/lib/auth/auth.client";
-import { SubmitButton } from "@/app/_components/SubmitButton";
 import { ErrorMessages } from "@/app/_components/ErrorMessages";
 import {
   CreateUserErrors,
@@ -9,13 +8,12 @@ import {
   createUserSchema,
 } from "@/lib/auth/auth.schema";
 import Link from "next/link";
-import { APIError, email } from "better-auth";
 import { useRouter, useSearchParams } from "next/navigation";
 import Alert from "@/app/_components/Alert";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Loader2, UserPlus } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { z } from "zod";
 
@@ -82,6 +80,7 @@ export default function AuthSignUp() {
           onSuccess() {
             console.log("success");
             setSuccess("Verify your email address");
+            router.refresh();
           },
         },
       });

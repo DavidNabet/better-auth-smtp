@@ -137,7 +137,7 @@ export async function createUsers(
 
   try {
     const users = await Promise.allSettled(
-      USER_EMAILS.map(async (email, idx) => {
+      USER_EMAILS.map(async (email) => {
         return await auth.api.createUser({
           body: {
             name: email.split("@")[0],

@@ -1,18 +1,9 @@
 "use server";
 
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
 import { db } from "@/db";
-import { getCurrentUser } from "@/lib/user/user.utils";
-import { RoleType } from "@/lib/permissions/permissions.utils";
-import {
-  getActiveOrganization,
-  getCurrentMember,
-  getOrganizationById,
-} from "@/lib/organization/organization.utils";
+import { getOrganizationById } from "@/lib/organization/organization.utils";
 import { CreateAppSchema } from "./app.schema";
 import { APIError } from "better-auth/api";
-import { slugify } from "../utils";
 
 export async function getApps() {
   // const { currentUser } = await getCurrentUser();

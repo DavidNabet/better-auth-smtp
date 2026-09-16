@@ -8,14 +8,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { db } from "@/db";
-import { ChevronDown, ChevronRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import {
-  GetModerationActions,
-  getModerationActionsTree,
-} from "@/lib/permissions/permissions.utils";
+import { getModerationActionsTree } from "@/lib/permissions/permissions.utils";
 import AccordionRow from "./LogRow";
 
 export async function UsersTable() {

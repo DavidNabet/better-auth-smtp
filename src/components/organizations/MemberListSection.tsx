@@ -1,7 +1,6 @@
 import { Suspense } from "react";
 import LoadingIcon from "@/app/_components/LoadingIcon";
 import MemberList from "@/components/organizations/MemberList";
-import { Member } from "@/lib/types";
 
 interface MemberListSectionProps {
   teamId: string;

@@ -1,14 +1,6 @@
 "use client";
 
-import {
-  JSX,
-  ReactNode,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Card,
   CardContent,
@@ -49,7 +41,6 @@ import {
   Folder,
   Plus,
   Loader2,
-  Crown,
   GalleryVerticalEnd,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -69,7 +60,6 @@ import { authClient } from "@/lib/auth/auth.client";
 import type { Team } from "@/lib/types";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { hasClientOrgPermission } from "@/lib/permissions/permissions.utils";
-import { router } from "better-auth/api";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
@@ -128,7 +118,6 @@ const tab = [
 export default function Teams({ organizationId }: TeamsProps) {
   const router = useRouter();
   const [teams, setTeams] = useState<Team[]>([]);
-  const [loading, setLoading] = useState(true);
   const teamsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
