@@ -75,7 +75,6 @@ export async function inviteMember(
           return toActionState("Something went wrong.", "ERROR");
       }
     }
-    throw error;
     return toActionState("Something went wrong.", "ERROR");
   }
   //   revalidatePath("/dashboard/apps");

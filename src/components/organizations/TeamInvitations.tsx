@@ -43,7 +43,7 @@ import {
 } from "@/components/ui/select";
 import { DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { authClient } from "@/lib/auth/auth.client";
-import { cn, capitalize } from "@/lib/utils";
+import { cn, capitalize, formatDate } from "@/lib/utils";
 import {
   createToastCallbacks,
   withCallbacks,
@@ -242,19 +242,6 @@ export default function TeamInvitations({
     await refreshInvitations();
   };
 
-  if (total === 0) {
-    return (
-      <Empty>
-        <EmptyHeader>
-          <EmptyMedia variant="icon">
-            <Mail className="size-6" />
-          </EmptyMedia>
-          <EmptyTitle>No Invitations found</EmptyTitle>
-        </EmptyHeader>
-      </Empty>
-    );
-  }
-
   return (
     <div className="relative">
       <Card className="w-full shadow-xs h-full">
@@ -287,39 +274,48 @@ export default function TeamInvitations({
           </div>
         </CardHeader>
         <CardContent>
-          <div ref={invitesRef} className="flex flex-col gap-4 overflow-y-auto">
-            <div
-              ref={virtualizer.containerRef}
-              style={{
-                position: "relative",
-              }}
-            >
-              {virtualizer.getVirtualItems().map((virtualRow) => (
-                <InvitationRow
-                  key={invitations[virtualRow.index].id}
-                  invitation={invitations[virtualRow.index]}
-                  getStatusVariant={getStatusVariant}
-                  getStatusColor={getStatusColor}
-                  onCancel={handleCancel}
-                  virtualRow={virtualRow}
-                  rowVirtualizer={virtualizer}
-                />
-              ))}
-            </div>
-          </div>
-          {hasMore && (
-            <div className="flex justify-center p-4">
-              <Button
-                variant="outline"
-                onClick={loadMore}
-                disabled={loading}
-                className="w-full max-w-xs"
+          {total === 0 ? (
+            <Empty>
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <Mail className="size-6" />
+                </EmptyMedia>
+                <EmptyTitle>No Invitations found</EmptyTitle>
+              </EmptyHeader>
+            </Empty>
+          ) : (
+            <>
+              <div
+                ref={invitesRef}
+                className="flex flex-col gap-4 border rounded-md"
+                onScroll={virtualizer.measure}
               >
-                {loading
-                  ? "Loading"
-                  : `Load more (${total - invitations.length})`}
-              </Button>
-            </div>
+                {virtualizer.getVirtualItems().map((virtualRow) => (
+                  <InvitationRow
+                    key={invitations[virtualRow.index].id}
+                    invitation={invitations[virtualRow.index]}
+                    getStatusVariant={getStatusVariant}
+                    getStatusColor={getStatusColor}
+                    onCancel={handleCancel}
+                  />
+                ))}
+              </div>
+
+              {hasMore && (
+                <div className="flex justify-center p-4">
+                  <Button
+                    variant="outline"
+                    onClick={loadMore}
+                    disabled={loading}
+                    className="w-full max-w-xs"
+                  >
+                    {loading
+                      ? "Loading"
+                      : `Load more (${total - invitations.length})`}
+                  </Button>
+                </div>
+              )}
+            </>
           )}
         </CardContent>
       </Card>
@@ -332,8 +328,6 @@ function InvitationRow({
   getStatusVariant,
   getStatusColor,
   onCancel,
-  virtualRow,
-  rowVirtualizer,
 }: {
   invitation: Invitation;
   getStatusVariant: (status: string) => "default" | "secondary" | "destructive";
@@ -341,17 +335,9 @@ function InvitationRow({
     status: string,
   ) => "bg-orange-500 text-white" | "text-white" | "inherit";
   onCancel: (i: Invitation) => void;
-  virtualRow: VirtualItem;
-  rowVirtualizer: Virtualizer<HTMLDivElement, Element>;
 }) {
   return (
-    <div
-      className="flex flex-col gap-3 rounded-lg border bg-card my-4 p-4"
-      ref={rowVirtualizer.measureElement}
-      style={{
-        height: `${virtualRow.size}px`,
-      }}
-    >
+    <div className="flex flex-col gap-3 rounded-lg bg-card p-4">
       <div className="flex items-start justify-between gap-4">
         <div className={`flex min-w-0 flex-1 flex-col gap-2`}>
           <div className="flex flex-wrap items-center gap-2">
@@ -369,7 +355,10 @@ function InvitationRow({
             <Badge variant="outline">{invitation.role}</Badge>
           </div>
           <div className="flex flex-wrap items-center gap-2 text-muted-foreground text-xs">
-            <span>Invited by {invitation.user.name}</span>
+            <span>
+              Invited by {invitation.user.name} on{" "}
+              {formatDate(invitation.createdAt)}
+            </span>
             {invitation.expiresAt && (
               <>
                 <span aria-hidden="true">•</span>

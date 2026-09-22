@@ -10,12 +10,14 @@ export async function GET(
   const { invitationId } = await params;
 
   try {
-    await auth.api.acceptInvitation({
+    const { invitation } = await auth.api.acceptInvitation({
       body: {
         invitationId,
       },
       headers: await headers(),
     });
+
+    console.log("Statut de Invitation : ", invitation.status);
 
     return NextResponse.redirect(new URL("/dashboard", req.url));
   } catch (error) {

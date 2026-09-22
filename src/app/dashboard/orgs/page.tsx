@@ -41,7 +41,7 @@ export default async function Organizations() {
     <>
       <div className="flex flex-col items-center justify-center gap-6">
         <Suspense fallback={<LoadingIcon />}>
-          {organizations.length === 0 && (
+          {organizations.length === 0 ? (
             <Empty>
               <EmptyHeader>
                 <EmptyMedia variant="icon">
@@ -58,36 +58,40 @@ export default async function Organizations() {
                 <DialogButton />
               </EmptyContent>
             </Empty>
+          ) : (
+            <Card
+              className={cn(
+                "w-full shadow-transparent mt-6 border-transparent",
+              )}
+            >
+              <CardHeader>
+                <div className="flex flex-col gap-4">
+                  <div className="flex flex-col flex-wrap gap-3 md:flex-row md:items-center md:justify-between">
+                    <div className="flex min-w-0 flex-1 flex-col gap-2">
+                      <CardTitle className="text-2xl">
+                        Your Organizations
+                      </CardTitle>
+                      <CardDescription>
+                        {organizations.length} organization
+                        {organizations.length !== 1 ? "s" : ""} created
+                      </CardDescription>
+                    </div>
+                    <DialogButton />
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <Suspense fallback={<LoadingIcon />}>
+                  <div className="grid gap-4 md:grid-cols-3">
+                    {organizations?.map((org) => (
+                      <OrganizationCard org={org} key={org.id} />
+                    ))}
+                  </div>
+                </Suspense>
+              </CardContent>
+            </Card>
           )}
         </Suspense>
-
-        <Card
-          className={cn("w-full shadow-transparent mt-6 border-transparent")}
-        >
-          <CardHeader>
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-col flex-wrap gap-3 md:flex-row md:items-center md:justify-between">
-                <div className="flex min-w-0 flex-1 flex-col gap-2">
-                  <CardTitle className="text-2xl">Your Organizations</CardTitle>
-                  <CardDescription>
-                    {organizations.length} organization
-                    {organizations.length !== 1 ? "s" : ""} created
-                  </CardDescription>
-                </div>
-                <DialogButton />
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <Suspense fallback={<LoadingIcon />}>
-              <div className="grid gap-4 md:grid-cols-3">
-                {organizations?.map((org) => (
-                  <OrganizationCard org={org} key={org.id} />
-                ))}
-              </div>
-            </Suspense>
-          </CardContent>
-        </Card>
       </div>
     </>
   );

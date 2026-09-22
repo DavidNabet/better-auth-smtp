@@ -152,6 +152,7 @@ export default function Teams({ organizationId }: TeamsProps) {
         onError(context) {
           if (context.response.status) {
             hasClientOrgPermission("owner", "team", "delete");
+            throw new Error("You cannot perform this action");
           }
         },
       },

@@ -17,7 +17,7 @@ const USER = ac.newRole({
 });
 
 const MEMBER = ac.newRole({
-  user: ["update", "set-password"],
+  user: ["update", "set-password", "get"],
   comments: ["create-comment", "toggle-hide"],
   apps: ["apps-list"],
 });
@@ -25,11 +25,11 @@ const MEMBER = ac.newRole({
 const ADMIN = ac.newRole({
   comments: ["create-comment", "toggle-hide", "delete-comment"],
   apps: ["apps-list"],
-  user: ["update", "set-password", "ban"],
+  user: ["update", "set-password", "ban", "get"],
 });
 
 const OWNER = ac.newRole({
-  user: ["update", "set-password", "ban"],
+  user: ["update", "set-password", "ban", "get"],
   comments: ["create-comment", "toggle-hide", "delete-comment"],
   apps: ["apps-create", "apps-list", "apps-update", "apps-delete"],
 });

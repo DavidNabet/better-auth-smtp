@@ -1,5 +1,6 @@
 import { db } from "@/db";
 import { auth } from "@/lib/auth";
+import { revalidateTag } from "next/cache";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 
@@ -15,7 +16,7 @@ export async function GET(
   }
 
   // Vérification d'autorisation côté serveur via better-auth ac
-  const { success } = await auth.api.hasPermission({
+  await auth.api.hasPermission({
     headers: await headers(),
     body: {
       permissions: {
@@ -24,14 +25,11 @@ export async function GET(
     },
   });
 
-  if (!success) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
-
   // P1.2 — IDOR : un user authentifié mais non membre ne doit pas lister les membres.
   const isMember = await db.member.findFirst({
     where: { organizationId: orgId, userId: session.user.id },
   });
+  console.log("GET MEMBERS : ", isMember);
   if (!isMember) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
@@ -81,6 +79,8 @@ export async function GET(
     createdAt: m.createdAt,
     updatedAt: m.createdAt,
   }));
+
+  revalidateTag(`members:${orgId}`);
 
   return NextResponse.json(
     {

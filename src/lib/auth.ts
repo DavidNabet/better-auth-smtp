@@ -25,6 +25,7 @@ import {
   findTeamByName,
   getActiveOrganization,
 } from "@/lib/organization/organization.utils";
+import { getUserById } from "./user/user.utils";
 
 export const auth = betterAuth({
   database: prismaAdapter(db, {
@@ -233,9 +234,9 @@ export const auth = betterAuth({
         SUPER_ADMIN,
       },
       // P1.4 — ids admin pilotés par env, avec repli sûr sur la valeur commitée.
-      // adminUserIds: process.env.ADMIN_USER_IDS?.split(",")
-      //   .map((s) => s.trim())
-      //   .filter(Boolean),
+      adminUserIds: process.env.ADMIN_USER_IDS?.split(",")
+        .map((s) => s.trim())
+        .filter(Boolean),
       impersonationSessionDuration: 60 * 60 * 24,
     }),
     twoFactor({
@@ -248,21 +249,28 @@ export const auth = betterAuth({
       skipVerificationOnEnable: true,
     }),
     organization({
-      requireEmailVerificationOnInvitation: false,
+      requireEmailVerificationOnInvitation: true,
       allowUserToCreateOrganization(user) {
-        return user.id === process.env.SUPER_ADMIN_ID;
+        return user.email === process.env.ADMIN_EMAIL;
       },
       cancelPendingInvitationsOnReInvite: true,
       organizationHooks: {
         // FIX: L'utilisateur doit d'abord créer un compte puis accepter l'invitation envoyé par mail
         // path: api/accept-invitation/:invitationId
-        beforeAcceptInvitation: async ({ invitation, organization }) => {
-          const ctx = auth.$context;
-          logger.info(
-            "Before accepting invitation ctx",
-            (await ctx).session?.session,
-          );
-          logger.info(`Adding ${invitation.email} to ${organization.name}`);
+        beforeAcceptInvitation: async ({ invitation, organization, user }) => {
+          console.log(`Adding ${invitation.email} to ${organization.name}`);
+          const inviter = await getUserById(invitation.inviterId);
+          await auth.api.notify({
+            body: {
+              userId: user.id,
+              type: "before_accept.invitation",
+              title:
+                `${inviter?.email} vous a invité à rejoindre l'organisation ${organization.name}` ||
+                `Vous êtes invité à rejoindre l'organisation ${organization.name}`,
+              href: `/dashboard/orgs/${organization.slug}`,
+              roles: ["member"],
+            },
+          });
         },
         afterAcceptInvitation: async ({
           invitation,
@@ -271,16 +279,11 @@ export const auth = betterAuth({
           member,
         }) => {
           console.log("after Accept Invitation: ", user.email);
-          if (user.role === Role.USER) {
-            await auth.api.adminUpdateUser({
-              body: {
-                userId: user.id,
-                data: {
-                  role: Role.MEMBER,
-                },
-              },
-              headers: await headers(),
-            });
+          if (user?.role === Role.USER) {
+            const data = await (
+              await auth.$context
+            ).internalAdapter.updateUser(user.id, { role: Role.MEMBER });
+            console.log("changing role...", data);
             // await db.user.update({
             //   where: { id: user.id },
             //   data: {
@@ -379,17 +382,6 @@ export const auth = betterAuth({
           data.organization.name,
           inviteLink,
         );
-
-        await auth.api.notify({
-          body: {
-            title: "Invitation en attente",
-            type: "invitation.pending",
-            organizationId: data.organization.id,
-            userId: data.inviter.id,
-            body: `Vous avez une invitation à rejoindre ${data.organization.name}`,
-            href: `/dashboard/orgs/${data.organization.slug}`,
-          },
-        });
       },
       teams: {
         enabled: true,
