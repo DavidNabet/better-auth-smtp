@@ -11,7 +11,8 @@ import {
 } from "../ui/select";
 import { authClient } from "@/lib/auth/auth.client";
 import { getOrganizations } from "@/lib/organization/organization.utils";
-import { use } from "react";
+import { use, useEffect } from "react";
+import { wait } from "@/lib/utils";
 
 type OrganizationSwitcherProps = {
   organizations: ReturnType<typeof getOrganizations>;
@@ -36,6 +37,8 @@ export function OrganizationSwitcher({
         return;
       }
       toast.success("Organization switched successfully");
+      wait(3000);
+      router.push(`/dashboard/orgs/${orgSlug}`);
     } catch (error) {
       console.error(error);
       toast.error("Failed to active an organization");
@@ -44,11 +47,8 @@ export function OrganizationSwitcher({
 
   return (
     <Select
-      value={activeOrganization?.slug}
-      onValueChange={(val) => (
-        handleChangeOrganization(val),
-        router.push(`/dashboard/orgs/${val}`)
-      )}
+      value={activeOrganization?.slug ?? "Supa"}
+      onValueChange={(val) => handleChangeOrganization(val)}
     >
       <SelectTrigger className="w-45 selectLink">
         <SelectValue placeholder="Select an organization" />

@@ -13,10 +13,11 @@ export const routeMiddleware: Middleware = async (req, _event, next) => {
   const { data: session } = await betterFetch<Session>(
     "/api/auth/get-session",
     {
-      baseURL: process.env.NEXT_PUBLIC_APP_URL,
+      baseURL: req.nextUrl.origin,
       headers: {
         cookie: req.headers.get("cookie") || "",
       },
+      credentials: "include",
     },
   );
 

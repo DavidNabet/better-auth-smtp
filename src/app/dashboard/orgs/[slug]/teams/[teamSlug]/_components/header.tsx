@@ -1,17 +1,23 @@
 import InviteDialog from "@/components/organizations/InviteDialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getInitials } from "@/lib/utils";
+import { CreateInvitation } from "@/components/organizations/TeamInvitations";
+import CreateInvitationTrigger from "@/components/organizations/CreateInvitationTrigger";
 
 interface TeamHeaderProps {
   logo?: string;
+  teamId: string;
   teamName: string;
   memberCount: number;
+  organizationId: string;
 }
 
 export default function TeamHeader({
   logo,
+  teamId,
   teamName,
   memberCount,
+  organizationId,
 }: TeamHeaderProps) {
   return (
     <div className="flex flex-col flex-wrap gap-4 md:flex-row md:items-center md:justify-between">
@@ -30,8 +36,11 @@ export default function TeamHeader({
         </div>
       </div>
       <div className="flex flex-wrap items-center gap-2">
-        <InviteDialog title="Invite Member">
-          <p>Members</p>
+        <InviteDialog title="Add a member" btnText="Add Member">
+          <CreateInvitationTrigger
+            organizationId={organizationId}
+            teamId={teamId}
+          />
         </InviteDialog>
       </div>
     </div>

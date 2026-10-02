@@ -43,6 +43,7 @@ import {
   MessageSquare,
   MoreVertical,
   X,
+  RefreshCw,
 } from "lucide-react";
 import { Card, CardContent } from "../ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -167,6 +168,14 @@ export default function Notification({ userNotify }: NotificationProps) {
                     <SelectItem value="unread">Unread</SelectItem>
                   </SelectContent>
                 </Select>
+                <Button
+                  onClick={refresh}
+                  size="sm"
+                  type="button"
+                  variant="outline"
+                >
+                  <RefreshCw className="size-4" />
+                </Button>
               </div>
             )}
           </div>

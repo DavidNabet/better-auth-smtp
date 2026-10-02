@@ -29,7 +29,6 @@ export async function GET(
   const isMember = await db.member.findFirst({
     where: { organizationId: orgId, userId: session.user.id },
   });
-  console.log("GET MEMBERS : ", isMember);
   if (!isMember) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }

@@ -1,6 +1,6 @@
 "use client";
 
-import { Mail, Trash2, Loader2, X, RefreshCw } from "lucide-react";
+import { Mail, Trash2, Loader2, X, RefreshCw, UserPlus } from "lucide-react";
 import {
   Suspense,
   useActionState,
@@ -48,7 +48,10 @@ import {
   createToastCallbacks,
   withCallbacks,
 } from "@/app/_components/ServerActionToast";
-import { inviteMember } from "@/lib/organization/organization.action";
+import {
+  addTeamMemberAction,
+  inviteMember,
+} from "@/lib/organization/organization.action";
 
 import { toast } from "sonner";
 import { Checkbox } from "../ui/checkbox";
@@ -263,11 +266,12 @@ export default function TeamInvitations({
             >
               <RefreshCw className="size-4" />
             </Button> */}
-            <InviteDialog title="Create Invitation">
+            <InviteDialog title="Create Invitation" btnText="Invite Member">
               {organizationId && (
                 <CreateInvitation
                   organizationId={organizationId}
                   onSuccess={refreshInvitations}
+                  isTeamMember={false}
                 />
               )}
             </InviteDialog>
@@ -415,61 +419,153 @@ function InvitationActionsDropdown({
 }
 
 export function CreateInvitation({
+  teamId,
   organizationId,
   onSuccess,
+  fetchMembers: customFetch,
+  isTeamMember,
 }: {
+  teamId?: string;
   organizationId?: string;
   onSuccess?: () => void;
+  fetchMembers?: () => Promise<{
+    users: User[];
+    total: number;
+  }>;
+  isTeamMember: boolean;
 }) {
   const formRef = useRef<HTMLFormElement>(null);
+  const formMemberRef = useRef<HTMLFormElement>(null);
   const [users, setUsers] = useState<User[]>([]);
-  const isLoadingRef = useRef(true);
-  const toastCallbacks = createToastCallbacks({
-    loading: "Envoyer une invitation...",
-  });
-  const [state, action, pending] = useActionState(
-    withCallbacks(inviteMember, {
-      ...toastCallbacks,
-      onSuccess(result) {
-        toastCallbacks.onSuccess?.(result);
-        formRef.current?.reset();
 
-        onSuccess?.();
-      },
-    }),
-    null,
-  );
+  const useInviteMember = () => {
+    return useActionState(
+      withCallbacks(inviteMember, {
+        ...createToastCallbacks({
+          loading: "Envoyer une invitation...",
+        }),
+        onSuccess() {
+          // toastCallbacks.onSuccess?.(result);
+          formRef.current?.reset();
+
+          onSuccess?.();
+        },
+      }),
+      null,
+    );
+  };
+
+  const useAddTeamMember = () => {
+    const toastCallbacks = createToastCallbacks({
+      loading: "Ajouter un nouveau membre...",
+    });
+    return useActionState(
+      withCallbacks(addTeamMemberAction, {
+        ...toastCallbacks,
+        onSuccess(result) {
+          toastCallbacks.onSuccess?.(result);
+          formMemberRef.current?.reset();
+        },
+      }),
+      null,
+    );
+  };
 
   const [isChecked, setIsChecked] = useState<boolean>(true);
+  const [inviteState, inviteAction, invitePending] = useInviteMember();
+  const [memberState, memberAction, memberPending] = useAddTeamMember();
 
   const fetchUsers = async () => {
-    isLoadingRef.current = true;
-    try {
-      const res = await fetch(
-        `/api/organizations/${organizationId}/available-users`,
-        { cache: "no-cache" },
-      );
-      if (!res.ok) throw new Error("Failed to fetch available users");
-      const data = await res.json();
-      setUsers(data.users);
-    } catch (error) {
-      console.log(error);
-    } finally {
-      isLoadingRef.current = false;
-    }
+    const res = await fetch(
+      `/api/organizations/${organizationId}/available-users`,
+      { cache: "no-cache" },
+    );
+    if (!res.ok) throw new Error("Failed to fetch available users");
+    return res.json() as Promise<{
+      users: User[];
+      total: number;
+    }>;
   };
+
+  const fetcher = customFetch ?? fetchUsers;
 
   useEffect(() => {
     if (!organizationId) return;
-    fetchUsers();
-  }, [organizationId]);
+    fetcher().then(({ users: initial }) => {
+      setUsers(initial);
+    });
+  }, [organizationId, fetcher]);
+
+  if (isTeamMember) {
+    return (
+      <form
+        ref={formMemberRef}
+        className="overflow-y-auto"
+        id="addMemberForm"
+        action={memberAction}
+      >
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 gap-3">
+            {teamId && <input type="hidden" name="teamId" value={teamId} />}
+            <div className="col-span-6">
+              <Label htmlFor="email" className="block text-sm font-medium">
+                Email
+              </Label>
+
+              <Suspense fallback={<LoadingIcon />}>
+                <Select name="email">
+                  <SelectTrigger className="mt-1 w-full">
+                    <SelectValue placeholder="Users in db" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {users.map((user) => (
+                      <SelectItem key={user.id} value={user.email}>
+                        {user.email}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Suspense>
+
+              <ErrorMessages
+                errors={memberState?.errorMessage?.email ?? null}
+              />
+            </div>
+          </div>
+          <DialogFooter className="mt-6 col-span-6 gap-x-6">
+            <DialogClose asChild>
+              <Button variant="outline">Annuler</Button>
+            </DialogClose>
+            <Button
+              type="submit"
+              form="addMemberForm"
+              variant="default"
+              disabled={memberPending}
+            >
+              {memberPending ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                <>
+                  <UserPlus className="size-4" />
+                  Add at the team
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </div>
+      </form>
+    );
+  }
 
   return (
     <form
       ref={formRef}
       className="overflow-y-auto"
       id="invitationForm"
-      action={action}
+      action={inviteAction}
     >
       <div className="space-y-4">
         <div className="grid grid-cols-1 gap-3">
@@ -511,7 +607,7 @@ export function CreateInvitation({
               />
             )}
 
-            <ErrorMessages errors={state?.errorMessage?.email ?? null} />
+            <ErrorMessages errors={inviteState?.errorMessage?.email ?? null} />
           </div>
           <div className="col-span-6">
             <Label
@@ -532,7 +628,7 @@ export function CreateInvitation({
             <p className="mt-2 text-muted-foreground text-sm">
               Members can create content, admins can manage the team
             </p>
-            <ErrorMessages errors={state?.errorMessage?.role ?? null} />
+            <ErrorMessages errors={inviteState?.errorMessage?.role ?? null} />
           </div>
         </div>
         <DialogFooter className="mt-6 col-span-6 gap-x-6">
@@ -543,9 +639,9 @@ export function CreateInvitation({
             type="submit"
             form="invitationForm"
             variant="default"
-            disabled={pending}
+            disabled={invitePending}
           >
-            {pending ? (
+            {invitePending ? (
               <>
                 <Loader2 className="size-4 animate-spin" />
                 Creating...

@@ -22,22 +22,19 @@ export async function getNotificationsByUserId() {
   }
 }
 
-export async function onMarkAsRead(notificationId: string) {
+export async function getNotificationByOrgId(orgId: string) {
   try {
-    const notification = await db.notification.update({
-      where: { id: notificationId },
-      data: {
-        status: "accepted",
-        read: true,
+    const notifications = await db.notification.findMany({
+      where: {
+        organizationId: orgId,
+      },
+      include: {
+        user: true,
       },
     });
-    return notification;
+    return notifications;
   } catch (error) {
     console.error(error);
-    return null;
+    return [];
   }
 }
-
-// onClearAll,
-// onDelete,
-// onMarkAllAsRead,

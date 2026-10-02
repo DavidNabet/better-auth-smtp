@@ -15,6 +15,17 @@ export const inviteSchema = z.object({
   organizationId: z.string().min(1, "Org Id is required").optional(),
 });
 
+export const addTeamMemberSchema = z.object({
+  email: z
+    .email({
+      pattern: z.regexes.email,
+      error: "Entrer une adresse mail valide",
+    })
+    .trim()
+    .min(1, "L'email est requis"),
+  teamId: z.string().min(1, "Team Id is required"),
+});
+
 export const createOrganizationSchema = z.object({
   organizationId: z.string().min(1, "Org Id is required").optional(),
   name: z.string().trim().min(1, "Le nom de l'organization est requis"),

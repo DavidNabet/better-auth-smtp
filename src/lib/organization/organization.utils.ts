@@ -387,6 +387,7 @@ export async function createDefaultTeams(
             name: "Admin",
             description: "Equipe d'administration (accès: roles admin, owner).",
             organizationId,
+            slug: `admin-${organizationId.toLowerCase()}`,
             teamMembers: {
               create: {
                 userId,
@@ -405,6 +406,7 @@ export async function createDefaultTeams(
             description:
               "Equipe de modération (accès: roles admin, owner, member).",
             organizationId,
+            slug: `moderation-${organizationId.toLowerCase()}`,
             teamMembers: {
               create: {
                 userId,

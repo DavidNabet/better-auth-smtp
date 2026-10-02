@@ -22,6 +22,7 @@ import { RoleType } from "@/lib/permissions/permissions.utils";
 import Notification from "@/components/notifications/Notification";
 import { db } from "@/db";
 import { Session } from "@/lib/auth";
+import Notif from "@/components/notifications/Notif";
 
 export default async function Navbar() {
   const data = await getCurrentServerSession();

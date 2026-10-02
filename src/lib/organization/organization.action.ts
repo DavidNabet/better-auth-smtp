@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { revalidateTag } from "next/cache";
 import { headers as head } from "next/headers";
 import {
+  addTeamMemberSchema,
   createTeamSchema,
   inviteSchema,
 } from "@/lib/organization/organization.schema";
@@ -13,6 +14,7 @@ import { getCurrentUser } from "../user/user.utils";
 import { hasServerOrgPermission } from "../permissions/permissions.actions";
 import { APIError } from "better-auth/api";
 import { ErrorTypes } from "../user/user.actions";
+import { db } from "@/db";
 
 // TODO: Faire un check côté DB de l'OrgId, s'il est invalide, on peut quand même lire les informations lié à l'organization (les membres, etc...)
 
@@ -63,6 +65,56 @@ export async function inviteMember(
     console.log("invitation: ", invitation);
     revalidateTag(`invalidations:${organizationId}`);
     revalidateTag("organization");
+    return toActionState("Invitation sent to member", "SUCCESS");
+  } catch (error) {
+    if (error instanceof APIError) {
+      console.log(error.message, error.body?.code);
+      const errorCode = error.body?.code as ErrorTypes;
+      switch (errorCode) {
+        case "YOU_ARE_NOT_ALLOWED_TO_INVITE_USERS_TO_THIS_ORGANIZATION":
+          return toActionState(error.message, "ERROR");
+        default:
+          return toActionState("Something went wrong.", "ERROR");
+      }
+    }
+    return toActionState("Something went wrong.", "ERROR");
+  }
+  //   revalidatePath("/dashboard/apps");
+}
+export async function addTeamMemberAction(
+  formState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const data = Object.fromEntries(formData);
+  const validatedFields = addTeamMemberSchema.safeParse(data);
+  if (!validatedFields.success) {
+    return toAction<typeof addTeamMemberSchema>(validatedFields.error, "ERROR");
+  }
+
+  const { teamId, email } = validatedFields.data;
+
+  const user = await db.user.findUnique({ where: { email } });
+  if (!user) throw new Error("User not found");
+
+  // const { session } = await getCurrentUser();
+
+  try {
+    if (!(await hasServerOrgPermission("member", "update"))) {
+      return toActionState(
+        "You don't have permission to perform this action",
+        "ERROR",
+      );
+    }
+    const data = await auth.api.addTeamMember({
+      body: {
+        teamId,
+        userId: user.id,
+      },
+      headers: await head(),
+    });
+    console.log("addTeamMember: ", data);
+    // revalidateTag(`invalidations:${teamId}`);
+    // revalidateTag("organization");
     return toActionState("Invitation sent to member", "SUCCESS");
   } catch (error) {
     if (error instanceof APIError) {

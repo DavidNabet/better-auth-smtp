@@ -13,13 +13,19 @@ import { authClient } from "@/lib/auth/auth.client";
 import { useAuth } from "@/hooks/use-auth";
 
 import { Button } from "../ui/button";
+import { UserPlus } from "lucide-react";
 
 interface InviteDialogProps {
   title: string;
   children: React.ReactNode;
+  btnText: string;
 }
 
-export default function InviteDialog({ title, children }: InviteDialogProps) {
+export default function InviteDialog({
+  title,
+  children,
+  btnText,
+}: InviteDialogProps) {
   const { session } = useAuth();
   const [canInvite, setCanInvite] = useState(false);
 
@@ -45,7 +51,10 @@ export default function InviteDialog({ title, children }: InviteDialogProps) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button>Invite Member</Button>
+        <Button>
+          <UserPlus className="size-4" />
+          {btnText}
+        </Button>
       </DialogTrigger>
       <DialogContent className="md:max-w-md">
         <DialogHeader>

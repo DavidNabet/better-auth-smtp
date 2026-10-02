@@ -68,6 +68,7 @@ export function CreateOrganizationForm() {
           },
           onSuccess() {
             toast.success("Organization created successfully!!");
+            setFormData({ name: "", slug: "" });
             router.refresh();
           },
         },
@@ -93,7 +94,7 @@ export function CreateOrganizationForm() {
       </div>
       <div className="col-span-6">
         <Label htmlFor="slug" className="block text-sm font-medium">
-          Name
+          Slug
         </Label>
         <Input
           name="slug"

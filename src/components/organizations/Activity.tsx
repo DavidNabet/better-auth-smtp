@@ -44,28 +44,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { getNotificationByOrgId } from "@/lib/notification/notification.utils";
+
+type Notification = Awaited<ReturnType<typeof getNotificationByOrgId>>;
 
 export type ActivityType =
-  | "member_joined"
+  | "before_member_joined"
+  | "after_member_joined"
   | "member_left"
   | "member_role_changed"
   | "app_created"
   | "app_updated"
   | "settings_updated";
-
-export interface ActivityEntry {
-  id: string;
-  type: ActivityType;
-  user: {
-    id: string;
-    name: string;
-    image?: string;
-  };
-  description: string;
-  timestamp: Date;
-  projectId?: string;
-  projectName?: string;
-}
 
 /**
  * fakeActivityEntries
@@ -75,9 +65,9 @@ export interface ActivityEntry {
  * Chaque entrée respecte l'interface ActivityEntry :
  * - id : identifiant unique de l'activité
  * - type : type d'activité (doit correspondre à ActivityType)
- * - user : informations sur l'utilisateur qui a effectué l'action
- * - description : description textuelle de l'activité
- * - timestamp : date/heure de l'activité
+ * - user : informations sur l'utilisateur qui a reçu la notification
+ * - title : description textuelle de l'activité
+ * - createdAt : date/heure de l'activité
  * - projectId : (optionnel) identifiant du projet lié
  * - projectName : (optionnel) nom du projet lié
  *
@@ -85,68 +75,18 @@ export interface ActivityEntry {
  * - Les timestamps sont générés relativement à Date.now() pour simuler
  *   des activités récentes (il y a X minutes/heures/jours).
  */
-export const fakeActivityEntries: ActivityEntry[] = [
-  {
-    id: "act_3",
-    type: "member_joined", // Adapte selon ton ActivityType
-    user: {
-      id: "user_003",
-      name: "Sophie Bernard",
-      image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sophie",
-    },
-    description: "A rejoint l'équipe Frontend",
-    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // Il y a 2 heures
-    // Pas de projectId/projectName pour cette activité (optionnel)
-  },
-  {
-    id: "act_7",
-    type: "member_left", // Adapte selon ton ActivityType
-    user: {
-      id: "user_007",
-      name: "Camille Rousseau",
-      image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Camille",
-    },
-    description: "A quitté l'équipe Backend",
-    timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // Il y a 3 jours
-  },
-  {
-    id: "act_8",
-    type: "member_role_changed", // Adapte selon ton ActivityType
-    user: {
-      id: "user_008",
-      name: "Lucas Petit",
-      image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Lucas",
-    },
-    description: "Owner a changé le rôle de Lucas",
-    timestamp: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // Il y a 5 jours
-    projectId: "proj_gamma",
-    projectName: "Projet Gamma",
-  },
-  {
-    id: "act_9",
-    type: "app_created", // Adapte selon ton ActivityType
-    user: {
-      id: "user_009",
-      name: "Emma Laurent",
-      image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Emma",
-    },
-    description: "A créé le projet 'Projet Delta'",
-    timestamp: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // Il y a 7 jours
-    projectId: "proj_delta",
-    projectName: "Projet Delta",
-  },
-];
 
 export interface TeamActivityFeedProps {
-  activities?: ActivityEntry[];
+  activities?: Notification;
   showFilters?: boolean;
   showSearch?: boolean;
   itemsPerPage?: number;
 }
 
-function getActivityIcon(type: ActivityType) {
+function getActivityIcon(type: string) {
   switch (type) {
-    case "member_joined":
+    case "before_member_joined":
+    case "after_member_joined":
     case "member_left":
       return UserPlus;
     case "member_role_changed":
@@ -161,9 +101,10 @@ function getActivityIcon(type: ActivityType) {
   }
 }
 
-function getActivityColor(type: ActivityType): string {
+function getActivityColor(type: string): string {
   switch (type) {
-    case "member_joined":
+    case "before_member_joined":
+    case "after_member_joined":
       return "text-green-400";
     case "member_left":
       return "text-red-600";
@@ -177,7 +118,7 @@ function getActivityColor(type: ActivityType): string {
 
 export default function TeamActivityFeed({
   activities = [],
-  itemsPerPage = 10,
+  itemsPerPage = 5,
   showFilters = true,
   showSearch = true,
 }: TeamActivityFeedProps) {
@@ -195,9 +136,8 @@ export default function TeamActivityFeed({
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
         (a) =>
-          a.description.toLowerCase().includes(query) ||
-          a.user.name.toLowerCase().includes(query) ||
-          a.projectName?.toLowerCase().includes(query),
+          a.title.toLowerCase().includes(query) ||
+          a?.user?.name?.toLowerCase().includes(query),
       );
     }
     return filtered;
@@ -208,14 +148,14 @@ export default function TeamActivityFeed({
 
   const groupedActivities = displayedActivities.reduce(
     (groups, activity) => {
-      const dateKey = formatYesterdayDate(activity.timestamp);
+      const dateKey = formatYesterdayDate(activity.createdAt);
       if (!groups[dateKey]) {
         groups[dateKey] = [];
       }
       groups[dateKey].push(activity);
       return groups;
     },
-    {} as Record<string, ActivityEntry[]>,
+    {} as Record<string, Notification>,
   );
 
   return (
@@ -249,7 +189,9 @@ export default function TeamActivityFeed({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="member_joined">Member joined</SelectItem>
+                  <SelectItem value="after_member_joined">
+                    Member joined
+                  </SelectItem>
                   <SelectItem value="app_created">Apps</SelectItem>
                   <SelectItem value="settings_updated">Settings</SelectItem>
                 </SelectContent>
@@ -273,7 +215,7 @@ export default function TeamActivityFeed({
             </EmptyHeader>
           </Empty>
         ) : (
-          <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-6 pt-2 h-70 overflow-y-auto">
             {Object.entries(groupedActivities).map(
               ([dateKey, dateActivities]) => (
                 <div key={dateKey}>
@@ -295,11 +237,11 @@ export default function TeamActivityFeed({
                         >
                           <Avatar className="size-8 shrink-0">
                             <AvatarImage
-                              alt={activity.user.name}
-                              src={activity.user.image}
+                              alt={activity?.user?.name!}
+                              src={activity?.user?.image!}
                             />
                             <AvatarFallback className="text-xs">
-                              {getInitials(activity.user.name)}
+                              {getInitials(activity?.user?.name!)}
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex min-w-0 flex-1 flex-col gap-2">
@@ -315,17 +257,12 @@ export default function TeamActivityFeed({
                               >
                                 <Icon className="size-3" />
                               </div>
-                              {activity.projectName && (
-                                <Badge className="text-xs" variant="outline">
-                                  {activity.projectName}
-                                </Badge>
-                              )}
                             </div>
                             <p className="wrap-break-word text-sm">
-                              {activity.description}
+                              {activity.title}
                             </p>
                             <span className="text-muted-foreground text-xs">
-                              {formatRelativeTime(activity.timestamp)}
+                              {formatRelativeTime(activity.createdAt)}
                             </span>
                           </div>
                         </div>

@@ -268,7 +268,7 @@ function TeamActionsDropdown({
       <DropdownMenuContent align="end" collisionPadding={8} sideOffset={4}>
         <DropdownMenuItem asChild>
           <Link
-            href={`/dashboard/orgs/${team.organization.slug}/teams/${team.name.toLowerCase()}-${team.id}`}
+            href={`/dashboard/orgs/${team.organization.slug}/teams/${team.slug}`}
           >
             <Folder className="size-4" />
             Open

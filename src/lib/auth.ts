@@ -31,10 +31,17 @@ export const auth = betterAuth({
   database: prismaAdapter(db, {
     provider: "postgresql",
   }),
-  baseURL: process.env.BETTER_AUTH_URL ?? "",
+  // trustedOrigins: [
+  //   process.env.BASE_URL ?? "",
+  //   "https://l98pnvl5-3000.uks1.devtunnels.ms/",
+  // ],
+  baseURL: {
+    allowedHosts: ["localhost:3000", "localhost:3001"],
+    fallback: process.env.BETTER_AUTH_URL,
+  },
   emailVerification: {
     beforeEmailVerification: async (user, req) => {
-      logger.info("Request before verification", user.email);
+      console.info("Request before verification", user.email);
     },
     sendVerificationEmail: async ({ user, url }) => {
       console.info("Verification email sent to", user.email);
@@ -122,13 +129,14 @@ export const auth = betterAuth({
         }
       },
       afterDelete: async (user, request) => {
-        logger.info(`User ${user.email} account is deleted`);
+        console.info(`User ${user.email} account is deleted`);
       },
     },
   },
   session: {
     expiresIn: 60 * 60 * 24 * 30,
     updateAge: 60 * 60 * 24 * 3,
+    deferSessionRefresh: true,
     // cookieCache: {
     //   enabled: true,
     //   maxAge: 60 * 60 * 24,
@@ -146,6 +154,7 @@ export const auth = betterAuth({
       ipAddressHeaders: ["x-client-ip", "x-forwarded-for"],
     },
   },
+  trustedOrigins: ["http://localhost:3000", "http://localhost:3001"],
   verification: {
     disableCleanup: false,
   },
@@ -174,7 +183,7 @@ export const auth = betterAuth({
               .map((e) => e.trim().toLowerCase())
               .filter(Boolean) ?? [];
           if (ADMIN_EMAILS.includes((user.email ?? "").toLowerCase())) {
-            logger.info("auth db user updated: ", user.name);
+            console.info("auth db user updated: ", user.name);
 
             // return { data: { ...user, role: Role.ADMIN } };
             await db.user.update({
@@ -209,7 +218,7 @@ export const auth = betterAuth({
             return { data: { ...user, emailVerified: true } };
           }
 
-          logger.info("Not invite");
+          console.info("Not invite");
           return { data: user };
         },
         //   after: async (user, ctx) => {
@@ -242,7 +251,7 @@ export const auth = betterAuth({
     twoFactor({
       otpOptions: {
         async sendOTP({ user, otp }) {
-          logger.info("OTP sent to: ", user.email);
+          console.info("OTP sent to: ", user.email);
           await sendOTPforLogin(user.name, user.email, otp);
         },
       },
@@ -263,6 +272,7 @@ export const auth = betterAuth({
           await auth.api.notify({
             body: {
               userId: user.id,
+              organizationId: organization.id,
               type: "before_accept.invitation",
               title:
                 `${inviter?.email} vous a invité à rejoindre l'organisation ${organization.name}` ||
@@ -278,12 +288,13 @@ export const auth = betterAuth({
           user,
           member,
         }) => {
-          console.log("after Accept Invitation: ", user.email);
+          console.info("after Accept Invitation: ", user.email);
+          const inviter = await getUserById(invitation.inviterId);
           if (user?.role === Role.USER) {
             const data = await (
               await auth.$context
             ).internalAdapter.updateUser(user.id, { role: Role.MEMBER });
-            console.log("changing role...", data);
+            console.log("changing role...", data?.role);
             // await db.user.update({
             //   where: { id: user.id },
             //   data: {
@@ -291,6 +302,17 @@ export const auth = betterAuth({
             //   },
             // });
           }
+          // User has accepted invitation
+          await auth.api.notify({
+            body: {
+              userId: inviter?.id,
+              organizationId: organization.id,
+              type: "after_accept.invitation",
+              title: `${user.email} à rejoint l'organisation ${organization.name}`,
+              href: `/dashboard/orgs/${organization.slug}`,
+              roles: ["owner", "admin"],
+            },
+          });
           // logout user after accepting invitation to update session with new role and permissions
         },
         afterCancelInvitation: async ({
@@ -298,7 +320,7 @@ export const auth = betterAuth({
           organization,
           cancelledBy,
         }) => {
-          logger.success(
+          console.info(
             `Invitation for ${invitation.email} to join ${organization.name} has been cancelled by ${cancelledBy.name}`,
           );
 
@@ -310,7 +332,7 @@ export const auth = betterAuth({
           ));
         },
         afterCreateOrganization: async ({ organization, member, user }) => {
-          logger.info("Organization created: ", organization);
+          console.info("Organization created: ", organization);
           await createDefaultTeams(organization.id, user.id);
         },
         beforeCreateTeam: async ({ team, organization, user }) => {
@@ -327,16 +349,25 @@ export const auth = betterAuth({
           user,
           organization,
         }) => {
-          logger.success(
+          console.info(
             `✅ UpdateMemberRole: ${user.email} role => ${member.role}`,
           );
-          if (previousRole === "member" && user.role === Role.MEMBER) {
-            await auth.api.adminUpdateUser({
+          if (previousRole === "member") {
+            // await auth.api.adminUpdateUser({
+            //   body: {
+            //     userId: user.id,
+            //     data: {
+            //       role: Role.ADMIN,
+            //     },
+            //   },
+            // });
+            await auth.api.notify({
               body: {
                 userId: user.id,
-                data: {
-                  role: Role.ADMIN,
-                },
+                organizationId: organization.id,
+                type: "member_role_changed",
+                title: `L'organisateur vous a promu au rang de ${member.role}`,
+                roles: ["admin", "member"],
               },
             });
             // await db.user.update({
@@ -345,15 +376,24 @@ export const auth = betterAuth({
             //     role: Role.ADMIN,
             //   },
             // });
-          } else if (previousRole === "admin" && user.role === Role.ADMIN) {
-            await auth.api.adminUpdateUser({
+          } else if (previousRole === "admin") {
+            // await auth.api.adminUpdateUser({
+            //   body: {
+            //     userId: user.id,
+            //     data: {
+            //       role: Role.MEMBER,
+            //     },
+            //   },
+            //   headers: await headers(),
+            // });
+            await auth.api.notify({
               body: {
                 userId: user.id,
-                data: {
-                  role: Role.MEMBER,
-                },
+                organizationId: organization.id,
+                type: "member_role_changed",
+                title: `L'organisateur vous a rétrograder au rang de ${member.role}`,
+                roles: ["member", "admin"],
               },
-              headers: await headers(),
             });
             // await db.user.update({
             //   where: { id: user.id },
@@ -373,7 +413,7 @@ export const auth = betterAuth({
       async sendInvitationEmail(data) {
         // data.role
         const inviteLink = `${process.env.NEXT_PUBLIC_APP_URL}/api/accept-invitation/${data.id}`;
-        logger.info("Invitation Email: ", data.email);
+        console.info("Invitation Email: ", data.email);
 
         await sendInviteEmail(
           data.email,

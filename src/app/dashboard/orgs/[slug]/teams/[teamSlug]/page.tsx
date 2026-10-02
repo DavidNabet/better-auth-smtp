@@ -8,11 +8,10 @@ import {
   getTeamMembersWithOrgRole,
 } from "@/lib/organization/organization.utils";
 import { Suspense } from "react";
-import TeamActivityFeed, {
-  fakeActivityEntries,
-} from "@/components/organizations/Activity";
+import TeamActivityFeed from "@/components/organizations/Activity";
 import LoadingIcon from "@/app/_components/LoadingIcon";
 import { getCurrentUser } from "@/lib/user/user.utils";
+import { getNotificationByOrgId } from "@/lib/notification/notification.utils";
 
 export const metadata: Metadata = {
   title: "Team",
@@ -22,22 +21,23 @@ export async function generateStaticParams() {
   return [{ slugTeamId: "/^[a-z0-9]+(?:[_-][a-zA-Z0-9]+)*$/" }];
 }
 
-async function getTeamsData(name: string) {
-  const team = await getTeamDetails(name);
+async function getTeamsData(teamSlug: string) {
+  const team = await getTeamDetails(teamSlug);
   const memberCount = await getTeamMembersWithOrgRole(team?.id || "");
   return { team, memberCount };
 }
 
 export default async function TeamDetails(
-  props: PageProps<"/dashboard/orgs/[slug]/teams/[slugTeamId]">,
+  props: PageProps<"/dashboard/orgs/[slug]/teams/[teamSlug]">,
 ) {
-  const { slugTeamId } = await props.params;
-  const name = slugTeamId.split("-")[0];
+  const { teamSlug } = await props.params;
+  const orgId = teamSlug.split("-")[1];
   const { currentUser } = await getCurrentUser();
 
-  const [{ team, memberCount }] = await Promise.all([getTeamsData(name)]);
-
-  console.log("TeamDetails MemberCount: ", memberCount);
+  const [{ team, memberCount }, notifications] = await Promise.all([
+    getTeamsData(teamSlug),
+    getNotificationByOrgId(orgId),
+  ]);
 
   if (!team || !memberCount) return;
 
@@ -46,8 +46,10 @@ export default async function TeamDetails(
       <div className={cn("flex w-full flex-col gap-6 my-6")}>
         <TeamHeader
           logo={team.logo!}
+          teamId={team.id}
           teamName={team.name!}
           memberCount={memberCount.length}
+          organizationId={team.organization.id}
         />
       </div>
       <div className="grid gap-4 lg:grid-cols-[1fr_350px] lg:gap-8">
@@ -62,7 +64,7 @@ export default async function TeamDetails(
         </div>
         <div>
           <Suspense fallback={<LoadingIcon />}>
-            <TeamActivityFeed activities={fakeActivityEntries} />
+            <TeamActivityFeed activities={notifications} />
           </Suspense>
         </div>
       </div>
