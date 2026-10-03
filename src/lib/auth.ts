@@ -37,7 +37,7 @@ export const auth = betterAuth({
   // ],
   baseURL: {
     allowedHosts: ["localhost:3000", "localhost:3001"],
-    fallback: process.env.BETTER_AUTH_URL,
+    fallback: process.env.BETTER_AUTH_URL ?? "",
   },
   emailVerification: {
     beforeEmailVerification: async (user, req) => {
@@ -158,6 +158,7 @@ export const auth = betterAuth({
   verification: {
     disableCleanup: false,
   },
+  // TODO: Pour n'importe quel user qui n'est pas owner, l'activeOrganizationId est égale à l'organizationId du membre owner par défaut
   databaseHooks: {
     session: {
       create: {
@@ -343,6 +344,18 @@ export const auth = betterAuth({
             });
           }
         },
+
+        // TODO: Ajouter un champ createdBy dans le model Team pour envoyer l'userId au notify
+        afterAddTeamMember: async ({
+          teamMember,
+          team,
+          organization,
+          user,
+        }) => {
+          console.info(
+            `✅ afterAddTeamMember: ${user.email} added on ${team.name}`,
+          );
+        },
         afterUpdateMemberRole: async ({
           member,
           previousRole,
@@ -363,7 +376,7 @@ export const auth = betterAuth({
             // });
             await auth.api.notify({
               body: {
-                userId: user.id,
+                // userId: user.id,
                 organizationId: organization.id,
                 type: "member_role_changed",
                 title: `L'organisateur vous a promu au rang de ${member.role}`,
@@ -388,7 +401,7 @@ export const auth = betterAuth({
             // });
             await auth.api.notify({
               body: {
-                userId: user.id,
+                // userId: user.id,
                 organizationId: organization.id,
                 type: "member_role_changed",
                 title: `L'organisateur vous a rétrograder au rang de ${member.role}`,
@@ -448,6 +461,12 @@ export const auth = betterAuth({
               input: true,
               returned: true,
             },
+            // createdBy: {
+            //   type: "string",
+            //   required: false,
+            //   input: true,
+            //   returned: true,
+            // },
           },
         },
       },

@@ -118,7 +118,7 @@ function getActivityColor(type: string): string {
 
 export default function TeamActivityFeed({
   activities = [],
-  itemsPerPage = 5,
+  itemsPerPage = 10,
   showFilters = true,
   showSearch = true,
 }: TeamActivityFeedProps) {

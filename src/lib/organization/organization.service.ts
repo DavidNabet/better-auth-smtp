@@ -7,25 +7,26 @@ const statement = {
   organization: ["update", "delete"],
   member: ["create", "update", "delete", "update-name"],
   invitation: ["create", "cancel"],
-  team: defaultStatements.team,
+  team: ["list", "create", "update", "delete"],
 } as const;
 const dc = createAccessControl(statement);
 
 const member = dc.newRole({
   member: ["update-name"],
+  team: ["list"],
 });
 
 const admin = dc.newRole({
   member: ["update", "delete", "update-name"],
   invitation: ["create", "cancel"],
-  team: ["create", "update"],
+  team: ["create", "update", "list"],
 });
 
 const owner = dc.newRole({
   organization: ["update", "delete"],
   member: ["create", "update", "delete", "update-name"],
   invitation: ["create", "cancel"],
-  team: ["create", "update", "delete"],
+  team: ["create", "update", "delete", "list"],
 });
 
 export { statement, dc, owner, admin, member };

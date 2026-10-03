@@ -76,16 +76,14 @@ export default function Notification({ userNotify }: NotificationProps) {
     notifications,
     refresh,
     unreadCount,
-  } = useInbox(authClient, {
-    pageSize: 5,
-  });
+  } = useInbox(authClient);
   const [openDrawer, setOpenDrawer] = useState(false);
   const [typeFilter, setTypeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
 
   const filteredNotifications = notifications.filter((notification) => {
     const matchesType =
-      typeFilter === "all" || notification.type === typeFilter;
+      typeFilter === "all" || notification.type.includes(typeFilter);
 
     const matchesStatus =
       filter === "all" || (statusFilter === "unread" && !notification.read);

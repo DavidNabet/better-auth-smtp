@@ -1,6 +1,8 @@
 import { Suspense } from "react";
 import LoadingIcon from "@/app/_components/LoadingIcon";
-import MemberList from "@/components/organizations/MemberList";
+import MemberList, {
+  MemberHeader,
+} from "@/components/organizations/MemberList";
 
 interface MemberListSectionProps {
   teamId: string;
@@ -15,11 +17,17 @@ export default function MemberListSection({
 }: MemberListSectionProps) {
   return (
     <Suspense fallback={<LoadingIcon />}>
-      <MemberList
-        teamId={teamId}
-        currentUserId={currentUserId}
-        initialCount={memberCount}
-      />
+      <MemberHeader
+        title="Tous nos membres"
+        description="Membre inscrits dans l'équipe"
+      >
+        <MemberList
+          teamId={teamId}
+          currentUserId={currentUserId}
+          initialCount={memberCount}
+          isTeamMember={true}
+        />
+      </MemberHeader>
     </Suspense>
   );
 }

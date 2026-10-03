@@ -20,7 +20,7 @@ export async function GET(
     headers: await headers(),
     body: {
       permissions: {
-        member: ["create"],
+        member: ["update-name"],
       },
     },
   });
@@ -30,7 +30,10 @@ export async function GET(
     where: { organizationId: orgId, userId: session.user.id },
   });
   if (!isMember) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return NextResponse.json(
+      { error: "Vous n'êtes pas membre" },
+      { status: 403 },
+    );
   }
 
   const { searchParams } = new URL(req.url);

@@ -18,13 +18,16 @@ export async function GET(
     headers: await headers(),
     body: {
       permissions: {
-        team: ["create"],
+        team: ["list"],
       },
     },
   });
 
   if (!success) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return NextResponse.json(
+      { error: "Vous n'avez pas la permission" },
+      { status: 403 },
+    );
   }
 
   // P1.2 — IDOR : résoudre l'org de la team, 404 si introuvable, 403 si non membre.
@@ -44,7 +47,10 @@ export async function GET(
 
   const { searchParams } = new URL(req.url);
   const cursor = searchParams.get("cursor");
-  const limit = Math.max(1, Math.min(Number(searchParams.get("limit")) || 50, 100));
+  const limit = Math.max(
+    1,
+    Math.min(Number(searchParams.get("limit")) || 50, 100),
+  );
 
   const members = await db.teamMember.findMany({
     where: { teamId },

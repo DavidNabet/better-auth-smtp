@@ -135,6 +135,7 @@ export default function Teams({ organizationId }: TeamsProps) {
   const fetchTeams = async () => {
     try {
       const res = await fetch(`/api/organizations/${organizationId}/teams`);
+      console.log("res fetchTeams: ", res);
       if (!res.ok) throw new Error("Failed to fetch teams");
       const data = await res.json();
 

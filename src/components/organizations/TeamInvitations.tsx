@@ -63,6 +63,7 @@ import {
   Virtualizer,
 } from "@tanstack/react-virtual";
 import LoadingIcon from "@/app/_components/LoadingIcon";
+import { useRouter } from "next/navigation";
 // import { useMutation, useQueryClient } from "@tanstack/react-query";
 // import { queryKeys } from "@/lib/query/keys";
 // import type { Invitation as Invite } from "@prisma/client";
@@ -157,8 +158,8 @@ export default function TeamInvitations({
         nextCursorRef.current = nextCursor;
         setTotal(total);
         setHasMore(!!nextCursor);
-      } catch (error) {
-        if (error instanceof DOMException) {
+      } catch (error: any) {
+        if (error.name === "AbortError") {
           console.log("Fetch des invitations annulé (composant démonté)");
           return;
         }
@@ -434,18 +435,20 @@ export function CreateInvitation({
   }>;
   isTeamMember: boolean;
 }) {
+  const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
   const formMemberRef = useRef<HTMLFormElement>(null);
   const [users, setUsers] = useState<User[]>([]);
 
   const useInviteMember = () => {
+    const toastCallbacks = createToastCallbacks({
+      loading: "Envoyer une invitation...",
+    });
     return useActionState(
       withCallbacks(inviteMember, {
-        ...createToastCallbacks({
-          loading: "Envoyer une invitation...",
-        }),
-        onSuccess() {
-          // toastCallbacks.onSuccess?.(result);
+        ...toastCallbacks,
+        onSuccess(result) {
+          toastCallbacks.onSuccess?.(result);
           formRef.current?.reset();
 
           onSuccess?.();
@@ -465,6 +468,7 @@ export function CreateInvitation({
         onSuccess(result) {
           toastCallbacks.onSuccess?.(result);
           formMemberRef.current?.reset();
+          router.back();
         },
       }),
       null,
@@ -518,11 +522,13 @@ export function CreateInvitation({
                     <SelectValue placeholder="Users in db" />
                   </SelectTrigger>
                   <SelectContent>
-                    {users.map((user) => (
-                      <SelectItem key={user.id} value={user.email}>
-                        {user.email}
-                      </SelectItem>
-                    ))}
+                    {users
+                      ? users.map((user) => (
+                          <SelectItem key={user.id} value={user.email}>
+                            {user.email}
+                          </SelectItem>
+                        ))
+                      : "loading"}
                   </SelectContent>
                 </Select>
               </Suspense>

@@ -2,7 +2,9 @@
 
 import { Suspense } from "react";
 import LoadingIcon from "@/app/_components/LoadingIcon";
-import MemberList from "@/components/organizations/MemberList";
+import MemberList, {
+  MemberHeader,
+} from "@/components/organizations/MemberList";
 import { Member } from "@/lib/types";
 
 interface MemberListTriggerProps {
@@ -35,12 +37,18 @@ export default function MemberListTrigger({
   };
   return (
     <Suspense fallback={<LoadingIcon />}>
-      <MemberList
-        teamId={teamId}
-        currentUserId={currentUserId}
-        initialCount={memberCount}
-        fetchMembers={fetchOrgMembers}
-      />
+      <MemberHeader
+        title="Tous les membres"
+        description="Membres inscrits dans l'organisation"
+      >
+        <MemberList
+          teamId={teamId}
+          currentUserId={currentUserId}
+          initialCount={memberCount}
+          fetchMembers={fetchOrgMembers}
+          isTeamMember={false}
+        />
+      </MemberHeader>
     </Suspense>
   );
 }

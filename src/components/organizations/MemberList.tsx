@@ -8,8 +8,17 @@ import {
   UserCheck,
   MoreVertical,
   Trash2,
+  RefreshCw,
 } from "lucide-react";
-import { useMemo, useState, useRef, useCallback, useEffect } from "react";
+import {
+  useMemo,
+  useState,
+  useRef,
+  useCallback,
+  useEffect,
+  Fragment,
+  ReactNode,
+} from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
@@ -43,10 +52,13 @@ import { getInitials } from "@/lib/utils";
 import { hasClientOrgPermission } from "@/lib/permissions/permissions.utils";
 import { type Member } from "@/lib/types";
 
+// TODO: Trouver un autre système comme Redux pour ce type de props: isTeamMember
+
 interface MemberListProps {
   teamId: string;
   currentUserId: string;
   initialCount: number;
+  isTeamMember: boolean;
   fetchMembers?: (
     id: string,
     cursor?: string,
@@ -62,9 +74,12 @@ const ITEM_HEIGHT = 116;
 const OVERS_CAN = 5;
 
 async function fetchMembers(teamId: string, cursor?: string, limit = 5) {
+  const controller = new AbortController();
   const params = new URLSearchParams({ teamId, limit: String(limit) });
   if (cursor) params.set("cursor", cursor);
-  const res = await fetch(`/api/team/${teamId}/members?${params}`);
+  const res = await fetch(`/api/team/${teamId}/members?${params}`, {
+    signal: controller.signal,
+  });
   if (!res.ok) throw new Error("Failed to fetch members");
   return res.json() as Promise<{
     members: Member[];
@@ -76,6 +91,7 @@ export default function MemberList({
   teamId,
   currentUserId,
   initialCount,
+  isTeamMember,
   fetchMembers: customFetch,
 }: MemberListProps) {
   const router = useRouter();
@@ -118,12 +134,22 @@ export default function MemberList({
 
   // Inital load
   useEffect(() => {
-    fetcher(teamId).then(({ members: initial, nextCursor, total }) => {
-      setMembers(initial);
-      setNextCursor(nextCursor);
-      setTotal(total);
-      setHasMore(!!nextCursor);
-    });
+    const controller = new AbortController();
+    fetcher(teamId)
+      .then(({ members: initial, nextCursor, total }) => {
+        setMembers(initial);
+        setNextCursor(nextCursor);
+        setTotal(total);
+        setHasMore(!!nextCursor);
+      })
+      .catch((err) => {
+        if (err.name === "AbortController") {
+          console.log("Fetch MemberList aborted");
+        } else {
+          console.error("Fetch error: ", err);
+        }
+      });
+    return () => controller.abort();
   }, [teamId, fetcher]);
 
   const getRoleIcon = useMemo(
@@ -181,6 +207,21 @@ export default function MemberList({
     }
   };
 
+  const handleTeamMemberRemove = async (member: Member, teamId: string) => {
+    // const res = await authClient.organization.removeTeamMember({
+    //   teamId,
+    //   userId: member.userId,
+    // });
+    // if (res.error) {
+    //   toast.error(res.error.message);
+    // } else {
+    //   toast.success("Team Member removed");
+    //   router.refresh();
+    // }
+
+    console.log("handleTeamMemberRemove", member, teamId);
+  };
+
   if (total === 0) {
     return (
       <Empty>
@@ -195,52 +236,42 @@ export default function MemberList({
   }
 
   return (
-    <Card className="w-full shadow-xs">
-      <CardHeader>
-        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-          <div className="flex flex-col gap-1">
-            <CardTitle>Members</CardTitle>
-            <CardDescription>
-              Membres inscrits dans votre équipe
-            </CardDescription>
-          </div>
+    <>
+      <div
+        ref={parentRef}
+        className="border rounded-lg"
+        onScroll={virtualizer.measure}
+      >
+        {virtualizer.getVirtualItems().map((virtualRow) => (
+          <MemberRow
+            key={members[virtualRow.index].id}
+            member={members[virtualRow.index]}
+            currentUserId={currentUserId}
+            getRoleIcon={getRoleIcon}
+            getRoleVariant={getRoleBadgeVariant}
+            onRoleChange={handleRoleChange}
+            onRemove={handleRemove}
+            onTeamMemberRemove={handleTeamMemberRemove}
+            isTeamMember={isTeamMember}
+            teamId={teamId}
+          />
+        ))}
+      </div>
+      {hasMore && (
+        <div className="flex justify-center p-4">
+          <Button
+            variant="outline"
+            onClick={loadMore}
+            disabled={loading}
+            className="w-full max-w-xs"
+          >
+            {loading
+              ? "Loading..."
+              : `Load more (${total - members.length} remaining)`}
+          </Button>
         </div>
-      </CardHeader>
-      <CardContent>
-        {/* {idx < membersList.length - 1 && <Separator />} */}
-        <div
-          ref={parentRef}
-          className="border rounded-lg"
-          onScroll={virtualizer.measure}
-        >
-          {virtualizer.getVirtualItems().map((virtualRow) => (
-            <MemberRow
-              key={members[virtualRow.index].id}
-              member={members[virtualRow.index]}
-              currentUserId={currentUserId}
-              getRoleIcon={getRoleIcon}
-              getRoleVariant={getRoleBadgeVariant}
-              onRoleChange={handleRoleChange}
-              onRemove={handleRemove}
-            />
-          ))}
-        </div>
-        {hasMore && (
-          <div className="flex justify-center p-4">
-            <Button
-              variant="outline"
-              onClick={loadMore}
-              disabled={loading}
-              className="w-full max-w-xs"
-            >
-              {loading
-                ? "Loading..."
-                : `Load more (${total - members.length} remaining)`}
-            </Button>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+      )}
+    </>
   );
 }
 
@@ -251,6 +282,9 @@ function MemberRow({
   getRoleVariant,
   onRoleChange,
   onRemove,
+  onTeamMemberRemove,
+  isTeamMember,
+  teamId,
 }: {
   member: Member;
   currentUserId: string;
@@ -258,6 +292,9 @@ function MemberRow({
   getRoleVariant: (role: string) => "default" | "secondary" | "outline";
   onRoleChange: (m: Member, role: string) => void;
   onRemove: (m: Member) => void;
+  onTeamMemberRemove: (m: Member, t: string) => void;
+  isTeamMember: boolean;
+  teamId: string;
 }) {
   const RoleIcon = getRoleIcon(member.role);
   const isCurrentUser = member.userId === currentUserId;
@@ -293,6 +330,9 @@ function MemberRow({
           member={member}
           onRoleChange={onRoleChange}
           onRemove={onRemove}
+          onTeamMemberRemove={onTeamMemberRemove}
+          isTeamMember={isTeamMember}
+          teamId={teamId}
         />
       )}
     </div>
@@ -303,10 +343,16 @@ function MemberActionsDropdown({
   member,
   onRemove,
   onRoleChange,
+  onTeamMemberRemove,
+  isTeamMember,
+  teamId,
 }: {
   member: Member;
   onRoleChange: (m: Member, role: string) => void;
   onRemove: (m: Member) => void;
+  onTeamMemberRemove: (m: Member, t: string) => void;
+  isTeamMember?: boolean;
+  teamId: string;
 }) {
   return (
     <DropdownMenu>
@@ -321,27 +367,73 @@ function MemberActionsDropdown({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" collisionPadding={8} sideOffset={4}>
-        {member.role === "member" && (
-          <DropdownMenuItem onClick={() => onRoleChange(member, "admin")}>
-            <Shield className="size-4" />
-            Promote to admin
+        {!isTeamMember ? (
+          <>
+            {member.role === "member" && (
+              <DropdownMenuItem onClick={() => onRoleChange(member, "admin")}>
+                <Shield className="size-4" />
+                Promote to admin
+              </DropdownMenuItem>
+            )}
+            {member.role === "admin" && (
+              <DropdownMenuItem onClick={() => onRoleChange(member, "member")}>
+                <UserCheck className="size-4" />
+                Demote to Member
+              </DropdownMenuItem>
+            )}
+            {member.role !== "viewer" && <DropdownMenuSeparator />}
+
+            <DropdownMenuItem
+              variant="destructive"
+              onClick={() => onRemove(member)}
+            >
+              <Trash2 className="size-4" />
+              Remove Member
+            </DropdownMenuItem>
+          </>
+        ) : (
+          <DropdownMenuItem
+            variant="destructive"
+            onClick={() => onTeamMemberRemove(member, teamId)}
+          >
+            <Trash2 className="size-4" />
+            Remove Team Member
           </DropdownMenuItem>
         )}
-        {member.role === "admin" && (
-          <DropdownMenuItem onClick={() => onRoleChange(member, "member")}>
-            <UserCheck className="size-4" />
-            Demote to Member
-          </DropdownMenuItem>
-        )}
-        {member.role !== "viewer" && <DropdownMenuSeparator />}
-        <DropdownMenuItem
-          variant="destructive"
-          onClick={() => onRemove(member)}
-        >
-          <Trash2 className="size-4" />
-          Remove Member
-        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
 }
+
+export const MemberHeader = ({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description: string;
+  children: ReactNode;
+}) => {
+  const router = useRouter();
+  return (
+    <Card className="w-full shadow-xs">
+      <CardHeader>
+        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <div className="flex flex-col gap-1">
+            <CardTitle>{title}</CardTitle>
+            <CardDescription>{description}</CardDescription>
+          </div>
+          <Button
+            variant="outline"
+            type="button"
+            size="icon"
+            onClick={() => router.refresh()}
+          >
+            <RefreshCw className="size-4" />
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent>{children}</CardContent>
+    </Card>
+  );
+};

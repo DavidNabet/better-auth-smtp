@@ -39,6 +39,8 @@ export default async function TeamDetails(
     getNotificationByOrgId(orgId),
   ]);
 
+  console.log("Notifications: ", notifications.length);
+
   if (!team || !memberCount) return;
 
   return (
