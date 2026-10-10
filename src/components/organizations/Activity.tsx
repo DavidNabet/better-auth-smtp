@@ -129,7 +129,9 @@ export default function TeamActivityFeed({
   const filteredActivities = useMemo(() => {
     let filtered = activities;
     if (typeFilter !== "all") {
-      filtered = filtered.filter((a) => a.type === typeFilter);
+      filtered = filtered.filter((a) =>
+        a.type.match(new RegExp(typeFilter, "i")),
+      );
     }
 
     if (searchQuery.trim()) {
@@ -189,9 +191,7 @@ export default function TeamActivityFeed({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="after_member_joined">
-                    Member joined
-                  </SelectItem>
+                  <SelectItem value="member">Member joined</SelectItem>
                   <SelectItem value="app_created">Apps</SelectItem>
                   <SelectItem value="settings_updated">Settings</SelectItem>
                 </SelectContent>

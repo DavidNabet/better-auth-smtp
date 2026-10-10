@@ -26,6 +26,7 @@ import {
   getActiveOrganization,
 } from "@/lib/organization/organization.utils";
 import { getUserById } from "./user/user.utils";
+import { wait } from "./utils";
 
 export const auth = betterAuth({
   database: prismaAdapter(db, {
@@ -270,18 +271,22 @@ export const auth = betterAuth({
         beforeAcceptInvitation: async ({ invitation, organization, user }) => {
           console.log(`Adding ${invitation.email} to ${organization.name}`);
           const inviter = await getUserById(invitation.inviterId);
-          await auth.api.notify({
+          const { notifications } = await auth.api.notify({
             body: {
               userId: user.id,
-              organizationId: organization.id,
               type: "before_accept.invitation",
               title:
                 `${inviter?.email} vous a invité à rejoindre l'organisation ${organization.name}` ||
                 `Vous êtes invité à rejoindre l'organisation ${organization.name}`,
               href: `/dashboard/orgs/${organization.slug}`,
-              roles: ["member"],
             },
           });
+          if (notifications?.[0]?.id) {
+            await db.notification.update({
+              where: { id: notifications[0].id },
+              data: { organizationId: organization.id },
+            });
+          }
         },
         afterAcceptInvitation: async ({
           invitation,
@@ -304,16 +309,20 @@ export const auth = betterAuth({
             // });
           }
           // User has accepted invitation
-          await auth.api.notify({
+          const { notifications } = await auth.api.notify({
             body: {
               userId: inviter?.id,
-              organizationId: organization.id,
               type: "after_accept.invitation",
               title: `${user.email} à rejoint l'organisation ${organization.name}`,
               href: `/dashboard/orgs/${organization.slug}`,
-              roles: ["owner", "admin"],
             },
           });
+          if (notifications?.[0]?.id) {
+            await db.notification.update({
+              where: { id: notifications[0].id },
+              data: { organizationId: organization.id },
+            });
+          }
           // logout user after accepting invitation to update session with new role and permissions
         },
         afterCancelInvitation: async ({
@@ -355,6 +364,22 @@ export const auth = betterAuth({
           console.info(
             `✅ afterAddTeamMember: ${user.email} added on ${team.name}`,
           );
+          const { notifications } = await auth.api.notify({
+            body: {
+              userId: user.id,
+              type: "team_member_join",
+              title: `L'organisateur vous a rajouté dans la team ${team.name}`,
+              href: `/dashboard/orgs/${organization.slug}/teams/${team.slug}`,
+            },
+          });
+          wait(3000);
+
+          if (notifications?.[0]?.id) {
+            await db.notification.update({
+              where: { id: notifications[0].id },
+              data: { organizationId: organization.id },
+            });
+          }
         },
         afterUpdateMemberRole: async ({
           member,
@@ -374,15 +399,20 @@ export const auth = betterAuth({
             //     },
             //   },
             // });
-            await auth.api.notify({
+            const { notifications } = await auth.api.notify({
               body: {
-                // userId: user.id,
-                organizationId: organization.id,
+                userId: member.userId,
                 type: "member_role_changed",
                 title: `L'organisateur vous a promu au rang de ${member.role}`,
-                roles: ["admin", "member"],
               },
             });
+            wait(3000);
+            if (notifications?.[0]?.id) {
+              await db.notification.update({
+                where: { id: notifications[0].id },
+                data: { organizationId: organization.id },
+              });
+            }
             // await db.user.update({
             //   where: { id: user.id },
             //   data: {
@@ -399,15 +429,19 @@ export const auth = betterAuth({
             //   },
             //   headers: await headers(),
             // });
-            await auth.api.notify({
+            const { notifications } = await auth.api.notify({
               body: {
-                // userId: user.id,
-                organizationId: organization.id,
+                userId: member.userId,
                 type: "member_role_changed",
                 title: `L'organisateur vous a rétrograder au rang de ${member.role}`,
-                roles: ["member", "admin"],
               },
             });
+            if (notifications[0]?.id) {
+              await db.notification.update({
+                where: { id: notifications[0].id },
+                data: { organizationId: organization.id },
+              });
+            }
             // await db.user.update({
             //   where: { id: user.id },
             //   data: {

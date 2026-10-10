@@ -59,6 +59,7 @@ export async function GET(
           name: true,
           email: true,
           image: true,
+          updatedAt: true,
         },
       },
     },
@@ -70,6 +71,7 @@ export async function GET(
     nextCursor = next!.id;
   }
 
+  // format to receive updatedAt field
   const formatted = members.map((m) => ({
     id: m.id,
     userId: m.user.id,
@@ -79,7 +81,7 @@ export async function GET(
     organizationId: m.organizationId,
     role: m.role,
     createdAt: m.createdAt,
-    updatedAt: m.createdAt,
+    updatedAt: m.user.updatedAt,
   }));
 
   revalidateTag(`members:${orgId}`);

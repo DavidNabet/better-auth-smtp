@@ -70,6 +70,7 @@ export async function GET(
           name: true,
           email: true,
           image: true,
+          updatedAt: true,
           members: {
             where: { role: { not: "member" } },
             select: {
@@ -97,7 +98,7 @@ export async function GET(
     organizationId: m.team.organizationId,
     role: m.user.members[0]?.role ?? "member",
     createdAt: m.createdAt,
-    updatedAt: m.createdAt,
+    updatedAt: m.user.updatedAt,
   }));
 
   return NextResponse.json(

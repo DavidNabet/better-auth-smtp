@@ -55,22 +55,27 @@ const nextConfig: NextConfig = {
             value: "*", // Set your origin
           },
           {
-            key: "Access-Control-Allow-Credentials",
-            value: "true",
-          },
-          {
             key: "Access-Control-Allow-Methods",
-            value: "GET, POST, PUT, DELETE, OPTIONS",
+            value: "GET, POST, PUT, DELETE, OPTIONS, PATCH",
           },
           {
             key: "Access-Control-Allow-Headers",
-            value: "Content-Type, Authorization",
+            value:
+              "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version",
+          },
+          {
+            key: "Access-Control-Allow-Credentials",
+            value: "true",
           },
         ],
       },
       {
         source: "/(.*)",
         headers: [
+          {
+            key: "Vary",
+            value: "Origin",
+          },
           {
             key: "X-Frame-Options",
             value: "DENY",

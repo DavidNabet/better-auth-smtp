@@ -47,8 +47,7 @@ import { Button } from "@/components/ui/button";
 // import { RoleType } from "@/lib/permissions/permissions.utils";
 import { authClient } from "@/lib/auth/auth.client";
 import { toast } from "sonner";
-import { formatDate, formatRelativeTime } from "@/lib/utils";
-import { getInitials } from "@/lib/utils";
+import { formatDate, getInitials, formatRelativeTime } from "@/lib/utils";
 import { hasClientOrgPermission } from "@/lib/permissions/permissions.utils";
 import { type Member } from "@/lib/types";
 
@@ -208,16 +207,23 @@ export default function MemberList({
   };
 
   const handleTeamMemberRemove = async (member: Member, teamId: string) => {
-    // const res = await authClient.organization.removeTeamMember({
-    //   teamId,
-    //   userId: member.userId,
-    // });
-    // if (res.error) {
-    //   toast.error(res.error.message);
-    // } else {
-    //   toast.success("Team Member removed");
-    //   router.refresh();
-    // }
+    const res = await authClient.organization.removeTeamMember({
+      teamId,
+      userId: member.userId,
+      fetchOptions: {
+        onError(context) {
+          if (context.response.status === 401) {
+            hasClientOrgPermission("admin", "member", "delete");
+          }
+        },
+      },
+    });
+    if (res.error) {
+      toast.error(res.error.message);
+    } else {
+      toast.success("Team Member removed");
+      router.back();
+    }
 
     console.log("handleTeamMemberRemove", member, teamId);
   };
