@@ -48,6 +48,11 @@ export async function getOrganizations() {
           in: members.map((m) => m.organizationId),
         },
       },
+      select: {
+        name: true,
+        slug: true,
+        id: true,
+      },
     });
 
     return organizations;
@@ -372,30 +377,9 @@ export async function createDefaultTeams(
     }
 
     // Vérifier si les équipes existent déjà pour éviter de créer des doublons.
-    const [adminTeam, moderationTeam] = await Promise.all([
-      findTeamByName("Admin", organizationId),
-      findTeamByName("Moderation", organizationId),
-    ]);
+    const moderationTeam = await findTeamByName("Moderation", organizationId);
 
     const ops: Promise<unknown>[] = [];
-
-    if (!adminTeam) {
-      ops.push(
-        db.team.create({
-          data: {
-            name: "Admin",
-            description: "Equipe d'administration (accès: roles admin, owner).",
-            organizationId,
-            slug: `admin-${organizationId.toLowerCase()}`,
-            teamMembers: {
-              create: {
-                userId,
-              },
-            },
-          },
-        }),
-      );
-    }
 
     if (!moderationTeam) {
       ops.push(

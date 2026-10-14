@@ -14,22 +14,16 @@ import {
   CardDescription,
   CardHeader,
 } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
 import { Suspense } from "react";
 import { CreateAppForm } from "@/components/apps/CreateAppForm";
 import { getOrganizations } from "@/lib/organization/organization.utils";
 import LoadingIcon from "@/app/_components/LoadingIcon";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { getApps } from "@/lib/app/app.utils";
-import { cn, formatRelativeTime } from "@/lib/utils";
-import { Folder, MoreVertical, Plus, Trash2 } from "lucide-react";
+import { getAllApps } from "@/lib/app/app.utils";
+import { cn } from "@/lib/utils";
+import { Plus, Folder } from "lucide-react";
+import AppRow from "@/components/apps/AppRow";
+import * as Emp from "@/components/ui/empty";
 
 export const metadata: Metadata = {
   title: "Apps",
@@ -38,7 +32,7 @@ export const metadata: Metadata = {
 export default async function Apps() {
   const [organizations, apps] = await Promise.all([
     getOrganizations(),
-    getApps(),
+    getAllApps(),
   ]);
   return (
     <>
@@ -81,75 +75,23 @@ export default async function Apps() {
         <CardContent>
           <Suspense fallback={<LoadingIcon />}>
             {apps.length === 0 ? (
-              <p className="text-muted-foreground text-sm gap-3">
-                <Folder className="size-6" /> Aucune app trouvé
-              </p>
+              <Emp.Empty>
+                <Emp.EmptyHeader>
+                  <Emp.EmptyMedia variant="icon">
+                    <Folder />
+                  </Emp.EmptyMedia>
+                  <Emp.EmptyTitle>
+                    You don&apos;t have any apps yet !
+                  </Emp.EmptyTitle>
+                  <Emp.EmptyDescription>
+                    You can create app who serves for everyone
+                  </Emp.EmptyDescription>
+                </Emp.EmptyHeader>
+              </Emp.Empty>
             ) : (
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {apps.map((app) => (
-                  <div
-                    className="group flex flex-col justify-between gap-3 rounded-lg border bg-card p-4 transition-colors hover:border-primary hover:shadow-sm"
-                    key={app.id}
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <div
-                          className="flex size-10 items-center justify-center rounded-lg"
-                          style={{ backgroundColor: "ButtonHighlight" }}
-                        >
-                          {!app.logo ? (
-                            <span className="text-lg">{app.logo}</span>
-                          ) : (
-                            <Folder className="size-5" />
-                          )}
-                        </div>
-                        <div className="flex min-w-0 flex-1 flex-col gap-2">
-                          <h3 className="font-semibold text-base leading-tight">
-                            {app.name}
-                          </h3>
-                        </div>
-                      </div>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            aria-label={`More options for ${app.name}`}
-                            size="icon-sm"
-                            type="button"
-                            variant="ghost"
-                          >
-                            <MoreVertical className="size-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent
-                          align="end"
-                          collisionPadding={8}
-                          sideOffset={4}
-                        >
-                          <DropdownMenuItem asChild>
-                            <Link href={`/dashboard/apps/${app.slug}`}>
-                              <Folder className="size-4" />
-                              Open
-                            </Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem variant="destructive">
-                            <Trash2 className="size-4" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                    {app.description && (
-                      <p className="line-clamp-2 text-muted-foreground text-sm">
-                        {app.description}
-                      </p>
-                    )}
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground text-xs">
-                        Updated {formatRelativeTime(app.updatedAt)}
-                      </span>
-                    </div>
-                  </div>
+                  <AppRow app={app} key={app.id} />
                 ))}
               </div>
             )}

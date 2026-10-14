@@ -8,23 +8,8 @@ import {
   CardDescription,
   CardHeader,
 } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogDescription,
-  DialogTitle,
-  DialogTrigger,
-  DialogClose,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
+import * as Dlg from "@/components/ui/dialog";
+import * as Dpm from "@/components/ui/dropdown-menu";
 import { cn, getInitials } from "@/lib/utils";
 import {
   AvatarGroup,
@@ -63,59 +48,12 @@ import { hasClientOrgPermission } from "@/lib/permissions/permissions.utils";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
-interface TeamsProps {
-  organizationId?: string;
-}
-
-const tab = [
-  {
-    id: 1,
-    name: "Admin Team",
-    description: "Team for project A",
-    icon: <Shield className="size-5 text-amber-500" />,
-    members: [
-      {
-        id: 1,
-        name: "John Doe",
-        image: "https://github.com/maxleiter.png",
-        role: "member",
-      },
-      {
-        id: 2,
-        name: "Jane Smith",
-        image: "https://github.com/shadcn.png",
-        role: "admin",
-      },
-    ],
-  },
-  {
-    id: 2,
-    name: "Moderation Team",
-    description: "Team for project B",
-    icon: <MessageCircle className="size-5 text-indigo-500" />,
-    members: [
-      {
-        id: 1,
-        name: "John Doe",
-        image: "https://github.com/maxleiter.png",
-        role: "member",
-      },
-      {
-        id: 2,
-        name: "Jane Smith",
-        image: "https://github.com/shadcn.png",
-        role: "admin",
-      },
-    ],
-  },
-];
-
 // FIXED: Ajouter une admin Team (roles: owner et admin) et une moderation Team (roles: owner, admin, member) à chaque création d'une organization par défaut
 
 // TODO: Paramétrer les permissions s'il s'agit d'une team Admin, on procède aux permissions lié à cet effet, également pour une team moderation
 
 // TODO: Ajouter coté client un sélecteur pour sélectionner des membres dans la team avec un Drawer
-export default function Teams({ organizationId }: TeamsProps) {
+export default function Teams({ organizationId }: { organizationId?: string }) {
   const router = useRouter();
   const [teams, setTeams] = useState<Team[]>([]);
   const teamsRef = useRef<HTMLDivElement>(null);
@@ -199,8 +137,8 @@ export default function Teams({ organizationId }: TeamsProps) {
               Manage functional groups and their scoped permissions.
             </CardDescription>
           </div>
-          <Dialog>
-            <DialogTrigger asChild>
+          <Dlg.Dialog>
+            <Dlg.DialogTrigger asChild>
               <Button
                 className="w-full shrink-0 md:w-auto"
                 type="button"
@@ -209,21 +147,21 @@ export default function Teams({ organizationId }: TeamsProps) {
                 <Plus className="size-4" />
                 Create a team
               </Button>
-            </DialogTrigger>
-            <DialogContent className="md:max-w-md">
-              <DialogHeader>
-                <DialogTitle>Créez une nouvelle team</DialogTitle>
-                <DialogDescription>
+            </Dlg.DialogTrigger>
+            <Dlg.DialogContent className="md:max-w-md">
+              <Dlg.DialogHeader>
+                <Dlg.DialogTitle>Créez une nouvelle team</Dlg.DialogTitle>
+                <Dlg.DialogDescription>
                   Ajouter une nouvelle team à votre organization
-                </DialogDescription>
-              </DialogHeader>
+                </Dlg.DialogDescription>
+              </Dlg.DialogHeader>
               <div>
                 {organizationId && (
                   <CreateTeamForm organizationId={organizationId} />
                 )}
               </div>
-            </DialogContent>
-          </Dialog>
+            </Dlg.DialogContent>
+          </Dlg.Dialog>
         </div>
       </CardHeader>
       <CardContent>
@@ -254,33 +192,74 @@ function TeamActionsDropdown({
   team: Team;
   onRemove: (t: Team) => void;
 }) {
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          aria-label={`More options for ${team.name}`}
-          size="icon-sm"
-          type="button"
-          variant="ghost"
-        >
-          <MoreVertical className="size-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" collisionPadding={8} sideOffset={4}>
-        <DropdownMenuItem asChild>
-          <Link
-            href={`/dashboard/orgs/${team.organization.slug}/teams/${team.slug}`}
+    <>
+      <Dpm.DropdownMenu>
+        <Dpm.DropdownMenuTrigger asChild>
+          <Button
+            aria-label={`More options for ${team.name}`}
+            size="icon-sm"
+            type="button"
+            variant="ghost"
           >
-            <Folder className="size-4" />
-            Open
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem variant="destructive" onClick={() => onRemove(team)}>
-          <Trash2 className="size-4" /> Delete
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+            <MoreVertical className="size-4" />
+          </Button>
+        </Dpm.DropdownMenuTrigger>
+        <Dpm.DropdownMenuContent
+          align="end"
+          collisionPadding={8}
+          sideOffset={4}
+        >
+          <Dpm.DropdownMenuItem asChild>
+            <Link
+              href={`/dashboard/orgs/${team.organization.slug}/teams/${team.slug}`}
+            >
+              <Folder className="size-4" />
+              Open
+            </Link>
+          </Dpm.DropdownMenuItem>
+          <Dpm.DropdownMenuSeparator />
+          <Dpm.DropdownMenuItem
+            variant="destructive"
+            onClick={() => setShowDeleteDialog(true)}
+          >
+            <Trash2 className="size-4" /> Delete
+          </Dpm.DropdownMenuItem>
+        </Dpm.DropdownMenuContent>
+      </Dpm.DropdownMenu>
+
+      <Dlg.Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <Dlg.DialogContent>
+          <Dlg.DialogHeader>
+            <Dlg.DialogTitle>Delete the team</Dlg.DialogTitle>
+            <Dlg.DialogDescription>
+              Are you sure you want to delete this team ? This action cannot be
+              undone.
+            </Dlg.DialogDescription>
+          </Dlg.DialogHeader>
+          <div className="flex justify-end gap-2">
+            <Button
+              onClick={() => setShowDeleteDialog(false)}
+              type="button"
+              variant="outline"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                onRemove(team);
+                setShowDeleteDialog(false);
+              }}
+              type="button"
+              variant="destructive"
+            >
+              Delete
+            </Button>
+          </div>
+        </Dlg.DialogContent>
+      </Dlg.Dialog>
+    </>
   );
 }
 
@@ -397,10 +376,10 @@ function CreateTeamForm({ organizationId }: { organizationId: string }) {
             <ErrorMessages errors={state?.errorMessage?.description ?? null} />
           </div>
         </div>
-        <DialogFooter className="mt-6 col-span-6 gap-x-6">
-          <DialogClose asChild>
+        <Dlg.DialogFooter className="mt-6 col-span-6 gap-x-6">
+          <Dlg.DialogClose asChild>
             <Button variant="outline">Annuler</Button>
-          </DialogClose>
+          </Dlg.DialogClose>
           <Button
             type="submit"
             form="teamForm"
@@ -416,7 +395,7 @@ function CreateTeamForm({ organizationId }: { organizationId: string }) {
               "Créer"
             )}
           </Button>
-        </DialogFooter>
+        </Dlg.DialogFooter>
       </div>
     </form>
   );

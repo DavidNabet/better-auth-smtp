@@ -26,7 +26,7 @@ import { createApp } from "@/lib/app/app.actions";
 import { CreateAppSchema } from "@/lib/app/app.schema";
 
 type CreateAppFormProps = {
-  organizations: Organization[];
+  organizations: Pick<Organization, "id" | "name">[];
 };
 export function CreateAppForm({ organizations }: CreateAppFormProps) {
   const [logo, setLogo] = useState<CreateAppSchema["logo"]>(undefined);

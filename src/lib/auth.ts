@@ -354,6 +354,28 @@ export const auth = betterAuth({
           }
         },
 
+        afterDeleteTeam: async ({ organization, team, user }) => {
+          console.info(
+            `✅ afterDeleteTeam: ${user?.email} added on ${team.name}`,
+          );
+          const { notifications } = await auth.api.notify({
+            body: {
+              userId: user?.id,
+              type: "member_team_deleted",
+              title: `L'organisateur a supprimé la team ${team.name}, vous n'en faites plus parti`,
+              href: `/dashboard/orgs/${organization.slug}`,
+            },
+          });
+          wait(3000);
+
+          if (notifications?.[0]?.id) {
+            await db.notification.update({
+              where: { id: notifications[0].id },
+              data: { organizationId: organization.id },
+            });
+          }
+        },
+
         // TODO: Ajouter un champ createdBy dans le model Team pour envoyer l'userId au notify
         afterAddTeamMember: async ({
           teamMember,
@@ -472,7 +494,7 @@ export const auth = betterAuth({
       },
       teams: {
         enabled: true,
-        maximumTeams: 4,
+        maximumTeams: 3,
         allowRemovingAllTeams: false,
       },
       schema: {

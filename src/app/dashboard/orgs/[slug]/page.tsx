@@ -13,6 +13,8 @@ import Teams from "@/components/organizations/Teams";
 import MemberListTrigger from "@/components/organizations/MemberListTrigger";
 // import TeamInvitationsSection from "@/components/organizations/TeamInvitationsSection";
 import dynamic from "next/dynamic";
+import AppsList from "@/components/apps/AppsList";
+import { getAppsByOrgSlug } from "@/lib/app/app.utils";
 
 export const metadata: Metadata = {
   title: "Organization Details",
@@ -44,9 +46,10 @@ export default async function OrganizationPage(
 
   // /dashboard/org/[orgSlug]/apps/[appSlug]/teams/[teamSlug]-[id]
 
-  const [organization, currentUser] = await Promise.all([
+  const [organization, currentUser, apps] = await Promise.all([
     getOrganizationBySlug(slug),
     getCurrentUser().then((r) => r.currentUser),
+    getAppsByOrgSlug(slug),
   ]);
 
   const isMember = organization?.members.some(
@@ -73,6 +76,9 @@ export default async function OrganizationPage(
       <div className="my-6">
         <h2 className="font-bold text-3xl">{organization?.name}</h2>
       </div>
+      <Suspense fallback={<LoadingIcon />}>
+        <AppsList apps={apps!} organizationId={organization!.id} />
+      </Suspense>
       <Suspense fallback={<LoadingIcon />}>
         <Teams organizationId={organization!.id} />
       </Suspense>

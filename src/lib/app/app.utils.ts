@@ -5,19 +5,43 @@ import { getOrganizationById } from "@/lib/organization/organization.utils";
 import { CreateAppSchema } from "./app.schema";
 import { APIError } from "better-auth/api";
 
-export async function getApps() {
+export async function getAllApps() {
   // const { currentUser } = await getCurrentUser();
 
   try {
-    // Implemented in db by default
-    // const activeOrganization = await getActiveOrganization(currentUser.id);
-
     const apps = await db.app.findMany();
 
     return apps;
   } catch (error) {
     console.error(error);
     return [];
+  }
+}
+
+export async function getAppsByOrgSlug(slug: string) {
+  try {
+    const organization = await db.organization.findFirst({
+      where: { slug },
+      select: {
+        id: true,
+      },
+    });
+    const apps = await db.app.findMany({
+      where: {
+        organizationId: organization?.id,
+      },
+      take: 3,
+      select: {
+        id: true,
+        name: true,
+        logo: true,
+        slug: true,
+        teamId: true,
+      },
+    });
+    return apps;
+  } catch (error) {
+    console.error(error);
   }
 }
 

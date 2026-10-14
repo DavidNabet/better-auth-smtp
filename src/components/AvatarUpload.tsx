@@ -66,9 +66,9 @@ export default function AvatarUpload({
         </Avatar>
       </div>
       <Button
-        variant="ghost"
+        variant="outline"
         size="icon"
-        className="rounded-full font-semibold text-primary hover:bg-gray-100"
+        className="rounded-full font-semibold text-primary dark:bg-secondary/75 dark:hover:bg-secondary"
         onClick={(e) => {
           e.preventDefault();
           inputRef.current?.click();

@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import { authClient } from "@/lib/auth/auth.client";
 
 type OrganizationCardProps = {
-  org: Organization;
+  org: Pick<Organization, "name" | "id" | "slug">;
 };
 
 export function OrganizationCard({ org }: OrganizationCardProps) {

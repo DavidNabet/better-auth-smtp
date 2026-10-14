@@ -27,7 +27,7 @@ interface ICard {
   title: string;
   description?: string;
   children?: ReactNode;
-  icon?: ReactNode;
+  icon?: any;
   boxed?: boolean;
   actions?: ReactNode;
 }
@@ -77,7 +77,7 @@ export function CardButton({
   ...props
 }: ICard & Partial<ICardLink> & CardProps) {
   return (
-    <Card className={cn("p-6 border-4 border-teal-500", className)} {...props}>
+    <Card className={cn("p-6", className)} {...props}>
       <div
         className={cn("flex gap-2", boxed && "items-center justify-between")}
       >
