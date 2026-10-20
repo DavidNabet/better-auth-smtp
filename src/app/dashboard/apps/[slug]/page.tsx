@@ -2,7 +2,7 @@ import AppHeader from "./_components/header";
 import Wrapper from "@/app/_components/Wrapper";
 import { Metadata } from "next";
 import { getAppBySlug } from "@/lib/app/app.utils";
-import { Star, Users, MessageSquare } from "lucide-react";
+import { Users, MessageSquare, ChevronRightSquare } from "lucide-react";
 import Stats, { StatProps } from "./_components/stats";
 import { Card, CardContent } from "@/components/ui/card";
 import Activity from "./_components/activity";
@@ -21,31 +21,40 @@ export default async function AppDetail(
   const { slug } = await props.params;
   const details = await getAppBySlug(slug);
   if (!details) return <div>App Introuvable!</div>;
-  const tab = [
+  console.log("details: ", details);
+  const tab: StatProps[] = [
     {
       title: "Projects associated",
       stat: details.feedbacks.length,
-      icon: <Star className="text-primary size-5" />,
+      status: "within",
+      range: "Dans la moyenne",
+      icon: <ChevronRightSquare className="text-primary size-5" />,
     },
     {
       title: "Team Members",
       stat: details.organization.members.length,
+      status: "exceed",
+      range: "Target: 6",
       icon: <Users className="text-primary size-5" />,
     },
     {
       title: "Satisfaction Rate",
       stat: "99%",
-      icon: <Star className="text-primary size-5" />,
+      status: "observe",
+      range: "Q3 Rate Satisfy",
+      icon: <ChevronRightSquare className="text-primary size-5" />,
     },
     {
       title: "Vote Rate",
-      // stat: details.feedbacks.find((f) => f.votes.length),
+      // stat: details.feedbacks.map((f) => f.votes.length),
       stat: 3,
+      status: "unknown",
+      range: "Q4 Review Pending",
       icon: <MessageSquare className="text-primary size-5" />,
     },
   ];
   return (
-    <div className="container mx-auto px-4 py-6 md:px-6 2xl:max-w-[1400px]">
+    <div className="container mx-auto px-4 py-6 md:px-6 2xl:max-w-350">
       <Wrapper title="App details">
         <div className="grid gap-6 md:grid-cols-4">
           {/* Sidebar */}

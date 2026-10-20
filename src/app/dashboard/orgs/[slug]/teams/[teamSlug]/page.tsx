@@ -12,6 +12,9 @@ import TeamActivityFeed from "@/components/organizations/Activity";
 import LoadingIcon from "@/app/_components/LoadingIcon";
 import { getCurrentUser } from "@/lib/user/user.utils";
 import { getNotificationByOrgId } from "@/lib/notification/notification.utils";
+import AppSection from "./_components/app-section";
+import { hasServerOrgPermission } from "@/lib/permissions/permissions.actions";
+import ChooseApp from "./_components/choose-app";
 
 export const metadata: Metadata = {
   title: "Team",
@@ -33,6 +36,7 @@ export default async function TeamDetails(
   const { teamSlug } = await props.params;
   const orgId = teamSlug.split("-")[1];
   const { currentUser } = await getCurrentUser();
+  const permission = await hasServerOrgPermission("organization", "delete");
 
   const [{ team, memberCount }, notifications] = await Promise.all([
     getTeamsData(teamSlug),
@@ -45,17 +49,16 @@ export default async function TeamDetails(
 
   return (
     <Wrapper>
-      <div className={cn("flex w-full flex-col gap-6 my-6")}>
-        <TeamHeader
-          logo={team.logo!}
-          teamId={team.id}
-          teamName={team.name!}
-          memberCount={memberCount.length}
-          organizationId={team.organization.id}
-        />
-      </div>
-      <div className="grid gap-4 lg:grid-cols-[1fr_350px] lg:gap-8">
-        <div>
+      <TeamHeader
+        logo={team.logo!}
+        teamId={team.id}
+        teamName={team.name!}
+        memberCount={memberCount.length}
+        organizationId={team.organization.id}
+      />
+      {team.apps.length > 1 && <AppSection apps={team.apps} />}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-8">
+        <div className="space-y-4 lg:col-span-2">
           <Suspense fallback={<LoadingIcon />}>
             <MemberListSection
               teamId={team.id!}
@@ -64,7 +67,13 @@ export default async function TeamDetails(
             />
           </Suspense>
         </div>
-        <div>
+
+        <div className="space-y-4">
+          {permission && (
+            <Suspense fallback={<LoadingIcon />}>
+              <ChooseApp />
+            </Suspense>
+          )}
           <Suspense fallback={<LoadingIcon />}>
             <TeamActivityFeed activities={notifications} />
           </Suspense>

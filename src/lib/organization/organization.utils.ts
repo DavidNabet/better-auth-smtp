@@ -329,6 +329,19 @@ export async function getTeamDetails(teamSlug: string) {
       logo: true,
       description: true,
       organization: { select: { id: true, name: true, slug: true } },
+      apps: {
+        select: {
+          logo: true,
+          id: true,
+          name: true,
+          slug: true,
+          organizationId: true,
+          teamId: true,
+          createdAt: true,
+          description: true,
+          updatedAt: true,
+        },
+      },
       teamMembers: {
         select: {
           id: true,

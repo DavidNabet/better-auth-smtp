@@ -5,7 +5,7 @@ import { Suspense } from "react";
 import LoadingIcon from "@/app/_components/LoadingIcon";
 import { Metadata } from "next";
 import { allFeedback } from "@/lib/feedback/feedback.utils";
-import { getApps } from "@/lib/app/app.utils";
+import { getAllApps } from "@/lib/app/app.utils";
 
 export const metadata: Metadata = {
   title: "Feedbacks",
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 
 export default async function FeedbacksPage() {
   // MVP idea-style
-  const [feedbacks, apps] = await Promise.all([allFeedback(), getApps()]);
+  const [feedbacks, apps] = await Promise.all([allFeedback(), getAllApps()]);
 
   if (!feedbacks) return null;
 
