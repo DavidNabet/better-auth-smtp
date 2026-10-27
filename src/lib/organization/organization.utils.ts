@@ -1,10 +1,9 @@
-"use server";
-
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import { getCurrentUser, getUserById } from "@/lib/user/user.utils";
 import { Invitation } from "@/lib/types";
+import { Prisma } from "@prisma/client";
 
 export const isAdminInOrg = async () => {
   try {
@@ -319,40 +318,24 @@ export async function getTeamMembersWithOrgRole(teamId: string) {
   });
 }
 
+export const teamSelect = {
+  id: true,
+  name: true,
+  logo: true,
+  description: true,
+  organizationId: true,
+  teamMembers: {
+    select: {
+      user: true,
+    },
+  },
+  apps: true,
+} satisfies Prisma.TeamSelect;
+
 export async function getTeamDetails(teamSlug: string) {
   return await db.team.findFirst({
     where: { slug: teamSlug },
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-      logo: true,
-      description: true,
-      organization: { select: { id: true, name: true, slug: true } },
-      apps: {
-        select: {
-          logo: true,
-          id: true,
-          name: true,
-          slug: true,
-          organizationId: true,
-          teamId: true,
-          createdAt: true,
-          description: true,
-          updatedAt: true,
-        },
-      },
-      teamMembers: {
-        select: {
-          id: true,
-          userId: true,
-          createdAt: true,
-          user: {
-            select: { id: true, name: true, email: true, image: true },
-          },
-        },
-      },
-    },
+    select: teamSelect,
   });
 }
 

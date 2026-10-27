@@ -28,9 +28,11 @@ export default function AppSection({ apps }: AppSectionProps) {
           </div>
         </CardHeader>
         <CardContent>
-          {apps.map((app) => (
-            <AppRow app={app} />
-          ))}
+          <div className="grid grid-cols-1 md:grid-cols-3">
+            {apps.map((app) => (
+              <AppRow key={app.id} app={app} />
+            ))}
+          </div>
         </CardContent>
       </Card>
     </section>

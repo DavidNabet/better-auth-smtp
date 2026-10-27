@@ -39,5 +39,10 @@ export const createTeamSchema = z.object({
   description: z.string().trim().max(150).optional(),
 });
 
+export const setTeamToAppSchema = z.object({
+  appName: z.string().min(1, "App Id is required"),
+  teamSlug: z.string().min(1, "Team slug is required").trim(),
+});
+
 export type InviteSchema = TypeOf<typeof inviteSchema>;
 export type CreateTeamSchema = TypeOf<typeof createTeamSchema>;

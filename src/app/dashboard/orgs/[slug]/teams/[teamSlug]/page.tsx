@@ -6,6 +6,7 @@ import MemberListSection from "@/components/organizations/MemberListSection";
 import {
   getTeamDetails,
   getTeamMembersWithOrgRole,
+  teamSelect,
 } from "@/lib/organization/organization.utils";
 import { Suspense } from "react";
 import TeamActivityFeed from "@/components/organizations/Activity";
@@ -49,14 +50,8 @@ export default async function TeamDetails(
 
   return (
     <Wrapper>
-      <TeamHeader
-        logo={team.logo!}
-        teamId={team.id}
-        teamName={team.name!}
-        memberCount={memberCount.length}
-        organizationId={team.organization.id}
-      />
-      {team.apps.length > 1 && <AppSection apps={team.apps} />}
+      <TeamHeader organizationId={team.organizationId} teamInfo={team} />
+      {team.apps.length >= 1 && <AppSection apps={team.apps} />}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-8">
         <div className="space-y-4 lg:col-span-2">
           <Suspense fallback={<LoadingIcon />}>
@@ -71,7 +66,7 @@ export default async function TeamDetails(
         <div className="space-y-4">
           {permission && (
             <Suspense fallback={<LoadingIcon />}>
-              <ChooseApp />
+              <ChooseApp organizationId={team.organizationId} />
             </Suspense>
           )}
           <Suspense fallback={<LoadingIcon />}>

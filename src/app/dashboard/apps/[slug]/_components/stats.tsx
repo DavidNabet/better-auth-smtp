@@ -22,7 +22,7 @@ export type StatProps = {
   stat: number | string;
   status: "within" | "observe" | "exceed" | "unknown";
   className?: string;
-  range?: string;
+  range?: string | string[];
 };
 
 const statusConfig = {

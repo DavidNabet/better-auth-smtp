@@ -7,6 +7,7 @@ import {
   addTeamMemberSchema,
   createTeamSchema,
   inviteSchema,
+  setTeamToAppSchema,
 } from "@/lib/organization/organization.schema";
 import { ActionState } from "../feedback/feedback.types";
 import { toAction, toActionState } from "../feedback/feedback.utils";
@@ -15,6 +16,7 @@ import { hasServerOrgPermission } from "../permissions/permissions.actions";
 import { APIError } from "better-auth/api";
 import { ErrorTypes } from "../user/user.actions";
 import { db } from "@/db";
+import { truncate } from "fs";
 
 // TODO: Faire un check côté DB de l'OrgId, s'il est invalide, on peut quand même lire les informations lié à l'organization (les membres, etc...)
 
@@ -179,6 +181,74 @@ export async function createTeam(
   }
 
   return toActionState("Team created successfully!!!", "SUCCESS");
+}
+
+export async function setTeamToApp(
+  formState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const data = Object.fromEntries(formData);
+  const validatedFields = setTeamToAppSchema.safeParse(data);
+  if (!validatedFields.success) {
+    return toAction<typeof setTeamToAppSchema>(validatedFields.error, "ERROR");
+  }
+
+  const { appName, teamSlug } = validatedFields.data;
+
+  // const { session } = await getCurrentUser();
+
+  const team = await db.team.findFirst({
+    where: { slug: teamSlug },
+    select: { id: true, apps: { select: { name: true } } },
+  });
+
+  if (team?.apps.filter((k) => k.name === appName)) {
+    return toActionState(
+      "Cette application a déjà été enregistré au sein de l\'équipe",
+      "ERROR",
+    );
+  }
+
+  const app = await db.app.findFirst({
+    where: {
+      name: appName,
+    },
+    select: { id: true },
+  });
+
+  try {
+    if (!(await hasServerOrgPermission("team", "delete"))) {
+      return toActionState(
+        "You don't have permission to perform this action",
+        "ERROR",
+      );
+    }
+    const added = await db.app.update({
+      where: {
+        id: app?.id,
+      },
+      data: {
+        teamId: team?.id,
+      },
+    });
+    console.log("setActiveTeam: ", added);
+    // revalidateTag(`invalidations:${teamId}`);
+    // revalidateTag("organization");
+    return toActionState("App added successfully", "SUCCESS");
+  } catch (error) {
+    if (error instanceof APIError) {
+      console.log(error.message, error.body?.code);
+      const errorCode = error.body?.code as ErrorTypes;
+      switch (errorCode) {
+        case "YOU_ARE_NOT_ALLOWED_TO_INVITE_USERS_TO_THIS_ORGANIZATION":
+          return toActionState(error.message, "ERROR");
+        default:
+          return toActionState("Something went wrong.", "ERROR");
+      }
+    }
+    return toActionState("Something went wrong.", "ERROR");
+  }
+  //   revalidatePath("/dashboard/apps");
 }
 
 export async function revalidateInvitations() {

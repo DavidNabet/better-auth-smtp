@@ -55,6 +55,7 @@ export const getFeedbackTitleById = async (feedbackId: string) => {
     return feedback?.title;
   } catch (error) {
     console.log(error);
+    return null;
   }
 };
 export const getFeedbackTitleByCommentId = async (commentId: string) => {
@@ -74,6 +75,7 @@ export const getFeedbackTitleByCommentId = async (commentId: string) => {
     return comment?.feedback?.title;
   } catch (error) {
     console.log(error);
+    return null;
   }
 };
 

@@ -10,7 +10,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export const getInitials = (name: string): string => {
-  return name.toUpperCase().slice(0, 2);
+  return name?.toUpperCase().slice(0, 2);
 };
 
 export function formatRelativeTime(date: Date): string {
