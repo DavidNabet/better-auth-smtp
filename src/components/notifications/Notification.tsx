@@ -5,7 +5,7 @@ import {
   useInbox,
   InboxNotification,
   formatRelativeTime,
-} from "better-inbox/react";
+} from "@byo-oss/notifications/react";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth/auth.client";
 import { cn, getInitials } from "@/lib/utils";

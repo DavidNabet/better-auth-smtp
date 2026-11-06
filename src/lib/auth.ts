@@ -5,7 +5,7 @@ import { nextCookies } from "better-auth/next-js";
 import { db } from "@/db";
 import { headers } from "next/headers";
 import { admin, twoFactor, organization } from "better-auth/plugins";
-import { inbox } from "better-inbox";
+import { inbox } from "@byo-oss/notifications";
 import {
   sendMagicLinkforLogin,
   sendOTPforLogin,

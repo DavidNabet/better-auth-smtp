@@ -1,5 +1,5 @@
 "use client";
-import { InboxButton } from "better-inbox/react";
+import { InboxButton } from "@byo-oss/notifications/react";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth/auth.client";
 

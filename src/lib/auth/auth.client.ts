@@ -16,7 +16,7 @@ import {
   admin as adm,
   member,
 } from "../organization/organization.service";
-import { inboxClient } from "better-inbox/client";
+import { inboxClient } from "@byo-oss/notifications/client";
 
 // Access role from server in the client
 export const authClient = createAuthClient({
