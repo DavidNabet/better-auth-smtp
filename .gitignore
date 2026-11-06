@@ -16,7 +16,7 @@
 .agents
 ARCHITECTURE_REVIEW.*
 RECOMMANDATION.*
-
+SOLUTION.*
 # testing
 /coverage
 

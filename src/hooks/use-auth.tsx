@@ -41,31 +41,36 @@ interface AuthContextType {
   session?: SessionUser;
   // isAdmin: boolean;
   logOut: () => void;
-  verifySession: () => void;
   verifySessionInOrganization: () => void;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(
   undefined,
 );
-// type UserRole = (typeof auth.$Infer.Session)["user"];
 
 export function useAuthState() {
   const [s, setSession] = useState<SessionUser | undefined>(undefined);
-  // const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const router = useRouter();
 
   useEffect(() => {
-    (async function run() {
-      const { data } = await authClient.getSession();
+    async function run() {
+      setIsLoading(false);
+      const { data, isPending, error } = authClient.useSession();
+      if (isPending) {
+        setIsLoading(true);
+      }
       const filteredData = sessionDto(data as SessionServer);
       setSession(filteredData);
+      setIsLoading(false);
       console.log("session provider: ", data);
 
       return () => {
         setSession(undefined);
       };
-    })();
+    }
+
+    run();
   }, []);
 
   // verify if user has member role
@@ -117,18 +122,6 @@ export function useAuthState() {
     setSession(undefined);
   }
 
-  async function verifySessionAndSave() {
-    const { data, isPending, error } = authClient.useSession();
-    if (!error && !isPending) {
-      // userRole: data?.user?.role,
-      const filteredData = sessionDto(data as SessionServer);
-      setSession(filteredData);
-    } else {
-      router.refresh();
-      router.push("/auth/signin");
-    }
-  }
-
   /**
    * Vérifie le rôle actif de l'utilisateur dans l'organisation courante.
    * Si une organisation est présente dans la session et qu'un rôle est retourné
@@ -153,7 +146,6 @@ export function useAuthState() {
     session: s,
     // isAdmin,
     logOut,
-    verifySession: verifySessionAndSave,
     verifySessionInOrganization: verifyUserInOrganization,
   };
 }

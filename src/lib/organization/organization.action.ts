@@ -217,7 +217,7 @@ export async function setTeamToApp(
   });
 
   try {
-    if (!(await hasServerOrgPermission("team", "delete"))) {
+    if (!(await hasServerOrgPermission("team", "update"))) {
       return toActionState(
         "You don't have permission to perform this action",
         "ERROR",

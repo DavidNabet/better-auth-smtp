@@ -1,6 +1,5 @@
 import { db } from "@/db";
 import { auth } from "@/lib/auth";
-import { revalidateTag } from "next/cache";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 
@@ -59,8 +58,6 @@ export async function GET(
     const next = invitations.pop();
     nextCursor = next!.id;
   }
-
-  revalidateTag(`invitations:${orgId}`);
 
   return NextResponse.json(
     {

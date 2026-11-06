@@ -64,7 +64,7 @@ export async function getOrganizations() {
 export async function getActiveOrganization(userId: string) {
   const memberUser = await db.member.findFirst({
     where: {
-      userId: userId,
+      userId,
     },
   });
 
@@ -72,7 +72,7 @@ export async function getActiveOrganization(userId: string) {
     return null;
   }
 
-  const activeOrganization = await db.organization.findUnique({
+  const activeOrganization = await db.organization.findFirst({
     where: { id: memberUser.organizationId },
   });
 
@@ -258,18 +258,7 @@ export async function filterTeamsByOrganization(organizationId: string) {
         organizationId,
         name: { notIn: memberships.map((m) => m.organization.name) },
       },
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        logo: true,
-        description: true,
-        createdAt: true,
-        organization: {
-          select: {
-            slug: true,
-          },
-        },
+      include: {
         teamMembers: {
           select: {
             user: {
@@ -281,6 +270,11 @@ export async function filterTeamsByOrganization(organizationId: string) {
                 email: true,
               },
             },
+          },
+        },
+        organization: {
+          select: {
+            slug: true,
           },
         },
       },

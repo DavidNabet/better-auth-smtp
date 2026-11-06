@@ -167,6 +167,13 @@ export const auth = betterAuth({
           const activeOrganization = await getActiveOrganization(
             session.userId,
           );
+          if (!activeOrganization) {
+            return {
+              data: {
+                ...session,
+              },
+            };
+          }
           return {
             data: {
               ...session,

@@ -24,11 +24,17 @@ export const routeMiddleware: Middleware = async (req, _event, next) => {
   // P1.3 — le rôle vient de la session validée (de confiance),
   // on supprime la comparaison fragile getSessionCookie(req)?.split(".")[0].
   for (const [routes, allowedRoles] of Object.entries(roleAccessMap)) {
-    if (path.endsWith(routes) && session) {
-      if (!allowedRoles.includes(session.user.role as Role)) {
-        return NextResponse.redirect(new URL("/", req.url));
+    allowedRoles.some((route) => {
+      const regexPattern = route
+        .replace(/\[.*?\]/g, "[^/]+")
+        .replace("/", "\\/");
+      const regex = new RegExp(`^${regexPattern}$`);
+      if (regex.test(path) && session) {
+        if (!allowedRoles.includes(session.user.role as Role)) {
+          return NextResponse.redirect(new URL("/", req.url));
+        }
       }
-    }
+    });
   }
 
   return next();

@@ -1,6 +1,5 @@
 import { db } from "@/db";
 import { auth } from "@/lib/auth";
-import { revalidateTag } from "next/cache";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 
@@ -83,8 +82,6 @@ export async function GET(
     createdAt: m.createdAt,
     updatedAt: m.user.updatedAt,
   }));
-
-  revalidateTag(`members:${orgId}`);
 
   return NextResponse.json(
     {

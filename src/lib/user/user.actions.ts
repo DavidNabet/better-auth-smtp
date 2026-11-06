@@ -20,6 +20,7 @@ import type { FormState } from "./user.types";
 import { getCurrentUser, getUserById } from "@/lib/user/user.utils";
 import type { ActionState } from "@/lib/feedback/feedback.types";
 import { toAction, toActionState } from "@/lib/feedback/feedback.utils";
+import { hasServerPermission } from "../permissions/permissions.actions";
 
 export type ErrorTypes = keyof typeof authServer.$ERROR_CODES;
 
@@ -207,7 +208,7 @@ export async function updateUser(schema: UpdateUserSchema): Promise<{
     }
 
     // Only admins and moderators can update other users, or users can update themselves
-    const isNotUser = currentUser.role !== "USER";
+    const isNotUser = await hasServerPermission("user", "ban");
     const isSelfUpdate = currentUser.id === userId;
 
     if (!isNotUser && !isSelfUpdate) {
