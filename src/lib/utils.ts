@@ -1,6 +1,26 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
+export function parseAdminEmails(): string[] {
+  return (
+    process.env.ADMIN_EMAIL?.split(",")
+      .map((e) => e.trim().toLowerCase())
+      .filter(Boolean) ?? []
+  );
+}
+
+export function parseAdminUserIds(): string[] {
+  return (
+    process.env.ADMIN_USER_IDS?.split(",")
+      .map((s) => s.trim())
+      .filter(Boolean) ?? []
+  );
+}
+
+export function isAdminEmail(email: string): boolean {
+  return parseAdminEmails().includes(email.toLowerCase());
+}
+
 export function wait(seconds: number): Promise<number> {
   return new Promise((res) => setTimeout(res, seconds));
 }

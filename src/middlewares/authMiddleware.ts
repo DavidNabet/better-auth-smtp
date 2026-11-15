@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { betterFetch } from "@better-fetch/fetch";
 import { Session } from "@/lib/auth";
 import { getSessionCookie } from "better-auth/cookies";
+import { attachSessionHeaders, getValidatedSession } from "./session";
 
 export const authMiddleware: Middleware = async (req, _event, next) => {
   const routes = ["/auth/signin", "/auth/signup", "/auth/two-factor"];
@@ -13,13 +14,19 @@ export const authMiddleware: Middleware = async (req, _event, next) => {
   const isAuthRoute = routes.includes(nextUrl.pathname);
   const isAdminRoute = adminRoute.includes(nextUrl.pathname);
   const isRoot = root.includes(nextUrl.pathname);
-  const sessionCookie = getSessionCookie(req);
+  // const sessionCookie = getSessionCookie(req);
+
+  const data = await getValidatedSession(req);
 
   // P1.3 — présence d'un cookie != session valide.
   // Un cookie expiré/invalide ne satisfait plus le garde.
-  const haveAccess = !!sessionCookie;
 
-  console.log("sessionCookie: ", sessionCookie?.split(".")[0]);
+  // console.log("sessionCookie: ", sessionCookie?.split(".")[0]);
+
+  const haveAccess = !!data?.session;
+  const session = data;
+
+  console.log("session validated: ", haveAccess);
 
   if (isRoot) {
     console.log("root");
@@ -38,36 +45,16 @@ export const authMiddleware: Middleware = async (req, _event, next) => {
     return NextResponse.redirect(new URL("/auth/signin", nextUrl));
   }
 
-  if (haveAccess) {
-    // if (!haveAccess) {
-    //   return NextResponse.redirect(new URL("/dashboard", req.url));
-    // }
-    return NextResponse.next();
-  }
+  // if (haveAccess) {
+  //   return NextResponse.next();
+  // }
 
   // empeche l'infinite loop
   if (haveAccess && isAdminRoute) {
     return NextResponse.next();
   }
 
-  // Redirect to dashboard if user is authenticated and trying to access auth routes
-  // if (sessionCookie) {
-  //   console.log("logged in");
-  //   if (nextUrl.pathname.startsWith("/auth")) {
-  //     return NextResponse.redirect(new URL("/dashboard", req.url));
-  //   }
-  //   return NextResponse.redirect(new URL("/dashboard", req.url));
-  // }
-
-  // if (sessionCookie) {
-  //   if (isAuthRoute) {
-  //     console.log("not logged in and isAuthRoute");
-  //     return response;
-  //   }
-  //   console.log("not logged in");
-
-  //   return NextResponse.redirect(new URL("/auth/signin", req.url));
-  // }
+  attachSessionHeaders(req, session);
 
   return next();
 };

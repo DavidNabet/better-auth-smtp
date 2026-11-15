@@ -246,13 +246,6 @@ export async function filterTeamsByOrganization(organizationId: string) {
       },
     });
 
-    const userOrgIds = memberships.map((m) => m.organizationId);
-
-    // If user is not in this organization, return empty
-    if (!userOrgIds.includes(organizationId)) {
-      return [];
-    }
-
     const teams = await db.team.findMany({
       where: {
         organizationId,
@@ -260,7 +253,7 @@ export async function filterTeamsByOrganization(organizationId: string) {
       },
       include: {
         teamMembers: {
-          select: {
+          include: {
             user: {
               select: {
                 id: true,
@@ -279,6 +272,10 @@ export async function filterTeamsByOrganization(organizationId: string) {
         },
       },
     });
+
+    if (!memberships.some((m) => m.organizationId === organizationId)) {
+      return [];
+    }
 
     return teams;
   } catch (error) {

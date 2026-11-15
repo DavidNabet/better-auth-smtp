@@ -26,7 +26,7 @@ import {
   getActiveOrganization,
 } from "@/lib/organization/organization.utils";
 import { getUserById } from "./user/user.utils";
-import { wait } from "./utils";
+import { isAdminEmail, parseAdminUserIds } from "./utils";
 
 export const auth = betterAuth({
   database: prismaAdapter(db, {
@@ -119,11 +119,7 @@ export const auth = betterAuth({
       enabled: true,
       beforeDelete: async (user, request) => {
         // P1.4 — correspondance EXACTE (évite le substring match et le crash si var absente).
-        const ADMIN_EMAILS =
-          process.env.ADMIN_EMAIL?.split(",")
-            .map((e) => e.trim().toLowerCase())
-            .filter(Boolean) ?? [];
-        if (ADMIN_EMAILS.includes((user.email ?? "").toLowerCase())) {
+        if (isAdminEmail(user.email ?? "")) {
           throw new APIError("BAD_REQUEST", {
             message: "Admin accounts can't be deleted",
           });
@@ -187,11 +183,7 @@ export const auth = betterAuth({
       update: {
         after: async (user, ctx) => {
           // P1.4 — correspondance EXACTE (cohérent avec beforeDelete).
-          const ADMIN_EMAILS =
-            process.env.ADMIN_EMAIL?.split(",")
-              .map((e) => e.trim().toLowerCase())
-              .filter(Boolean) ?? [];
-          if (ADMIN_EMAILS.includes((user.email ?? "").toLowerCase())) {
+          if (isAdminEmail(user.email ?? "")) {
             console.info("auth db user updated: ", user.name);
 
             // return { data: { ...user, role: Role.ADMIN } };
@@ -252,9 +244,7 @@ export const auth = betterAuth({
         SUPER_ADMIN,
       },
       // P1.4 — ids admin pilotés par env, avec repli sûr sur la valeur commitée.
-      adminUserIds: process.env.ADMIN_USER_IDS?.split(",")
-        .map((s) => s.trim())
-        .filter(Boolean),
+      adminUserIds: parseAdminUserIds(),
       impersonationSessionDuration: 60 * 60 * 24,
     }),
     twoFactor({
@@ -304,10 +294,17 @@ export const auth = betterAuth({
           console.info("after Accept Invitation: ", user.email);
           const inviter = await getUserById(invitation.inviterId);
           if (user?.role === Role.USER) {
-            const data = await (
-              await auth.$context
-            ).internalAdapter.updateUser(user.id, { role: Role.MEMBER });
-            console.log("changing role...", data?.role);
+            await auth.api.adminUpdateUser({
+              body: {
+                userId: user.id,
+                data: { role: Role.MEMBER },
+              },
+              headers: await headers(),
+            });
+            // const data = await (
+            //   await auth.$context
+            // ).internalAdapter.updateUser(user.id, { role: Role.MEMBER });
+            // console.log("changing role...", data?.role);
             // await db.user.update({
             //   where: { id: user.id },
             //   data: {
@@ -373,14 +370,14 @@ export const auth = betterAuth({
               href: `/dashboard/orgs/${organization.slug}`,
             },
           });
-          wait(3000);
-
-          if (notifications?.[0]?.id) {
-            await db.notification.update({
-              where: { id: notifications[0].id },
-              data: { organizationId: organization.id },
-            });
-          }
+          setTimeout(async () => {
+            if (notifications?.[0]?.id) {
+              await db.notification.update({
+                where: { id: notifications[0].id },
+                data: { organizationId: organization.id },
+              });
+            }
+          }, 2000);
         },
 
         // TODO: Ajouter un champ createdBy dans le model Team pour envoyer l'userId au notify
@@ -401,14 +398,14 @@ export const auth = betterAuth({
               href: `/dashboard/orgs/${organization.slug}/teams/${team.slug}`,
             },
           });
-          wait(3000);
-
-          if (notifications?.[0]?.id) {
-            await db.notification.update({
-              where: { id: notifications[0].id },
-              data: { organizationId: organization.id },
-            });
-          }
+          setTimeout(async () => {
+            if (notifications?.[0]?.id) {
+              await db.notification.update({
+                where: { id: notifications[0].id },
+                data: { organizationId: organization.id },
+              });
+            }
+          }, 2000);
         },
         afterUpdateMemberRole: async ({
           member,
@@ -435,13 +432,14 @@ export const auth = betterAuth({
                 title: `L'organisateur vous a promu au rang de ${member.role}`,
               },
             });
-            wait(3000);
-            if (notifications?.[0]?.id) {
-              await db.notification.update({
-                where: { id: notifications[0].id },
-                data: { organizationId: organization.id },
-              });
-            }
+            setTimeout(async () => {
+              if (notifications?.[0]?.id) {
+                await db.notification.update({
+                  where: { id: notifications[0].id },
+                  data: { organizationId: organization.id },
+                });
+              }
+            }, 2000);
             // await db.user.update({
             //   where: { id: user.id },
             //   data: {

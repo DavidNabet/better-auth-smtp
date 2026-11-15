@@ -65,7 +65,7 @@ export async function inviteMember(
       headers: await head(),
     });
     console.log("invitation: ", invitation);
-    revalidateTag(`invalidations:${organizationId}`);
+    revalidateTag(`members:${organizationId}`);
     revalidateTag("organization");
     return toActionState("Invitation sent to member", "SUCCESS");
   } catch (error) {

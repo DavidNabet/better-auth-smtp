@@ -20,6 +20,20 @@ export type Member = {
   updatedAt: Date;
 };
 
+export interface TeamMember {
+  id: string;
+  userId: string;
+  user: {
+    id: string;
+    name: string | null;
+    email: string;
+    image: string;
+    role: string;
+  };
+  teamId: string;
+  createdAt: Date;
+}
+
 export type Team = {
   id: string;
   name: string;

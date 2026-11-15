@@ -6,6 +6,7 @@ import {
   createContext,
   ReactNode,
   useContext,
+  useRef,
 } from "react";
 import { authClient } from "@/lib/auth/auth.client";
 import { useRouter } from "next/navigation";
@@ -35,11 +36,10 @@ function sessionDto(data: SessionServer | null) {
   };
 }
 
-type SessionUser = Awaited<ReturnType<typeof sessionDto>>;
+type SessionUser = NonNullable<ReturnType<typeof sessionDto>>;
 
 interface AuthContextType {
-  session?: SessionUser;
-  // isAdmin: boolean;
+  session: SessionUser | null;
   logOut: () => void;
   verifySessionInOrganization: () => void;
 }
@@ -50,28 +50,39 @@ export const AuthContext = createContext<AuthContextType | undefined>(
 
 export function useAuthState() {
   const [s, setSession] = useState<SessionUser | undefined>(undefined);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const { data, isPending, error, refetch } = authClient.useSession();
+
+  const isPendingRef = useRef(isPending);
   const router = useRouter();
 
   useEffect(() => {
-    async function run() {
-      setIsLoading(false);
-      const { data, isPending, error } = authClient.useSession();
-      if (isPending) {
-        setIsLoading(true);
-      }
+    isPendingRef.current = isPending;
+  }, [isPending]);
+
+  useEffect(() => {
+    if (isPending) {
+      const timerNotify = setTimeout(() => {
+        if (isPendingRef.current) {
+          refetch();
+        }
+      }, 2500);
+
       const filteredData = sessionDto(data as SessionServer);
       setSession(filteredData);
-      setIsLoading(false);
       console.log("session provider: ", data);
 
+      const timerReload = setTimeout(() => {
+        if (isPendingRef.current) {
+          window.location.reload();
+        }
+      }, 5000);
+
       return () => {
-        setSession(undefined);
+        clearTimeout(timerNotify);
+        clearTimeout(timerReload);
       };
     }
-
-    run();
-  }, []);
+  }, [isPending]);
 
   // verify if user has member role
   useEffect(() => {
@@ -115,11 +126,10 @@ export function useAuthState() {
   }, [s?.sessionId]);*/
 
   async function logOut() {
-    const { data, error } = await authClient.revokeSession({
-      token: s?.token!,
-    });
-    console.log("logout: ", data, error);
-    setSession(undefined);
+    await authClient.signOut();
+    router.refresh();
+    // setSession(undefined);
+    router.push("/auth/signin");
   }
 
   /**
@@ -143,7 +153,7 @@ export function useAuthState() {
   }
 
   return {
-    session: s,
+    session: s ?? null,
     // isAdmin,
     logOut,
     verifySessionInOrganization: verifyUserInOrganization,
